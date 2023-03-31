@@ -276,8 +276,14 @@ pub struct ItemDetails {
     pub creator_name: String,
     /// Coincides with price if the item is a non-limited,
     /// and lowest price if item is a limited.
-    pub price: u64,
-    pub favorite_count: u64,
+    ///
+    /// If the item is offsale, the price is 0.
+    /// However, if the price is a limited and no resellers exist,
+    /// then the price does not exist.
+    pub price: Option<u64>,
+    /// For some reason, if details for multiple items are requested from
+    /// the item details endpoint, this field is not present.
+    pub favorite_count: Option<u64>,
     /// Only exists if the item has a special price status.
     pub price_status: Option<PriceStatus>,
     /// Only exists if the item has special premium pricing.
@@ -349,9 +355,6 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
     type Error = RoboatError;
 
     fn try_from(value: reqwest_types::ItemDetailsRaw) -> Result<Self, Self::Error> {
-        let id = value.id.ok_or(RoboatError::MalformedResponse)?;
-        let item_type = value.item_type.ok_or(RoboatError::MalformedResponse)?;
-
         let asset_type = match value.asset_type {
             Some(asset_type_id) => {
                 let asset_type = AssetType::try_from(asset_type_id)?;
@@ -368,34 +371,43 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
             None => None,
         };
 
+        let id = value.id.ok_or(RoboatError::MalformedResponse)?;
+        let item_type = value.item_type.ok_or(RoboatError::MalformedResponse)?;
         let name = value.name.ok_or(RoboatError::MalformedResponse)?;
         let description = value.description.ok_or(RoboatError::MalformedResponse)?;
         let product_id = value.product_id.ok_or(RoboatError::MalformedResponse)?;
-        let genres = value.genres;
+        let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
         let item_statuses = value.item_statuses.ok_or(RoboatError::MalformedResponse)?;
+
         let item_restrictions = value
             .item_restrictions
             .ok_or(RoboatError::MalformedResponse)?;
+
         let creator_has_verified_badge = value
             .creator_has_verified_badge
             .ok_or(RoboatError::MalformedResponse)?;
-        let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
+
         let creator_user_id = value
             .creator_user_id
             .ok_or(RoboatError::MalformedResponse)?;
-        let creator_name = value.creator_name.ok_or(RoboatError::MalformedResponse)?;
 
-        let price = match value.price {
-            Some(x) => x,
-            None => match value.lowest_price {
-                Some(x) => x,
-                None => return Err(RoboatError::MalformedResponse),
-            },
-        };
+        let creator_name = value
+            .creator_name
+            .clone()
+            .ok_or(RoboatError::MalformedResponse)?;
 
-        let favorite_count = value.favorite_count.ok_or(RoboatError::MalformedResponse)?;
+        let genres = value.genres;
+        let favorite_count = value.favorite_count;
         let price_status = value.price_status;
         let premium_pricing = value.premium_pricing;
+
+        // If the price is None, use the lowest price (used for limiteds).
+        // If neither exists, the item has no resellers and the price
+        // does not exist.
+        let price = match value.price {
+            Some(x) => Some(x),
+            None => value.lowest_price,
+        };
 
         Ok(Self {
             id,
