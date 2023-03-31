@@ -139,7 +139,6 @@ pub enum CreatorType {
     Group,
 }
 
-// todo: try one with no resellers
 /// The price status of an item. Only applies to items not on sale (Free, Offsale).
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
