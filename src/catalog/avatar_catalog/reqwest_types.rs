@@ -1,5 +1,5 @@
 use super::{
-    CreatorType, Genre, ItemParameters, ItemRestriction, ItemStatus, ItemType, PremiumPricing,
+    CreatorType, Genre, ItemArgs, ItemRestriction, ItemStatus, ItemType, PremiumPricing,
     PriceStatus,
 };
 
@@ -56,20 +56,20 @@ pub(crate) struct ItemDetailsRaw {
     pub off_sale_deadline: Option<serde_json::Value>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub(crate) struct ItemDetailsReqBody {
-    pub(crate) items: Vec<ItemParametersReq>,
+    pub(crate) items: Vec<ItemArgsReq>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub(crate) struct ItemParametersReq {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub(crate) struct ItemArgsReq {
     #[serde(rename = "itemType")]
     pub item_type: ItemType,
     pub id: u64,
 }
 
-impl From<ItemParameters> for ItemParametersReq {
-    fn from(item: ItemParameters) -> Self {
+impl From<ItemArgs> for ItemArgsReq {
+    fn from(item: ItemArgs) -> Self {
         Self {
             item_type: item.item_type,
             id: item.id,

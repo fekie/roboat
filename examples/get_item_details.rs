@@ -1,41 +1,41 @@
-use roboat::catalog::avatar_catalog::ItemParameters;
+use roboat::catalog::avatar_catalog::ItemArgs;
 use roboat::catalog::avatar_catalog::ItemType;
 use roboat::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // bundle
-    let item_1 = ItemParameters {
+    let item_1 = ItemArgs {
         item_type: ItemType::Bundle,
         id: 39,
     };
 
     // limited item
-    let item_2 = ItemParameters {
+    let item_2 = ItemArgs {
         item_type: ItemType::Asset,
         id: 1365767,
     };
 
     // ugc
-    let item_3 = ItemParameters {
+    let item_3 = ItemArgs {
         item_type: ItemType::Asset,
         id: 12415326352,
     };
 
     // off sale
-    let item_4 = ItemParameters {
+    let item_4 = ItemArgs {
         item_type: ItemType::Asset,
         id: 11386336162,
     };
 
     // no resellers
-    let item_5 = ItemParameters {
+    let item_5 = ItemArgs {
         item_type: ItemType::Asset,
         id: 148791559,
     };
 
     // limited u
-    let item_6 = ItemParameters {
+    let item_6 = ItemArgs {
         item_type: ItemType::Asset,
         id: 21070789,
     };

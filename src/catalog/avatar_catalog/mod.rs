@@ -296,7 +296,7 @@ pub struct ItemDetails {
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub struct ItemParameters {
+pub struct ItemArgs {
     /// The type of the item (Asset or Bundle).
     pub item_type: ItemType,
     /// The id of the item, or of the bundle.
@@ -441,13 +441,13 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
 impl Client {
     async fn item_details_internal(
         &self,
-        items: Vec<ItemParameters>,
+        items: Vec<ItemArgs>,
     ) -> Result<Vec<ItemDetails>, RoboatError> {
         let request_body = reqwest_types::ItemDetailsReqBody {
             // Convert the ItemParameters to te reqwest ItemParametersReq
             items: items
                 .iter()
-                .map(|x| reqwest_types::ItemParametersReq::from(*x))
+                .map(|x| reqwest_types::ItemArgsReq::from(*x))
                 .collect(),
         };
 
@@ -501,7 +501,7 @@ impl Client {
 mod external {
     use crate::{Client, RoboatError};
 
-    use super::{ItemDetails, ItemParameters};
+    use super::{ItemArgs, ItemDetails};
 
     impl Client {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
@@ -517,7 +517,7 @@ mod external {
         ///
         /// # Example
         /// ```no_run
-        /// use roboat::catalog::avatar_catalog::ItemParameters;
+        /// use roboat::catalog::avatar_catalog::ItemArgs;
         /// use roboat::catalog::avatar_catalog::ItemType;
         /// use roboat::Client;
         ///
@@ -525,12 +525,12 @@ mod external {
         /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
         /// let client = Client::new();
         ///
-        /// let asset = ItemParameters {
+        /// let asset = ItemArgs {
         ///     item_type: ItemType::Asset,
         ///     id: 1365767,
         /// };
         ///
-        /// let bundle = ItemParameters {
+        /// let bundle = ItemArgs {
         ///    item_type: ItemType::Bundle,
         ///    id: 39,
         /// };
@@ -542,7 +542,7 @@ mod external {
         /// ```
         pub async fn item_details(
             &self,
-            items: Vec<ItemParameters>,
+            items: Vec<ItemArgs>,
         ) -> Result<Vec<ItemDetails>, RoboatError> {
             match self.item_details_internal(items.clone()).await {
                 Ok(x) => Ok(x),
