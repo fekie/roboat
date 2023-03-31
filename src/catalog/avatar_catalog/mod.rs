@@ -514,6 +514,32 @@ mod external {
         /// * The `id` parameter is that acts differently for this endpoint than others.
         /// If the `item_type` is `ItemType::Asset`, then `id` is the item ID.
         /// Otherwise, if the `item_type` is `ItemType::Bundle`, then `id` is the bundle ID.
+        ///
+        /// # Example
+        /// ```no_run
+        /// use roboat::catalog::avatar_catalog::ItemParameters;
+        /// use roboat::catalog::avatar_catalog::ItemType;
+        /// use roboat::Client;
+        ///
+        /// # #[tokio::main]
+        /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        /// let client = Client::new();
+        ///
+        /// let asset = ItemParameters {
+        ///     item_type: ItemType::Asset,
+        ///     id: 1365767,
+        /// };
+        ///
+        /// let bundle = ItemParameters {
+        ///    item_type: ItemType::Bundle,
+        ///    id: 39,
+        /// };
+        ///
+        /// let items = vec![asset, bundle];
+        /// let details = client.item_details(items).await?;
+        /// # Ok(())
+        /// # }
+        /// ```
         pub async fn item_details(
             &self,
             items: Vec<ItemParameters>,
