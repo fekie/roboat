@@ -492,7 +492,7 @@ impl Client {
 mod external {
     use crate::{Client, RoboatError};
 
-    use super::{ItemDetails, ItemParameters, ItemType};
+    use super::{ItemDetails, ItemParameters};
 
     impl Client {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
