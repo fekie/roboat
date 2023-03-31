@@ -473,6 +473,7 @@ impl Client {
 
                         Ok(item_details)
                     }
+                    400 => Err(RoboatError::BadRequest),
                     403 => {
                         let new_xcsrf = match response.headers().get(XCSRF_HEADER) {
                             Some(x) => x.to_str().unwrap().to_string(),
@@ -481,6 +482,8 @@ impl Client {
 
                         Err(RoboatError::InvalidXcsrf(new_xcsrf))
                     }
+                    429 => Err(RoboatError::TooManyRequests),
+                    500 => Err(RoboatError::InternalServerError),
                     _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
                 }
             }

@@ -39,6 +39,11 @@ pub enum RoboatError {
     /// Used when an endpoint returns status code 500.
     #[error("Internal Server Error")]
     InternalServerError,
+    /// Used when an endpoint returns status code 400.
+    /// This is used when the server cannot process the data sent, whether
+    /// it be because it is in the wrong format or it contains too much data.
+    #[error("Bad Request")]
+    BadRequest,
     /// Used for any status codes that do not fit any enum variants of this error.
     /// If you encounter this enum variant, please submit an issue so a variant can be
     /// made or the crate can be fixed.
