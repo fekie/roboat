@@ -24,11 +24,11 @@
 pub enum ResellerAmount {}
 
 mod external {
-    use crate::{Client, Error};
+    use crate::{Client, RoboatError};
 
     impl Client {
         /// Grabs a list of resellers from <https://economy.roblox.com/v1/assets/xxx/resellers>.
-        pub async fn resellers(&self, item_id: u64) -> Result<u64, Error> {
+        pub async fn resellers(&self, item_id: u64) -> Result<u64, RoboatError> {
             // Does not require xcsrf.
 
             self.resellers_internal(item_id).await
@@ -36,10 +36,10 @@ mod external {
     }
 }
 
-use crate::{Client, Error};
+use crate::{Client, RoboatError};
 
 impl Client {
-    async fn resellers_internal(&self, item_id: u64) -> Result<u64, Error> {
+    async fn resellers_internal(&self, item_id: u64) -> Result<u64, RoboatError> {
         todo!()
     }
 }

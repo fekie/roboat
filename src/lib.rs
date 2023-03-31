@@ -27,9 +27,11 @@ pub mod economy;
 
 use std::sync::Mutex;
 
+const XCSRF_HEADER: &str = "x-csrf-token";
+
 /// The universal error used in this crate.
 #[derive(thiserror::Error, Debug, Default)]
-pub enum Error {
+pub enum RoboatError {
     /// Used when an endpoint returns status code 429.
     #[default]
     #[error("Too Many Requests")]
@@ -46,10 +48,14 @@ pub enum Error {
     #[error("Malformed Response")]
     MalformedResponse,
     /// Used when an endpoint rejects a request due to an invalid xcsrf.
-    /// An invalid xcsrf is returned due to the fact that rust does not
+    /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
     /// allow async recursion without making a type signature extremely messy.
     #[error("Invalid Xcsrf. New Xcsrf Contained In Error.")]
     InvalidXcsrf(String),
+    /// Used when an endpoint returns a 403 status code, but the response does not contain
+    /// a new xcsrf.
+    #[error("Missing Xcsrf")]
+    XcsrfNotReturned,
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
