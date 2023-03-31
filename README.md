@@ -1,5 +1,5 @@
 # roboat
-An api wrapper for Roblox.com.
+An API wrapper for Roblox.com.
 
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
