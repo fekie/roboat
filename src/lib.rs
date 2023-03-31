@@ -22,8 +22,6 @@ pub use reqwest;
 
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
-/// A module for endpoints prefixed with <https://economy.roblox.com/*>.
-pub mod economy;
 
 use std::sync::Mutex;
 
