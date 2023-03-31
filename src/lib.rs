@@ -5,15 +5,9 @@
 //! that a [`Client`] is designed to work with proxies, as well as make
 //! multiple requests in parallel. All API calls are made through a [`Client`].
 //!
-//! # Implementation Details
-//! All modules corresponding to groups of endpoints are structured
-//! to where they consist of an "internal" and "external" module.
-//! The "external" modules contain public facing client methods, which
-//! call methods from "internal" modules which make the actual endpoint calls.
-//! This is done as some endpoints are designed to possibly have more than one call made.
-//! However, Rust does not allow async recursion by default. One possible solution, using #[async_recursion],
-//! complicates the type signature of methods, requiring much repetitive documentation to explain
-//! parameters and return values that would have been self-explanatory otherwise.
+//! # Covered Endpoints
+//! * Catalog API
+//!    - Item Details - [`Client::item_details`]
 
 #![warn(missing_docs)]
 
