@@ -1,5 +1,5 @@
 //! # About
-//! An api wrapper for Roblox.com.
+//! An api wrapper for roblox.com.
 //!
 //! This library is designed to be high-performance capable, meaning
 //! that a [`Client`] is designed to work with proxies, as well as make
@@ -12,7 +12,7 @@
 //! call methods from "internal" modules which make the actual endpoint calls.
 //! This is done as some endpoints are designed to possibly have more than one call made.
 //! However, Rust does not allow async recursion by default. One possible solution, using #[async_recursion],
-//! complicates the type signature of methods, requiring much repitive documentation to explain
+//! complicates the type signature of methods, requiring much repetitive documentation to explain
 //! parameters and return values that would have been self-explanatory otherwise.
 
 #![warn(missing_docs)]
@@ -20,9 +20,9 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
-/// A module for endpoints prefixed with https://catalog.roblox.com/*
+/// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
-/// A module for endpoints prefixed with https://economy.roblox.com/*
+/// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
 
 use std::sync::Mutex;
