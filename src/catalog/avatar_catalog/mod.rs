@@ -257,24 +257,37 @@ pub struct PremiumPricing {
     premium_price_in_robux: u64,
 }
 
+/// The details of an item. Retrieved from <https://catalog.roblox.com/v1/catalog/items/details>.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ItemDetails {
+    /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
     pub id: u64,
+    /// The type of item (Asset or Bundle).
     pub item_type: ItemType,
     /// Exclusive with [`ItemDetails::bundle_type`].
     pub asset_type: Option<AssetType>,
     /// Exclusive with [`ItemDetails::asset_type`].
     pub bundle_type: Option<BundleType>,
+    /// The name of the item.
     pub name: String,
+    /// The description of the item.
     pub description: String,
+    /// The product id of the item. This is different from the asset/bundle id.
+    /// This is most notably used when buying limiteds.
     pub product_id: u64,
     /// Only exists if the [`ItemDetails::item_type`] is a [`ItemType::Asset`].
     pub genres: Option<Vec<Genre>>,
+    /// The statuses of an item (e.g., New, Sale)
     pub item_statuses: Vec<ItemStatus>,
+    /// The restrictions on an item (e.g., ThirteenPlus, Limited).
     pub item_restrictions: Vec<ItemRestriction>,
+    /// Whether the creator is verified by Roblox.
     pub creator_has_verified_badge: bool,
+    /// The type of creator that created the item (User or Group).
     pub creator_type: CreatorType,
+    /// The id of the creator. The value is 1 if the creator is Roblox.
     pub creator_user_id: u64,
+    /// The name of the creator. The value is "Roblox" if the creator is Roblox.
     pub creator_name: String,
     /// Coincides with price if the item is a non-limited,
     /// and lowest price if item is a limited.
