@@ -5,7 +5,7 @@
 * As sometimes a request needs to repeat due to an invalid x-csrf-token, a "trampolining" approach is used as `async_recursion`
 complicates the type signature. Due to this, all functions that require an x-csrf-token have their public method in an `external` module. This module can be, but does not need to be, in a separate file. The public method gets called, which calls `xxx_internal()` (xxx being the public method name)
 up to two times.
-    - (e.g., `external::item_details` is the public version of `item_details_internal`)
+    - (e.g., `external::item_details()` is the public version of `item_details_internal()`)
 
 
 ### Naming Conventions
