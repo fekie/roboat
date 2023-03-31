@@ -3,8 +3,6 @@ use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
-use self::reqwest_types::ItemDetailsResponse;
-
 mod reqwest_types;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
