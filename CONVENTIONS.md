@@ -13,7 +13,7 @@ up to two times.
     - (e.g., `ItemDetailsResponse`)
 * Structs/Enums used inside structs suffixed with `-Response` are suffixed with `-Raw`.
     - (e.g., `ItemDetailsRaw`)
-* Structs used as a body to a [reqwest](https://crates.io/crates/reqwest) request are suffixed with `-ReqBody`.
+* Structs used as or in a body to a [reqwest](https://crates.io/crates/reqwest) request are suffixed with `-ReqBody`.
     - (e.g., `ItemDetailsReqBody`)
 * Structs/Enums used inside structs sufficed with `-ReqBody` are suffixed with `-Req`.
     - (e.g., `ItemParametersReq`)
