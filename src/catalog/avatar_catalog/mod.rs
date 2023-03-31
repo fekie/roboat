@@ -81,21 +81,21 @@ pub enum BundleType {
 #[allow(missing_docs)]
 pub enum Genre {
     #[default]
+    All,
+    Tutorial,
+    Scary,
     TownAndCity,
-
-    Medieval,
-    SciFi,
-    Fighting,
-    Horror,
-    Naval,
+    War,
+    Funny,
+    Fantasy,
     Adventure,
-    Sports,
-    Comedy,
-    Western,
-    Military,
-    Building,
+    SciFi,
+    Pirate,
     FPS,
     RPG,
+    Sports,
+    Ninja,
+    WildWest,
 }
 
 /// The status of an item (Sale, Exclusive).
