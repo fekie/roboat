@@ -292,11 +292,15 @@ pub struct ItemDetails {
     pub premium_pricing: Option<PremiumPricing>,
 }
 
+/// Holds information used to retrieve data from the [`Client::item_details`] endpoint.
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
 pub struct ItemParameters {
+    /// The type of the item (Asset or Bundle).
     pub item_type: ItemType,
+    /// The id of the item, or of the bundle.
+    /// In the [`Client::item_details`] endpoint, it acts as both, depending on the [`Self::item_type`].
     pub id: u64,
 }
 
@@ -502,8 +506,12 @@ mod external {
     impl Client {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         ///
-        /// ### Argument Notes
-        /// The `id` parameter is that acts differently for this endpoint than others.
+        /// # Notes
+        /// * Does not require authentication.
+        /// * This endpoint will accept up to 120 items at a time.
+        ///
+        /// # Argument Notes
+        /// * The `id` parameter is that acts differently for this endpoint than others.
         /// If the `item_type` is `ItemType::Asset`, then `id` is the item ID.
         /// Otherwise, if the `item_type` is `ItemType::Bundle`, then `id` is the bundle ID.
         pub async fn item_details(
