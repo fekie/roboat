@@ -10,8 +10,11 @@ up to two times.
 
 
 ### Naming Conventions
-* Structs used as a generic when calling [.json()](https://docs.rs/reqwest/latest/reqwest/struct.Response.html#method.json) are suffixed with   `-Response`.
+* Structs used as a generic when calling [.json()](https://docs.rs/reqwest/latest/reqwest/struct.Response.html#method.json) (where the status code is 200) are suffixed with `-Response` 
+(only in cases where the status code is 200).
     - (e.g., `ItemDetailsResponse`)
+* Structs used as a generic when calling [.json()](https://docs.rs/reqwest/latest/reqwest/struct.Response.html#method.json) (where the status code is NOT 200) are suffixed with `-ErrorResponse`.
+    - (e.g., `ToggleSaleErrorResponse`)
 * Structs/Enums used inside structs suffixed with `-Response` are suffixed with `-Raw`.
     - (e.g., `ItemDetailsRaw`)
 * Structs used as, or in, a body to a [reqwest](https://crates.io/crates/reqwest) request are suffixed with `-ReqBody`.
@@ -20,3 +23,6 @@ up to two times.
     - (e.g., `ItemArgsReq`)
 * Structs/Enums used as, or in, a type for a function parameter are suffixed with `-Args`.
     - (e.g., `ItemArgs`)
+
+### Misc Conventions
+* All methods that make a call to an endpoint must include a doc example and a crate example.
