@@ -514,7 +514,8 @@ impl Client {
 mod external {
     use crate::{Client, RoboatError};
 
-    use super::{ItemArgs, ItemDetails};
+    #[allow(unused_imports)]
+    use super::{ItemArgs, ItemDetails, ItemType};
 
     impl Client {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
@@ -525,8 +526,8 @@ mod external {
         ///
         /// # Argument Notes
         /// * The `id` parameter is that acts differently for this endpoint than others.
-        /// If the `item_type` is `ItemType::Asset`, then `id` is the item ID.
-        /// Otherwise, if the `item_type` is `ItemType::Bundle`, then `id` is the bundle ID.
+        /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
+        /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
         ///
         /// # Example
         /// ```no_run
