@@ -29,6 +29,8 @@ pub mod economy;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 
+use serde::{Deserialize, Serialize};
+
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
 // Used in the cookie header.
@@ -77,4 +79,28 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
+}
+
+/// The maximum amount of instances to return from an endpoint.
+#[allow(missing_docs)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+pub enum Limit {
+    #[default]
+    Ten,
+    TwentyFive,
+    Fifty,
+    Hundred,
+}
+
+impl Limit {
+    fn to_u64(self) -> u64 {
+        match self {
+            Limit::Ten => 10,
+            Limit::TwentyFive => 25,
+            Limit::Fifty => 50,
+            Limit::Hundred => 100,
+        }
+    }
 }
