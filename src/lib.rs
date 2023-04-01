@@ -1,5 +1,5 @@
 //! # About
-//! An api wrapper for roblox.com.
+//! An API wrapper for Roblox.com.
 //!
 //! This library is designed to be high-performance capable, meaning
 //! that a [`Client`] is designed to work with proxies, as well as make

@@ -1,5 +1,11 @@
+[![Crates.io](https://img.shields.io/crates/v/roboat.svg)](https://crates.io/crates/roboat)
+[![Documentation](https://docs.rs/roboat/badge.svg)](https://docs.rs/roboat/)
+[![dependency status](https://deps.rs/repo/github/chloe-woahie/roboat/status.svg)](https://deps.rs/repo/github/chloe-woahie/roboat)
+
+[![](https://dcbadge.vercel.app/api/server/QmBEgPaFSD)](https://discord.gg/QmBEgPaFSD)
+
 # roboat
-An api wrapper for Roblox.com.
+An API wrapper for Roblox.com.
 
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
