@@ -1,3 +1,9 @@
+[![Crates.io](https://img.shields.io/crates/v/roboat.svg)](https://crates.io/crates/roboat)
+[![Documentation](https://docs.rs/roboat/badge.svg)](https://docs.rs/roboat/)
+[![dependency status](https://deps.rs/repo/github/chloe-woahie/roboat/status.svg)](https://deps.rs/repo/github/chloe-woahie/roboat)
+
+[![](https://dcbadge.vercel.app/api/server/QmBEgPaFSD)](https://discord.gg/QmBEgPaFSD)
+
 # roboat
 An API wrapper for Roblox.com.
 
