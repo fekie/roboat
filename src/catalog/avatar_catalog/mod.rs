@@ -520,7 +520,7 @@ mod external {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         ///
         /// # Notes
-        /// * Does not require authentication.
+        /// * Does not require a valid roblosecurity.
         /// * This endpoint will accept up to 120 items at a time.
         ///
         /// # Argument Notes
