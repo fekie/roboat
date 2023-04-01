@@ -8,6 +8,11 @@
 //! # Covered Endpoints
 //! * Catalog API
 //!    - Item Details - [`Client::item_details`]
+//! * Economy API
+//!   - Robux Balance - [`Client::robux`]
+//! * Users API
+//!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
+//! (all of them use the same endpoint internally and cache the results)
 
 #![warn(missing_docs)]
 
