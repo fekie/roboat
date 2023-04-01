@@ -7,7 +7,7 @@ mod reqwest_types;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
 
-const DETAILS_API: &str = "https://catalog.roblox.com/v1/catalog/items/details";
+const ITEM_DETAILS_API: &str = "https://catalog.roblox.com/v1/catalog/items/details";
 
 /// An enum representing the overall high level type of the item (Asset or Bundle)
 #[derive(
@@ -466,7 +466,7 @@ impl Client {
 
         let request_result = self
             .reqwest_client
-            .post(DETAILS_API)
+            .post(ITEM_DETAILS_API)
             .header(XCSRF_HEADER, self.xcsrf())
             .json(&request_body)
             .send()
@@ -550,6 +550,8 @@ mod external {
         ///
         /// let items = vec![asset, bundle];
         /// let details = client.item_details(items).await?;
+        /// println!("Item Name: {}", details[0].name);
+        /// println!("Bundle Name: {}", details[1].name);
         /// # Ok(())
         /// # }
         /// ```
