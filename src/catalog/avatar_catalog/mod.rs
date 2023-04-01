@@ -7,7 +7,7 @@ mod reqwest_types;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
 
-const DETAILS_API: &str = "https://catalog.roblox.com/v1/catalog/items/details";
+const ITEM_DETAILS_API: &str = "https://catalog.roblox.com/v1/catalog/items/details";
 
 /// An enum representing the overall high level type of the item (Asset or Bundle)
 #[derive(
@@ -250,11 +250,11 @@ pub struct PremiumPricing {
     /// The discount percentage in the form of a value from 0-100.
     #[serde(rename(deserialize = "premiumDiscountPercentage"))]
     #[serde(rename(deserialize = "premium_discount_percentage"))]
-    premium_discount_percentage: u64,
+    pub premium_discount_percentage: u64,
     /// The price of the item for premium users.
     #[serde(rename(deserialize = "premiumPriceInRobux"))]
     #[serde(rename(deserialize = "premium_price_in_robux"))]
-    premium_price_in_robux: u64,
+    pub premium_price_in_robux: u64,
 }
 
 /// The details of an item. Retrieved from <https://catalog.roblox.com/v1/catalog/items/details>.
@@ -466,7 +466,7 @@ impl Client {
 
         let request_result = self
             .reqwest_client
-            .post(DETAILS_API)
+            .post(ITEM_DETAILS_API)
             .header(XCSRF_HEADER, self.xcsrf())
             .json(&request_body)
             .send()
@@ -514,19 +514,20 @@ impl Client {
 mod external {
     use crate::{Client, RoboatError};
 
-    use super::{ItemArgs, ItemDetails};
+    #[allow(unused_imports)]
+    use super::{ItemArgs, ItemDetails, ItemType};
 
     impl Client {
         /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         ///
         /// # Notes
-        /// * Does not require authentication.
+        /// * Does not require a valid roblosecurity.
         /// * This endpoint will accept up to 120 items at a time.
         ///
         /// # Argument Notes
         /// * The `id` parameter is that acts differently for this endpoint than others.
-        /// If the `item_type` is `ItemType::Asset`, then `id` is the item ID.
-        /// Otherwise, if the `item_type` is `ItemType::Bundle`, then `id` is the bundle ID.
+        /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
+        /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
         ///
         /// # Example
         /// ```no_run
@@ -550,6 +551,8 @@ mod external {
         ///
         /// let items = vec![asset, bundle];
         /// let details = client.item_details(items).await?;
+        /// println!("Item Name: {}", details[0].name);
+        /// println!("Bundle Name: {}", details[1].name);
         /// # Ok(())
         /// # }
         /// ```
