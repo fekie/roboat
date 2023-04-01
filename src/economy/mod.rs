@@ -47,12 +47,12 @@ impl Client {
     /// let client = Client::new();
     /// client.set_roblosecurity("my_roblosecurity".to_string());
     ///
-    /// let robux = client.robux_balance().await?;
+    /// let robux = client.robux().await?;
     /// println!("Robux: {}", robux);
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn robux_balance(&self) -> Result<u64, RoboatError> {
+    pub async fn robux(&self) -> Result<u64, RoboatError> {
         let user_id = self.user_id().await?;
         let formatted_url = format!("{}{}{}", ROBUX_API_PART_1, user_id, ROBUX_API_PART_2);
         let roblosecurity = match self.roblosecurity() {
