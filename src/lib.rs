@@ -30,6 +30,8 @@ pub mod economy;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 
+// todo: add manual xcsrf refresh
+
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
