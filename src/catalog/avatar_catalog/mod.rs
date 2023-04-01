@@ -523,6 +523,7 @@ mod external {
         /// # Notes
         /// * Does not require a valid roblosecurity.
         /// * This endpoint will accept up to 120 items at a time.
+        /// * Will repeat once if the x-csrf-token is invalid.
         ///
         /// # Argument Notes
         /// * The `id` parameter is that acts differently for this endpoint than others.
