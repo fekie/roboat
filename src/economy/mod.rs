@@ -1,10 +1,36 @@
-use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR};
+use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR};
 use reqwest::header;
+use serde::{Deserialize, Serialize};
 
 mod reqwest_types;
 
 const ROBUX_API_PART_1: &str = "https://economy.roblox.com/v1/users/";
 const ROBUX_API_PART_2: &str = "/currency";
+
+const RESELLERS_API_PART_1: &str = "https://economy.roblox.com/v1/assets/";
+const RESELLERS_API_PART_2: &str = "/resellers?";
+
+/// A reseller of a resale listing.
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct Reseller {
+    pub user_id: u64,
+    pub name: String,
+}
+
+/// A resale listing of a limited item.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct Listing {
+    /// The unique asset id of the item.
+    pub uaid: u64,
+    /// The price of the listing.
+    pub price: u64,
+    /// The reseller of the listing.
+    pub reseller: Reseller,
+    /// The serial number of the item. This is separate from the uaid and only
+    /// exists for Limited U Items.
+    pub serial_number: Option<u64>,
+}
 
 impl Client {
     /// Grabs robux count of the current account from <https://economy.roblox.com/v1/users/{user_id}/currency>.
@@ -14,8 +40,6 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::catalog::avatar_catalog::ItemArgs;
-    /// use roboat::catalog::avatar_catalog::ItemType;
     /// use roboat::Client;
     ///
     /// # #[tokio::main]
@@ -56,6 +80,108 @@ impl Client {
                         };
                         let robux = raw.robux;
                         Ok(robux)
+                    }
+                    400 => Err(RoboatError::BadRequest),
+                    401 => Err(RoboatError::InvalidRoblosecurity),
+                    429 => Err(RoboatError::TooManyRequests),
+                    500 => Err(RoboatError::InternalServerError),
+                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
+                }
+            }
+            Err(e) => Err(RoboatError::ReqwestError(e)),
+        }
+    }
+
+    /// Grabs resellers of an item from <https://economy.roblox.com/v1/assets/{item_id}/resellers?cursor={cursor}&limit={limit}>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Argument Notes
+    /// * The cursor is used to get the a certain page of results. If you want the starting page, use `None`.
+    /// * The default `limit` is [`Limit::Ten`].
+    ///
+    /// # Return Value Notes
+    /// * The first value is a vector of reseller listings.
+    /// * The second value is the cursor for the next page of results. If there are no more pages, this will be `None`.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::Limit;
+    /// use roboat::Client;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = Client::new();
+    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    ///
+    /// let item_id = 1365767;
+    /// let limit = Limit::Ten;
+    /// let cursor = None;
+    ///
+    /// let (resellers, next_page_cursor) = client.resellers(item_id, limit, cursor).await?;
+    /// println!("Lowest Price for Item {}: {}", item_id, resellers[0].price);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn resellers(
+        &self,
+        item_id: u64,
+        limit: Limit,
+        cursor: Option<String>,
+    ) -> Result<(Vec<Listing>, Option<String>), RoboatError> {
+        let limit = limit.to_u64();
+        let cursor = cursor.unwrap_or_default();
+        let roblosecurity = match self.roblosecurity() {
+            Some(roblosecurity) => roblosecurity,
+            None => return Err(RoboatError::RoblosecurityNotSet),
+        };
+
+        let formatted_url = format!(
+            "{}{}{}?cursor={}&limit={}",
+            RESELLERS_API_PART_1, item_id, RESELLERS_API_PART_2, cursor, limit
+        );
+        let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+
+        let request_result = self
+            .reqwest_client
+            .get(formatted_url)
+            .header(header::COOKIE, cookie)
+            .send()
+            .await;
+
+        match request_result {
+            Ok(response) => {
+                let status_code = response.status().as_u16();
+
+                match status_code {
+                    200 => {
+                        let raw = match response.json::<reqwest_types::ResellersResponse>().await {
+                            Ok(x) => x,
+                            Err(_) => return Err(RoboatError::MalformedResponse),
+                        };
+
+                        let next_page_cursor = raw.next_page_cursor;
+
+                        let mut listings = Vec::new();
+
+                        for listing in raw.data {
+                            let reseller = Reseller {
+                                user_id: listing.seller.id,
+                                name: listing.seller.name,
+                            };
+
+                            let listing = Listing {
+                                uaid: listing.user_asset_id,
+                                price: listing.price,
+                                reseller,
+                                serial_number: listing.serial_number,
+                            };
+
+                            listings.push(listing);
+                        }
+
+                        Ok((listings, next_page_cursor))
                     }
                     400 => Err(RoboatError::BadRequest),
                     401 => Err(RoboatError::InvalidRoblosecurity),

@@ -15,11 +15,12 @@ and is capable of making requests in parallel.
     - Item Details - <https://catalog.roblox.com/v1/catalog/items/details>
 * Economy API
     - Robux Balance - <https://economy.roblox.com/v1/users/{user_id}/currency>
+    - Resellers - <https://economy.roblox.com/v1/assets/{item_id}/resellers?cursor={cursor}&limit={limit}>
 * User API
     - User Information - <https://users.roblox.com/v1/users/authenticated>
 
 # Related Crates
-This crate is a sister crate of [roli](https://crates.io/crates/roli), an api wrapper for [Rolimons.com](https://www.rolimons.com/).
+This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
 
 # Contributing
 Pull requests and issues are welcome! 
