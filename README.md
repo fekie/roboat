@@ -19,7 +19,7 @@ and is capable of making requests in parallel.
     - User Information - <https://users.roblox.com/v1/users/authenticated>
 
 # Related Crates
-This crate is a sister crate of [roli](https://crates.io/crates/roli), an api wrapper for [Rolimons.com](https://www.rolimons.com/).
+This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
 
 # Contributing
 Pull requests and issues are welcome! 
