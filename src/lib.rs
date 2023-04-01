@@ -19,6 +19,8 @@ pub use client::Client;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
 mod client;
+/// A module for endpoints prefixed with <https://economy.roblox.com/*>.
+pub mod economy;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 
