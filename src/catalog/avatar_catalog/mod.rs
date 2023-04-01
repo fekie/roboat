@@ -250,11 +250,11 @@ pub struct PremiumPricing {
     /// The discount percentage in the form of a value from 0-100.
     #[serde(rename(deserialize = "premiumDiscountPercentage"))]
     #[serde(rename(deserialize = "premium_discount_percentage"))]
-    premium_discount_percentage: u64,
+    pub premium_discount_percentage: u64,
     /// The price of the item for premium users.
     #[serde(rename(deserialize = "premiumPriceInRobux"))]
     #[serde(rename(deserialize = "premium_price_in_robux"))]
-    premium_price_in_robux: u64,
+    pub premium_price_in_robux: u64,
 }
 
 /// The details of an item. Retrieved from <https://catalog.roblox.com/v1/catalog/items/details>.
