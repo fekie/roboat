@@ -1,4 +1,6 @@
-use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR};
+use crate::{
+    Client, Limit, RobloxErrorResponse, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER,
+};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
@@ -12,6 +14,9 @@ const RESELLERS_API_PART_2: &str = "/resellers";
 
 const TRANSACTIONS_API_PART_1: &str = "https://economy.roblox.com/v2/users/";
 const TRANSACTIONS_API_PART_2: &str = "/transactions";
+
+const TOGGLE_SALE_API_PART_1: &str = "https://economy.roblox.com/v1/assets/";
+const TOGGLE_SALE_API_PART_2: &str = "/resellable-copies/";
 
 const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
 
@@ -300,8 +305,7 @@ impl Client {
                     200 => {
                         let raw = match response.json::<reqwest_types::UserSalesResponse>().await {
                             Ok(x) => x,
-                            Err(e) => {
-                                dbg!(e);
+                            Err(_) => {
                                 return Err(RoboatError::MalformedResponse);
                             }
                         };
@@ -342,6 +346,130 @@ impl Client {
                 }
             }
             Err(e) => Err(RoboatError::ReqwestError(e)),
+        }
+    }
+
+    pub(crate) async fn put_limited_on_sale_internal(
+        &self,
+        item_id: u64,
+        uaid: u64,
+        price: u64,
+    ) -> Result<(), RoboatError> {
+        let roblosecurity = match self.roblosecurity() {
+            Some(roblosecurity) => roblosecurity,
+            None => return Err(RoboatError::RoblosecurityNotSet),
+        };
+
+        let formatted_url = format!(
+            "{}{}{}{}",
+            TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
+        );
+
+        let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+
+        let json = serde_json::json!({
+            "price": price,
+        });
+
+        let request_result = self
+            .reqwest_client
+            .patch(formatted_url)
+            .header(header::COOKIE, cookie)
+            .header(XCSRF_HEADER, self.xcsrf())
+            .json(&json)
+            .send()
+            .await;
+
+        match request_result {
+            Ok(response) => {
+                let status_code = response.status().as_u16();
+
+                match status_code {
+                    // The item was successfully put on sale.
+                    200 => Ok(()),
+                    400 => Err(RoboatError::BadRequest),
+                    401 => Err(RoboatError::InvalidRoblosecurity),
+                    403 => {
+                        let new_xcsrf = match response.headers().get(XCSRF_HEADER) {
+                            Some(x) => x.to_str().unwrap().to_string(),
+                            None => return Err(RoboatError::XcsrfNotReturned),
+                        };
+
+                        Err(RoboatError::InvalidXcsrf(new_xcsrf))
+                    }
+                    429 => {
+                        let error_response = match response.json::<RobloxErrorResponse>().await {
+                            Ok(x) => x,
+                            Err(_) => {
+                                return Err(RoboatError::InvalidRoblosecurity);
+                            }
+                        };
+
+                        Err(RoboatError::from(error_response))
+                    }
+                    500 => Err(RoboatError::InternalServerError),
+                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
+                }
+            }
+            Err(e) => Err(RoboatError::ReqwestError(e)),
+        }
+    }
+}
+
+mod external {
+    use crate::{Client, RoboatError};
+
+    impl Client {
+        /// Puts a limited item on sale using the endpoint <https://economy.roblox.com/v1/assets/{item_id}/resellable-copies/{uaid}>.
+        ///
+        /// # Notes
+        /// * Requires a valid roblosecurity.
+        /// * Will repeat once if the x-csrf-token is invalid.
+        ///
+        /// # Return Value Notes
+        /// * Will return `Ok(())` if the item was successfully put on sale.
+        ///
+        /// # Example
+        /// ```no_run
+        /// use roboat::Client;
+        ///
+        /// # #[tokio::main]
+        /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        /// let client = Client::new();
+        /// client.set_roblosecurity("my_roblosecurity".to_string());
+        ///
+        /// let item_id = 123456789;
+        /// let uaid = 987654321;
+        /// let price = 5000;
+        ///
+        /// match client.put_limited_on_sale(item_id, uaid, price).await {
+        ///    Ok(_) => println!("Successfully put item on sale!"),
+        ///    Err(e) => println!("Error: {}", e),
+        /// }
+        /// # Ok(())
+        /// # }
+        /// ```
+        pub async fn put_limited_on_sale(
+            &self,
+            item_id: u64,
+            uaid: u64,
+            price: u64,
+        ) -> Result<(), RoboatError> {
+            match self
+                .put_limited_on_sale_internal(item_id, uaid, price)
+                .await
+            {
+                Ok(x) => Ok(x),
+                Err(e) => match e {
+                    RoboatError::InvalidXcsrf(new_xcsrf) => {
+                        self.set_xcsrf(new_xcsrf);
+
+                        self.put_limited_on_sale_internal(item_id, uaid, price)
+                            .await
+                    }
+                    _ => Err(e),
+                },
+            }
         }
     }
 }
