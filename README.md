@@ -15,7 +15,7 @@ and is capable of making requests in parallel.
     - Item Details - <https://catalog.roblox.com/v1/catalog/items/details>
 * Economy API
     - Robux Balance - <https://economy.roblox.com/v1/users/{user_id}/currency>
-    - Resellers - <https://economy.roblox.com/v1/assets/{item_id}/resellers?cursor={cursor}&limit={limit}>
+    - Resellers - <https://economy.roblox.com/v1/assets/{item_id}/resellers>
 * User API
     - User Information - <https://users.roblox.com/v1/users/authenticated>
 
