@@ -40,8 +40,6 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::catalog::avatar_catalog::ItemArgs;
-    /// use roboat::catalog::avatar_catalog::ItemType;
     /// use roboat::Client;
     ///
     /// # #[tokio::main]
