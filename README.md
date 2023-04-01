@@ -11,13 +11,13 @@ This library is designed to be high-performance capable, meaning that it support
 and is capable of making requests in parallel.
 
 # Covered Endpoints
-* Catalog API
+* Catalog API - [`catalog.roblox.com/*`]
     - Item Details - `/v1/catalog/items/details`
-* Economy API
+* Economy API - [`economy.roblox.com/*`]
     - Robux Balance - `/v1/users/{user_id}/currency`
     - Resellers - `/v1/assets/{item_id}/resellers`
     - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
-* Users API
+* Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
 
 # Related Crates
