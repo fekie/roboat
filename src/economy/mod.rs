@@ -1,6 +1,5 @@
-use crate::{
-    Client, Limit, RobloxErrorResponse, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER,
-};
+use crate::response_processing::process_403;
+use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
@@ -301,6 +300,8 @@ impl Client {
             Ok(response) => {
                 let status_code = response.status().as_u16();
 
+                dbg!(status_code);
+
                 match status_code {
                     200 => {
                         let raw = match response.json::<reqwest_types::UserSalesResponse>().await {
@@ -389,24 +390,8 @@ impl Client {
                     200 => Ok(()),
                     400 => Err(RoboatError::BadRequest),
                     401 => Err(RoboatError::InvalidRoblosecurity),
-                    403 => {
-                        let new_xcsrf = match response.headers().get(XCSRF_HEADER) {
-                            Some(x) => x.to_str().unwrap().to_string(),
-                            None => return Err(RoboatError::XcsrfNotReturned),
-                        };
-
-                        Err(RoboatError::InvalidXcsrf(new_xcsrf))
-                    }
-                    429 => {
-                        let error_response = match response.json::<RobloxErrorResponse>().await {
-                            Ok(x) => x,
-                            Err(_) => {
-                                return Err(RoboatError::InvalidRoblosecurity);
-                            }
-                        };
-
-                        Err(RoboatError::from(error_response))
-                    }
+                    403 => Err(process_403(response).await),
+                    429 => Err(RoboatError::TooManyRequests),
                     500 => Err(RoboatError::InternalServerError),
                     _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
                 }

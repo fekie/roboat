@@ -29,6 +29,7 @@ pub mod catalog;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+mod response_processing;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 
@@ -37,6 +38,8 @@ pub mod users;
 // todo: inventory api, groups api, follow api
 // todo: put RobloxErrorResponse for 401s
 // todo: make file with a bunch of common response processing.
+// todo: flip internal and external apis
+// todo: process 400s for invalid asset ids (try the put item on sale endpoint)
 
 use serde::{Deserialize, Serialize};
 
@@ -131,35 +134,4 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
-}
-
-impl From<RobloxErrorResponse> for RoboatError {
-    fn from(response: RobloxErrorResponse) -> Self {
-        match response.errors.first() {
-            Some(error) => match error.code {
-                0 => RoboatError::InvalidRoblosecurity,
-                9 => RoboatError::UserDoesNotOwnAsset,
-                _ => RoboatError::UnknownRobloxErrorCode {
-                    code: error.code,
-                    message: error.message.clone(),
-                },
-            },
-            None => RoboatError::InvalidRoblosecurity,
-        }
-    }
-}
-
-/// The generic non-200 status code response from an endpoint. Only the first error
-/// is used when converting to [`RoboatError`].
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-struct RobloxErrorResponse {
-    errors: Vec<RobloxErrorRaw>,
-}
-
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-struct RobloxErrorRaw {
-    code: u16,
-    message: String,
 }
