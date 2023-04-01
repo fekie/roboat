@@ -11,6 +11,7 @@
 //! * Economy API
 //!   - Robux Balance - [`Client::robux`]
 //!   - Resellers - [`Client::resellers`]
+//!   - User Sales - [`Client::user_sales`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
@@ -29,6 +30,8 @@ mod client;
 pub mod economy;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+
+// todo: add manual xcsrf refresh
 
 use serde::{Deserialize, Serialize};
 

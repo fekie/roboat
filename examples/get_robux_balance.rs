@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.set_roblosecurity(args.roblosecurity);
 
     let user = client.username().await?;
-    let robux = client.robux_balance().await?;
+    let robux = client.robux().await?;
 
     println!("Robux for {}: {}", user, robux);
 
