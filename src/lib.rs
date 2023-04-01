@@ -36,6 +36,14 @@ pub enum RoboatError {
     /// it be because it is in the wrong format or it contains too much data.
     #[error("Bad Request")]
     BadRequest,
+    /// Used when an endpoint returns status code 401. This can mean that
+    /// the roblosecurity is set but that it is either invalid, or
+    /// the user does not have authorization to access the endpoint.
+    #[error("Invalid Roblosecurity")]
+    InvalidRoblosecurity,
+    /// Used when no roblosecurity is set, on an endpoint that requires it.
+    #[error("Roblosecurity Not Set")]
+    RoblosecurityNotSet,
     /// Used for any status codes that do not fit any enum variants of this error.
     /// If you encounter this enum variant, please submit an issue so a variant can be
     /// made or the crate can be fixed.
