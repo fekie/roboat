@@ -76,6 +76,12 @@ pub struct Client {
     roblosecurity: Mutex<Option<String>>,
     /// The field holding the value for the X-CSRF-TOKEN header used in and returned by endpoints.
     xcsrf: Mutex<String>,
+    /// The user id of the user. Not modifiable by user.
+    user_id: Mutex<Option<u64>>,
+    /// The username of the user. Not modifiable by user.
+    username: Mutex<Option<String>>,
+    /// The display name of the user. Not modifiable by user.
+    display_name: Mutex<Option<String>>,
     /// A Reqwest HTTP client used to send web requests.
     reqwest_client: reqwest::Client,
 }
@@ -95,8 +101,26 @@ impl Client {
         Self {
             roblosecurity: Mutex::new(None),
             xcsrf: Mutex::new(String::new()),
+            user_id: Mutex::new(None),
+            username: Mutex::new(None),
+            display_name: Mutex::new(None),
             reqwest_client,
         }
+    }
+
+    /// Returns the cached user id if it exists.
+    pub fn cached_user_id(&self) -> Option<u64> {
+        *self.user_id.lock().unwrap()
+    }
+
+    /// Returns the cached username if it exists.
+    pub fn cached_username(&self) -> Option<String> {
+        self.username.lock().unwrap().clone()
+    }
+
+    /// Returns the cached display name if it exists.
+    pub fn cached_display_name(&self) -> Option<String> {
+        self.display_name.lock().unwrap().clone()
     }
 
     /// Sets the Roblosecurity string for the client.
