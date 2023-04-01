@@ -12,13 +12,13 @@ and is capable of making requests in parallel.
 
 # Covered Endpoints
 * Catalog API
-    - Item Details - <https://catalog.roblox.com/v1/catalog/items/details>
+    - Item Details - `/v1/catalog/items/details`
 * Economy API
-    - Robux Balance - <https://economy.roblox.com/v1/users/{user_id}/currency>
-    - Resellers - <https://economy.roblox.com/v1/assets/{item_id}/resellers>
-    - User Sales - <https://economy.roblox.com/v2/users/{user_id}/transactions?transactionType=Sale>
-* User API
-    - User Information - <https://users.roblox.com/v1/users/authenticated>
+    - Robux Balance - `/v1/users/{user_id}/currency`
+    - Resellers - `/v1/assets/{item_id}/resellers`
+    - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
+* Users API
+    - User Information - `/v1/users/authenticated`
 
 # Related Crates
 This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
