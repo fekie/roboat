@@ -12,13 +12,16 @@ and is capable of making requests in parallel.
 
 # Covered Endpoints
 * Catalog API
-    - Item Details
+    - Item Details - <https://catalog.roblox.com/v1/catalog/items/details>
+* Economy API
+    - Robux Balance - <https://economy.roblox.com/v1/users/{user_id}/currency>
+* User API
+    - User Information - <https://users.roblox.com/v1/users/authenticated>
 
 # Contributing
 Pull requests and issues are welcome! 
 
-Please refer to [CONVENTIONS.md](CONVENTIONS.md) for
-information on conventions used in this crate.
+Please refer to [CONVENTIONS.md](CONVENTIONS.md) for information on conventions used in this crate.
 
 Additional resources used to help make this crate are available in [RESOURCES.md](RESOURCES.md).
 
