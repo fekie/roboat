@@ -12,6 +12,7 @@
 //!   - Robux Balance - [`Client::robux`]
 //!   - Resellers - [`Client::resellers`]
 //!   - User Sales - [`Client::user_sales`]
+//!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
@@ -32,6 +33,10 @@ pub mod economy;
 pub mod users;
 
 // todo: add manual xcsrf refresh
+// todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
+// todo: inventory api, groups api, follow api
+// todo: put RobloxErrorResponse for 401s
+// todo: make file with a bunch of common response processing.
 
 use serde::{Deserialize, Serialize};
 
@@ -39,6 +44,30 @@ use serde::{Deserialize, Serialize};
 const XCSRF_HEADER: &str = "x-csrf-token";
 // Used in the cookie header.
 const ROBLOSECURITY_COOKIE_STR: &str = ".ROBLOSECURITY";
+
+/// The maximum amount of instances to return from an endpoint.
+#[allow(missing_docs)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+pub enum Limit {
+    #[default]
+    Ten,
+    TwentyFive,
+    Fifty,
+    Hundred,
+}
+
+impl Limit {
+    fn to_u64(self) -> u64 {
+        match self {
+            Limit::Ten => 10,
+            Limit::TwentyFive => 25,
+            Limit::Fifty => 50,
+            Limit::Hundred => 100,
+        }
+    }
+}
 
 /// The universal error used in this crate.
 #[derive(thiserror::Error, Debug, Default)]
@@ -55,11 +84,30 @@ pub enum RoboatError {
     /// it be because it is in the wrong format or it contains too much data.
     #[error("Bad Request")]
     BadRequest,
-    /// Used when an endpoint returns status code 401. This can mean that
-    /// the roblosecurity is set but that it is either invalid, or
-    /// the user does not have authorization to access the endpoint.
+    /// Returned when the user does not have a valid roblosecurity, or
+    /// does not have authorization to access the endpoint.
+    ///
+    /// This is also used as the backup error when an endpoint returns a 401 status code
+    /// but the error cannot be parsed from the response.
+    ///
+    /// Error code 0.
     #[error("Invalid Roblosecurity")]
     InvalidRoblosecurity,
+    /// Returned when the endpoint returns a 401 status code, with Roblox saying that the
+    /// user does not own the asset (e.g., in the case of selling an item).
+    ///
+    /// Roblox error code 9.
+    #[error("User Does Not Own Asset")]
+    UserDoesNotOwnAsset,
+    /// Returned when the endpoint returns a 401 status code, but the error response
+    /// contains an unknown Roblox error code.
+    #[error("Unknown Roblox Error Code {code}: {message}")]
+    UnknownRobloxErrorCode {
+        /// The error code returned by roblox.
+        code: u16,
+        /// The error message returned by roblox.
+        message: String,
+    },
     /// Used when no roblosecurity is set, on an endpoint that requires it.
     #[error("Roblosecurity Not Set")]
     RoblosecurityNotSet,
@@ -85,26 +133,33 @@ pub enum RoboatError {
     ReqwestError(reqwest::Error),
 }
 
-/// The maximum amount of instances to return from an endpoint.
-#[allow(missing_docs)]
-#[derive(
-    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
-)]
-pub enum Limit {
-    #[default]
-    Ten,
-    TwentyFive,
-    Fifty,
-    Hundred,
-}
-
-impl Limit {
-    fn to_u64(self) -> u64 {
-        match self {
-            Limit::Ten => 10,
-            Limit::TwentyFive => 25,
-            Limit::Fifty => 50,
-            Limit::Hundred => 100,
+impl From<RobloxErrorResponse> for RoboatError {
+    fn from(response: RobloxErrorResponse) -> Self {
+        match response.errors.first() {
+            Some(error) => match error.code {
+                0 => RoboatError::InvalidRoblosecurity,
+                9 => RoboatError::UserDoesNotOwnAsset,
+                _ => RoboatError::UnknownRobloxErrorCode {
+                    code: error.code,
+                    message: error.message.clone(),
+                },
+            },
+            None => RoboatError::InvalidRoblosecurity,
         }
     }
+}
+
+/// The generic non-200 status code response from an endpoint. Only the first error
+/// is used when converting to [`RoboatError`].
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+struct RobloxErrorResponse {
+    errors: Vec<RobloxErrorRaw>,
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+struct RobloxErrorRaw {
+    code: u16,
+    message: String,
 }

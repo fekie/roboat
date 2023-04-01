@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct CurrencyResponse {
+pub(super) struct CurrencyResponse {
     pub robux: u64,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct ResellersResponse {
+pub(super) struct ResellersResponse {
     #[serde(rename = "previousPageCursor")]
     pub previous_page_cursor: Option<String>,
     #[serde(rename = "nextPageCursor")]
@@ -15,7 +15,7 @@ pub(crate) struct ResellersResponse {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct ListingRaw {
+pub(super) struct ListingRaw {
     #[serde(rename = "userAssetId")]
     pub user_asset_id: u64,
     pub seller: ResellerRaw,
@@ -25,7 +25,7 @@ pub(crate) struct ListingRaw {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct ResellerRaw {
+pub(super) struct ResellerRaw {
     #[serde(rename = "hasVerifiedBadge")]
     pub has_verified_badge: bool,
     pub id: u64,
@@ -35,7 +35,7 @@ pub(crate) struct ResellerRaw {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct UserSalesResponse {
+pub(super) struct UserSalesResponse {
     #[serde(rename = "previousPageCursor")]
     pub previous_page_cursor: Option<String>,
     #[serde(rename = "nextPageCursor")]
@@ -44,7 +44,7 @@ pub(crate) struct UserSalesResponse {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct SaleRaw {
+pub(super) struct SaleRaw {
     #[serde(rename = "id")]
     pub sale_id: u64,
     #[serde(rename = "isPending")]
@@ -57,32 +57,45 @@ pub(crate) struct SaleRaw {
 
 // This is what they call the user that bought the item for some reason.
 #[derive(Serialize, Deserialize)]
-pub(crate) struct UserRaw {
+pub(super) struct UserRaw {
     pub id: u64,
     #[serde(rename = "name")]
     pub user_display_name: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct DetailsRaw {
+pub(super) struct DetailsRaw {
     pub id: u64,
     #[serde(rename = "name")]
     pub item_name: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct CurrencyRaw {
+pub(super) struct CurrencyRaw {
     pub amount: u64,
     #[serde(rename = "type")]
     pub currency_type: CurrencyTypeRaw,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) enum CurrencyTypeRaw {
+pub(super) enum CurrencyTypeRaw {
     Robux,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) enum TransactionTypeRaw {
+pub(super) enum TransactionTypeRaw {
     Sale,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ToggleSaleErrorResponse {
+    errors: Vec<ToggleSaleErrorRaw>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ToggleSaleErrorRaw {
+    code: u16,
+    message: String,
+    #[serde(rename = "userFacingMessage")]
+    user_facing_message: String,
 }
