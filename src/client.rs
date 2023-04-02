@@ -22,10 +22,7 @@ pub struct Client {
 }
 
 impl Client {
-    /// Used to interface with Roblox.com endpoints.
-    ///
-    /// Contains any necessary authentication and security tokens, as well as the
-    /// reqwest client.
+    /// Creates a new [`Client`] with no authentication nor a custom `reqwest` client.
     pub fn new() -> Self {
         Self::default()
     }
