@@ -24,5 +24,5 @@ pub (super) struct UserSearchResponse {
     pub next_page_cursor: String,
     #[serde(rename(deserialize = "data"))]
     #[serde(rename(deserialize = "data"))]
-    pub data: Vec<UserSearchUserInformation>,
+    pub data: Vec<UserSearchUserInformationRaw>,
 }

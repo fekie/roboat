@@ -19,11 +19,31 @@ pub(crate) struct UserInformation {
     pub display_name: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct User {
+    pub user_id: u64,
+    pub username: String,
+    pub display_name: String,
+    pub has_verified_badge: bool,
+    pub previous_usernames: Vec<String>,
+}
+
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct UserList {
+    pub previous_page_cursor: String,
+    pub next_page_cursor: String,
+    pub data: Vec<User>,
+}
+
 mod internal {
-    use super::{UserInformation, USER_DETAILS_API};
+
+    use super::{User, UserList, UserInformation ,USER_DETAILS_API};
     use super::{USERS_SEARCH_API};
     use crate::{Client, Limit, RoboatError};
     use reqwest::header;
+
+    mod reqwest_types;
 
     impl Client {
         /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
@@ -57,18 +77,20 @@ mod internal {
         }
 
         pub(crate) async fn users_search_internal(
-            keyword: &str,
-            limit: Limit,
             &self,
-        ) -> Result<reqwest_types::UserSearchResponse, RoboatError> {
+            keyword: String,
+            limit: Limit,
+            cursor: Option<String>
+        ) -> Result<UserList, RoboatError> {
 
+        let limit = limit.to_u64();
+        let cursor = cursor.unwrap_or_default();
 
         let formatted_url = format!(
-            "{}?keyword={}&limit={}",
-            USERS_SEARCH_API,  keyword, limit
+            "{}?keyword={}&limit={}&cursor={}",
+            USERS_SEARCH_API,  keyword, limit, cursor
         );
 
-            //todo pass parameters
             let request_result = self
                 .reqwest_client
                 .get(formatted_url)
@@ -77,7 +99,28 @@ mod internal {
 
             let response = Self::validate_request_result(request_result).await?;
             let user_search = Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
-            Ok(user_search)
+
+
+        let mut users = Vec::new();
+
+        for user in user_search.data {
+            let userData = User{
+                user_id: user.user_id,
+                username: user.username,
+                display_name: user.display_name,
+                has_verified_badge: user.has_verified_badge,
+                previous_usernames: user.previous_usernames
+            };
+
+            users.push(userData);
+        }
+
+        let result = UserList{
+            user_search.previous_page_cursor,
+            user_search.next_page_cursor,
+            data: users
+        };
+            Ok(result)
         }
     }
 }
