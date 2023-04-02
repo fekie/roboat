@@ -60,7 +60,7 @@
 //! fetching a list of reseller listings.
 //!
 //! ```no_run
-//! // Replace value this with your own roblosecurity token.
+//! // Replace this value with your own roblosecurity token.
 //! const ROBLOSECURITY: &str = "your-roblosecurity-token";
 //!
 //! #[tokio::main]
@@ -84,7 +84,7 @@
 //! This code snippet allows you to get your current robux, id, username, and display name.
 //!
 //! ```no_run
-//! // Replace value this with your own roblosecurity token.
+//! // Replace this value with your own roblosecurity token.
 //! const ROBLOSECURITY: &str = "your-roblosecurity-token";
 //!
 //! #[tokio::main]
