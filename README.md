@@ -5,7 +5,7 @@
 [![](https://dcbadge.vercel.app/api/server/QmBEgPaFSD)](https://discord.gg/QmBEgPaFSD)
 
 # roboat
-An API wrapper for Roblox.com.
+A high performance interface for the Roblox API.
 
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
