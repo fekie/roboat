@@ -11,9 +11,99 @@
 //! * Economy API
 //!   - Robux Balance - [`Client::robux`]
 //!   - Resellers - [`Client::resellers`]
+//!   - User Sales - [`Client::user_sales`]
+//!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
+//!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
+//! * Presence API
+//!   - Register Presence - [`Client::register_presence`]
+//!
+//! # Quick Start Examples
+//!
+//! ## Example 1
+//!
+//! This code snippet allows you to get the details of an item.
+//!
+//! ```no_run
+//! use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::new();
+//!
+//!     let item = ItemArgs {
+//!         item_type: ItemType::Asset,
+//!         id: 1365767,
+//!     };
+//!
+//!     let details = &client.item_details(vec![item]).await?[0];
+//!
+//!     let name = &details.name;
+//!     let description = &details.description;
+//!     let creator_name = &details.creator_name;
+//!     let price = details.price.unwrap_or(0);
+//!
+//!     println!("Name: {}", name);
+//!     println!("Description: {}", description);
+//!     println!("Creator Name: {}", creator_name);
+//!     println!("Price: {}", price);
+//!
+//!     Ok(())   
+//! }
+//! ```
+//!
+//! ## Example 2
+//!
+//! This code snippet allows you to view the lowest price of a limited item by
+//! fetching a list of reseller listings.
+//!
+//! ```no_run
+//! // Replace this value with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!
+//!     let item_id = 1365767;
+//!     let limit = roboat::Limit::Ten;
+//!     let cursor = None;
+//!
+//!     let (resellers, _) = client.resellers(item_id, limit, cursor).await?;
+//!
+//!     println!("Lowest Price for Valkyrie Helm: {}", resellers[0].price);  
+//!
+//!     Ok(())   
+//! }
+//! ```
+//!
+//! //! ## Example 3
+//!
+//! This code snippet allows you to get your current robux, id, username, and display name.
+//!
+//! ```no_run
+//! // Replace this value with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!
+//!     let robux = client.robux().await?;
+//!     let user_id = client.user_id().await?;
+//!     let username = client.username().await?;
+//!     let display_name = client.display_name().await?;    
+//!
+//!     println!("Robux: {}", robux);
+//!     println!("User ID: {}", user_id);
+//!     println!("Username: {}", username);
+//!     println!("Display Name: {}", display_name);
+//!
+//!     Ok(())   
+//! }
+//! ```
 
 #![warn(missing_docs)]
 
@@ -27,60 +117,20 @@ pub mod catalog;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://presence.roblox.com/*>.
+pub mod presence;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+mod validation;
+
+// todo: add manual xcsrf refresh
+// todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
+// todo: inventory api, groups api, follow api
 
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
-// Used in the cookie header.
-const ROBLOSECURITY_COOKIE_STR: &str = ".ROBLOSECURITY";
-
-/// The universal error used in this crate.
-#[derive(thiserror::Error, Debug, Default)]
-pub enum RoboatError {
-    /// Used when an endpoint returns status code 429.
-    #[default]
-    #[error("Too Many Requests")]
-    TooManyRequests,
-    /// Used when an endpoint returns status code 500.
-    #[error("Internal Server Error")]
-    InternalServerError,
-    /// Used when an endpoint returns status code 400.
-    /// This is used when the server cannot process the data sent, whether
-    /// it be because it is in the wrong format or it contains too much data.
-    #[error("Bad Request")]
-    BadRequest,
-    /// Used when an endpoint returns status code 401. This can mean that
-    /// the roblosecurity is set but that it is either invalid, or
-    /// the user does not have authorization to access the endpoint.
-    #[error("Invalid Roblosecurity")]
-    InvalidRoblosecurity,
-    /// Used when no roblosecurity is set, on an endpoint that requires it.
-    #[error("Roblosecurity Not Set")]
-    RoblosecurityNotSet,
-    /// Used for any status codes that do not fit any enum variants of this error.
-    /// If you encounter this enum variant, please submit an issue so a variant can be
-    /// made or the crate can be fixed.
-    #[error("Unidentified Status Code {0}")]
-    UnidentifiedStatusCode(u16),
-    /// Used when the response from an API endpoint is malformed.
-    #[error("Malformed Response")]
-    MalformedResponse,
-    /// Used when an endpoint rejects a request due to an invalid xcsrf.
-    /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
-    /// allow async recursion without making a type signature extremely messy.
-    #[error("Invalid Xcsrf. New Xcsrf Contained In Error.")]
-    InvalidXcsrf(String),
-    /// Used when an endpoint returns a 403 status code, but the response does not contain
-    /// a new xcsrf.
-    #[error("Missing Xcsrf")]
-    XcsrfNotReturned,
-    /// Used for any reqwest error that occurs.
-    #[error("RequestError {0}")]
-    ReqwestError(reqwest::Error),
-}
 
 /// The maximum amount of instances to return from an endpoint.
 #[allow(missing_docs)]
@@ -104,4 +154,78 @@ impl Limit {
             Limit::Hundred => 100,
         }
     }
+}
+
+/// The universal error used in this crate.
+#[derive(thiserror::Error, Debug, Default)]
+pub enum RoboatError {
+    /// Used when an endpoint returns status code 429.
+    #[default]
+    #[error("Too Many Requests")]
+    TooManyRequests,
+    /// Used when an endpoint returns status code 500.
+    #[error("Internal Server Error")]
+    InternalServerError,
+    /// Used when an endpoint returns status code 503. Roblox commonly throws these
+    /// when they are having an outage.
+    #[error("Roblox Outage")]
+    RobloxOutage,
+    /// Used when an endpoint returns status code 400 and does not embed an error.
+    /// This is used when the server cannot process the data sent, whether
+    /// it be because it is in the wrong format or it contains too much data.
+    #[error("Bad Request")]
+    BadRequest,
+    /// Returned when the user does not have a valid roblosecurity, or
+    /// does not have authorization to access the endpoint.
+    ///
+    /// This is also used as the backup error when an endpoint returns a 401 status code
+    /// but the error cannot be parsed from the response.
+    ///
+    /// Error code 0.
+    #[error("Invalid Roblosecurity")]
+    InvalidRoblosecurity,
+    /// Returned when the endpoint returns a 401 status code, with Roblox saying that the
+    /// user does not own the asset (e.g., in the case of selling an item).
+    ///
+    /// Roblox error code 9.
+    #[error("User Does Not Own Asset")]
+    UserDoesNotOwnAsset,
+    /// Returned when the endpoint returns a 400 status code with Roblox saying that the
+    /// asset id is invalid. Although it says asset id, it is used for uaid as well.
+    ///
+    /// Roblox error code 5.
+    #[error("Asset Id / UAID Is Invalid")]
+    AssetIdIsInvalid,
+    /// Returned when the endpoint returns a 401 status code, but the error response
+    /// contains an unknown Roblox error code.
+    #[error("Unknown Roblox Error Code {code}: {message}")]
+    UnknownRobloxErrorCode {
+        /// The error code returned by roblox.
+        code: u16,
+        /// The error message returned by roblox.
+        message: String,
+    },
+    /// Used when no roblosecurity is set, on an endpoint that requires it.
+    #[error("Roblosecurity Not Set")]
+    RoblosecurityNotSet,
+    /// Used for any status codes that do not fit any enum variants of this error.
+    /// If you encounter this enum variant, please submit an issue so a variant can be
+    /// made or the crate can be fixed.
+    #[error("Unidentified Status Code {0}")]
+    UnidentifiedStatusCode(u16),
+    /// Used when the response from an API endpoint is malformed.
+    #[error("Malformed Response")]
+    MalformedResponse,
+    /// Used when an endpoint rejects a request due to an invalid xcsrf.
+    /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
+    /// allow async recursion without making a type signature extremely messy.
+    #[error("Invalid Xcsrf. New Xcsrf Contained In Error.")]
+    InvalidXcsrf(String),
+    /// Used when an endpoint returns a 403 status code, but the response does not contain
+    /// a new xcsrf.
+    #[error("Missing Xcsrf")]
+    XcsrfNotReturned,
+    /// Used for any reqwest error that occurs.
+    #[error("RequestError {0}")]
+    ReqwestError(reqwest::Error),
 }

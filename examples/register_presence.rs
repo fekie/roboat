@@ -12,9 +12,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let client = Client::with_roblosecurity(args.roblosecurity);
 
-    println!("Username: {}", client.username().await?);
-    println!("Display Name: {}", client.display_name().await?);
-    println!("User ID: {}", client.user_id().await?);
+    let result = client.register_presence().await;
+
+    match result {
+        Ok(()) => println!("Registered presence!"),
+        Err(e) => println!("Failed to register presence. Reason: {}", e),
+    }
 
     Ok(())
 }

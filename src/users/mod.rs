@@ -1,5 +1,3 @@
-use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR};
-use reqwest::header;
 use serde::{Deserialize, Serialize};
 
 const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
@@ -20,91 +18,40 @@ pub(crate) struct UserInformation {
     pub display_name: String,
 }
 
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub(crate) struct UserSearchUserInformation {
-    #[serde(rename(deserialize = "id"))]
-    #[serde(rename(deserialize = "user_id"))]
-    pub user_id: u64,
-    #[serde(rename(deserialize = "name"))]
-    #[serde(rename(deserialize = "username"))]
-    pub username: String,
-    #[serde(rename(deserialize = "hasVerifiedBadge"))]
-    #[serde(rename(deserialize = "has_verified_badge"))]
-    pub has_verified_badge: bool,
-    #[serde(rename(deserialize = "previousUsernames"))]
-    #[serde(rename(deserialize = "previous_usernames"))]
-    pub previous_usernames: Vec<String>,
-    #[serde(rename(deserialize = "displayName"))]
-    #[serde(rename(deserialize = "display_name"))]
-    pub display_name: String,
-}
+mod internal {
+    use super::{UserInformation, USER_DETAILS_API};
+    use crate::{Client, RoboatError};
+    use reqwest::header;
 
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub (crate) struct UserSearch {
-    #[serde(rename(deserialize = "previousPageCursor"))]
-    #[serde(rename(deserialize = "previous_page_cursor"))]
-    pub previous_page_cursor: String,
-    #[serde(rename(deserialize = "nextPageCursor"))]
-    #[serde(rename(deserialize = "next_page_cursor"))]
-    pub next_page_cursor: String,
-    #[serde(rename(deserialize = "data"))]
-    #[serde(rename(deserialize = "data"))]
-    pub data: Vec<UserSearchUserInformation>,
-}
- 
-impl Client {
-    /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
-    /// Roblosecurity inside the client.
-    ///
-    /// This is only for internal use. Use [`Client::user_id`], [`Client::username`], and [`Client::display_name`] instead.
-    ///
-    /// # Notes
-    /// * Requires a valid roblosecurity.
-    pub(crate) async fn user_information_internal(&self) -> Result<UserInformation, RoboatError> {
-        let roblosecurity = match self.roblosecurity() {
-            Some(roblosecurity) => roblosecurity,
-            None => return Err(RoboatError::RoblosecurityNotSet),
-        };
+    impl Client {
+        /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
+        /// Roblosecurity inside the client.
+        ///
+        /// This is only for internal use. Use [`Client::user_id`], [`Client::username`], and [`Client::display_name`] instead.
+        ///
+        /// # Notes
+        /// * Requires a valid roblosecurity.
+        pub(crate) async fn user_information_internal(
+            &self,
+        ) -> Result<UserInformation, RoboatError> {
+            let cookie = self.create_cookie_string()?;
 
-        let request_result = self
-            .reqwest_client
-            .get(USER_DETAILS_API)
-            .header(
-                header::COOKIE,
-                format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity),
-            )
-            .send()
-            .await;
+            let request_result = self
+                .reqwest_client
+                .get(USER_DETAILS_API)
+                .header(header::COOKIE, cookie)
+                .send()
+                .await;
 
-        match request_result {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+            let response = Self::validate_request_result(request_result).await?;
+            let user_information = Self::parse_to_raw::<UserInformation>(response).await?;
 
-                match status_code {
-                    200 => {
-                        let user_information: UserInformation = match response.json().await {
-                            Ok(x) => x,
-                            Err(_) => return Err(RoboatError::MalformedResponse),
-                        };
+            // Cache results.
+            *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);
+            *self.username.lock().unwrap() = Some(user_information.username.clone());
+            *self.display_name.lock().unwrap() = Some(user_information.display_name.clone());
 
-                        // Cache results.
-                        *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);
-                        *self.username.lock().unwrap() = Some(user_information.username.clone());
-                        *self.display_name.lock().unwrap() =
-                            Some(user_information.display_name.clone());
-
-                        Ok(user_information)
-                    }
-                    400 => Err(RoboatError::BadRequest),
-                    401 => Err(RoboatError::InvalidRoblosecurity),
-                    429 => Err(RoboatError::TooManyRequests),
-                    500 => Err(RoboatError::InternalServerError),
-                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
-                }
-            }
-            Err(e) => Err(RoboatError::ReqwestError(e)),
+            Ok(user_information)
         }
     }
 }
