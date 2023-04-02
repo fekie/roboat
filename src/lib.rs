@@ -13,6 +13,7 @@
 //!   - Resellers - [`Client::resellers`]
 //!   - User Sales - [`Client::user_sales`]
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
+//!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
@@ -36,10 +37,6 @@ mod validation;
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
-// todo: put RobloxErrorResponse for 401s
-// todo: make file with a bunch of common response processing.
-// todo: flip internal and external apis
-// todo: process 400s for invalid asset ids (try the put item on sale endpoint)
 
 use serde::{Deserialize, Serialize};
 

@@ -345,6 +345,48 @@ impl Client {
             },
         }
     }
+
+    /// Takes a limited item off sale using the endpoint <https://economy.roblox.com/v1/assets/{item_id}/resellable-copies/{uaid}>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Return Value Notes
+    /// * Will return `Ok(())` if the item was successfully taken off sale.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::Client;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = Client::new();
+    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    ///
+    /// let item_id = 123456789;
+    /// let uaid = 987654321;
+    ///
+    /// match client.take_limited_off_sale(item_id, uaid).await {
+    ///    Ok(_) => println!("Successfully took item off sale!"),
+    ///    Err(e) => println!("Error: {}", e),
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn take_limited_off_sale(&self, item_id: u64, uaid: u64) -> Result<(), RoboatError> {
+        match self.take_limited_off_sale_internal(item_id, uaid).await {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf);
+
+                    self.take_limited_off_sale_internal(item_id, uaid).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
@@ -375,6 +417,41 @@ mod internal {
             let json = serde_json::json!({
                 "price": price,
             });
+
+            let request_result = self
+                .reqwest_client
+                .patch(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, self.xcsrf())
+                .json(&json)
+                .send()
+                .await;
+
+            let _ = validate_request_result(request_result).await?;
+
+            // We don't need to do anything, we just need a 200 status code.
+
+            Ok(())
+        }
+
+        pub(super) async fn take_limited_off_sale_internal(
+            &self,
+            item_id: u64,
+            uaid: u64,
+        ) -> Result<(), RoboatError> {
+            let roblosecurity = match self.roblosecurity() {
+                Some(roblosecurity) => roblosecurity,
+                None => return Err(RoboatError::RoblosecurityNotSet),
+            };
+
+            let formatted_url = format!(
+                "{}{}{}{}",
+                TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
+            );
+
+            let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+
+            let json = serde_json::json!({});
 
             let request_result = self
                 .reqwest_client
