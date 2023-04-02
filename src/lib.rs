@@ -1,5 +1,5 @@
 //! # About
-//! An API wrapper for Roblox.com.
+//! A high performance interface for the Roblox API.
 //!
 //! This library is designed to be high-performance capable, meaning
 //! that a [`Client`] is designed to work with proxies, as well as make
@@ -24,31 +24,25 @@
 //!
 //! ## Example 1
 //!
-//! This code snippet allows you to get the details of an item.
+//! This code snippet allows you to get your current robux, id, username, and display name.
 //!
 //! ```no_run
-//! use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
+//! // Replace this value with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::Client::new();
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
 //!
-//!     let item = ItemArgs {
-//!         item_type: ItemType::Asset,
-//!         id: 1365767,
-//!     };
+//!     let robux = client.robux().await?;
+//!     let user_id = client.user_id().await?;
+//!     let username = client.username().await?;
+//!     let display_name = client.display_name().await?;    
 //!
-//!     let details = &client.item_details(vec![item]).await?[0];
-//!
-//!     let name = &details.name;
-//!     let description = &details.description;
-//!     let creator_name = &details.creator_name;
-//!     let price = details.price.unwrap_or(0);
-//!
-//!     println!("Name: {}", name);
-//!     println!("Description: {}", description);
-//!     println!("Creator Name: {}", creator_name);
-//!     println!("Price: {}", price);
+//!     println!("Robux: {}", robux);
+//!     println!("User ID: {}", user_id);
+//!     println!("Username: {}", username);
+//!     println!("Display Name: {}", display_name);
 //!
 //!     Ok(())   
 //! }
@@ -79,27 +73,33 @@
 //! }
 //! ```
 //!
-//! //! ## Example 3
+//! ## Example 3
 //!
-//! This code snippet allows you to get your current robux, id, username, and display name.
+//! This code snippet allows you to get the details of an item.
 //!
 //! ```no_run
-//! // Replace this value with your own roblosecurity token.
-//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//! use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!     let client = roboat::Client::new();
 //!
-//!     let robux = client.robux().await?;
-//!     let user_id = client.user_id().await?;
-//!     let username = client.username().await?;
-//!     let display_name = client.display_name().await?;    
+//!     let item = ItemArgs {
+//!         item_type: ItemType::Asset,
+//!         id: 1365767,
+//!     };
 //!
-//!     println!("Robux: {}", robux);
-//!     println!("User ID: {}", user_id);
-//!     println!("Username: {}", username);
-//!     println!("Display Name: {}", display_name);
+//!     let details = &client.item_details(vec![item]).await?[0];
+//!
+//!     let name = &details.name;
+//!     let description = &details.description;
+//!     let creator_name = &details.creator_name;
+//!     let price = details.price.unwrap_or(0);
+//!
+//!     println!("Name: {}", name);
+//!     println!("Description: {}", description);
+//!     println!("Creator Name: {}", creator_name);
+//!     println!("Price: {}", price);
 //!
 //!     Ok(())   
 //! }
