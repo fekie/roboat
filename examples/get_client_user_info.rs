@@ -10,8 +10,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let client = Client::new();
-    client.set_roblosecurity(args.roblosecurity);
+    let client = Client::with_roblosecurity(args.roblosecurity);
 
     println!("Username: {}", client.username().await?);
     println!("Display Name: {}", client.display_name().await?);

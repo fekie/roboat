@@ -22,12 +22,17 @@ pub struct Client {
 }
 
 impl Client {
-    /// Used to interface with Roblox.com endpoints.
-    ///
-    /// Contains any necessary authentication and security tokens, as well as the
-    /// reqwest client.
+    /// Creates a new [`Client`] with no authentication nor a custom `reqwest` client.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Creates a new [`Client`] with a roblosecurity already set.
+    pub fn with_roblosecurity(roblosecurity: String) -> Self {
+        Self {
+            roblosecurity: Mutex::new(Some(roblosecurity)),
+            ..Default::default()
+        }
     }
 
     /// Creates a new [`Client`] providing a custom [`reqwest::Client`].
@@ -102,8 +107,7 @@ impl Client {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use roboat::Client;
     ///
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("my_roblosecurity".to_string());
     /// let roblosecurity = client.roblosecurity()?;
     /// assert_eq!(roblosecurity, "my_roblosecurity".to_string());
     /// # Ok(())

@@ -20,8 +20,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// match client.register_presence().await {
     ///    Ok(_) => println!("Successfully registered presence!"),

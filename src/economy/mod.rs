@@ -74,8 +74,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let robux = client.robux().await?;
     /// println!("Robux: {}", robux);
@@ -122,8 +121,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let item_id = 1365767;
     /// let limit = Limit::Ten;
@@ -202,8 +200,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let limit = Limit::Ten;
     /// let cursor = None;
@@ -296,8 +293,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let item_id = 123456789;
     /// let uaid = 987654321;
@@ -348,8 +344,7 @@ impl Client {
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let item_id = 123456789;
     /// let uaid = 987654321;

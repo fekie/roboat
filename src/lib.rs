@@ -19,6 +19,91 @@
 //! (all of them use the same endpoint internally and cache the results)
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//!
+//! # Quick Start Examples
+//!
+//! ## Example 1
+//!
+//! This code snippet allows you to get the details of an item.
+//!
+//! ```no_run
+//! use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::new();
+//!
+//!     let item = ItemArgs {
+//!         item_type: ItemType::Asset,
+//!         id: 1365767,
+//!     };
+//!
+//!     let details = &client.item_details(vec![item]).await?[0];
+//!
+//!     let name = &details.name;
+//!     let description = &details.description;
+//!     let creator_name = &details.creator_name;
+//!     let price = details.price.unwrap_or(0);
+//!
+//!     println!("Name: {}", name);
+//!     println!("Description: {}", description);
+//!     println!("Creator Name: {}", creator_name);
+//!     println!("Price: {}", price);
+//!
+//!     Ok(())   
+//! }
+//! ```
+//!
+//! ## Example 2
+//!
+//! This code snippet allows you view the lowest price of a limited item by
+//! fetching a list of reseller listings.
+//!
+//! ```no_run
+//! // Replace value this with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!
+//!     let item_id = 1365767;
+//!     let limit = roboat::Limit::Ten;
+//!     let cursor = None;
+//!
+//!     let (resellers, _) = client.resellers(item_id, limit, cursor).await?;
+//!
+//!     println!("Lowest Price for Valkyrie Helm: {}", resellers[0].price);  
+//!
+//!     Ok(())   
+//! }
+//! ```
+//!
+//! //! ## Example 3
+//!
+//! This code snippet allows you to get your current robux, id, username, and display name.
+//!
+//! ```no_run
+//! // Replace value this with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!
+//!     let robux = client.robux().await?;
+//!     let user_id = client.user_id().await?;
+//!     let username = client.username().await?;
+//!     let display_name = client.display_name().await?;    
+//!
+//!     println!("Robux: {}", robux);
+//!     println!("User ID: {}", user_id);
+//!     println!("Username: {}", username);
+//!     println!("Display Name: {}", display_name);
+//!
+//!     Ok(())   
+//! }
+//! ```
 
 #![warn(missing_docs)]
 
@@ -39,9 +124,8 @@ pub mod users;
 mod validation;
 
 // todo: add manual xcsrf refresh
-// todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
+// todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
-// todo: add with_roblosecurity for client
 
 use serde::{Deserialize, Serialize};
 
