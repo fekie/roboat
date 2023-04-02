@@ -43,8 +43,6 @@ use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
-// Used in the cookie header.
-const ROBLOSECURITY_COOKIE_STR: &str = ".ROBLOSECURITY";
 
 /// The maximum amount of instances to return from an endpoint.
 #[allow(missing_docs)]
