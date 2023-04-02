@@ -31,12 +31,15 @@ mod client;
 pub mod economy;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+mod validation;
 
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
 // todo: put RobloxErrorResponse for 401s
 // todo: make file with a bunch of common response processing.
+// todo: flip internal and external apis
+// todo: process 400s for invalid asset ids (try the put item on sale endpoint)
 
 use serde::{Deserialize, Serialize};
 
@@ -79,7 +82,11 @@ pub enum RoboatError {
     /// Used when an endpoint returns status code 500.
     #[error("Internal Server Error")]
     InternalServerError,
-    /// Used when an endpoint returns status code 400.
+    /// Used when an endpoint returns status code 503. Roblox commonly throws these
+    /// when they are having an outage.
+    #[error("Roblox Outage")]
+    RobloxOutage,
+    /// Used when an endpoint returns status code 400 and does not embed an error.
     /// This is used when the server cannot process the data sent, whether
     /// it be because it is in the wrong format or it contains too much data.
     #[error("Bad Request")]
@@ -99,6 +106,12 @@ pub enum RoboatError {
     /// Roblox error code 9.
     #[error("User Does Not Own Asset")]
     UserDoesNotOwnAsset,
+    /// Returned when the endpoint returns a 400 status code with Roblox saying that the
+    /// asset id is invalid. Although it says asset id, it is used for uaid as well.
+    ///
+    /// Roblox error code 5.
+    #[error("Asset Id / UAID Is Invalid")]
+    AssetIdIsInvalid,
     /// Returned when the endpoint returns a 401 status code, but the error response
     /// contains an unknown Roblox error code.
     #[error("Unknown Roblox Error Code {code}: {message}")]
@@ -131,35 +144,4 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
-}
-
-impl From<RobloxErrorResponse> for RoboatError {
-    fn from(response: RobloxErrorResponse) -> Self {
-        match response.errors.first() {
-            Some(error) => match error.code {
-                0 => RoboatError::InvalidRoblosecurity,
-                9 => RoboatError::UserDoesNotOwnAsset,
-                _ => RoboatError::UnknownRobloxErrorCode {
-                    code: error.code,
-                    message: error.message.clone(),
-                },
-            },
-            None => RoboatError::InvalidRoblosecurity,
-        }
-    }
-}
-
-/// The generic non-200 status code response from an endpoint. Only the first error
-/// is used when converting to [`RoboatError`].
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-struct RobloxErrorResponse {
-    errors: Vec<RobloxErrorRaw>,
-}
-
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-struct RobloxErrorRaw {
-    code: u16,
-    message: String,
 }

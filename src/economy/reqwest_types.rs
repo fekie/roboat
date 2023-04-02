@@ -86,16 +86,3 @@ pub(super) enum CurrencyTypeRaw {
 pub(super) enum TransactionTypeRaw {
     Sale,
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct ToggleSaleErrorResponse {
-    errors: Vec<ToggleSaleErrorRaw>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ToggleSaleErrorRaw {
-    code: u16,
-    message: String,
-    #[serde(rename = "userFacingMessage")]
-    user_facing_message: String,
-}

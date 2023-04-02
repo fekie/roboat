@@ -6,12 +6,12 @@ use super::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub(crate) struct ItemDetailsResponse {
+pub(super) struct ItemDetailsResponse {
     pub data: Vec<ItemDetailsRaw>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub(crate) struct ItemDetailsRaw {
+pub(super) struct ItemDetailsRaw {
     pub id: Option<u64>,
     #[serde(rename = "itemType")]
     pub item_type: Option<ItemType>,
@@ -57,12 +57,12 @@ pub(crate) struct ItemDetailsRaw {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub(crate) struct ItemDetailsReqBody {
+pub(super) struct ItemDetailsReqBody {
     pub(crate) items: Vec<ItemArgsReq>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub(crate) struct ItemArgsReq {
+pub(super) struct ItemArgsReq {
     #[serde(rename = "itemType")]
     pub item_type: ItemType,
     pub id: u64,
