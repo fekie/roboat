@@ -82,7 +82,11 @@ pub enum RoboatError {
     /// Used when an endpoint returns status code 500.
     #[error("Internal Server Error")]
     InternalServerError,
-    /// Used when an endpoint returns status code 400.
+    /// Used when an endpoint returns status code 503. Roblox commonly throws these
+    /// when they are having an outage.
+    #[error("Roblox Outage")]
+    RobloxOutage,
+    /// Used when an endpoint returns status code 400 and does not embed an error.
     /// This is used when the server cannot process the data sent, whether
     /// it be because it is in the wrong format or it contains too much data.
     #[error("Bad Request")]
@@ -102,6 +106,12 @@ pub enum RoboatError {
     /// Roblox error code 9.
     #[error("User Does Not Own Asset")]
     UserDoesNotOwnAsset,
+    /// Returned when the endpoint returns a 400 status code with Roblox saying that the
+    /// asset id is invalid. Although it says asset id, it is used for uaid as well.
+    ///
+    /// Roblox error code 5.
+    #[error("Asset Id / UAID Is Invalid")]
+    AssetIdIsInvalid,
     /// Returned when the endpoint returns a 401 status code, but the error response
     /// contains an unknown Roblox error code.
     #[error("Unknown Roblox Error Code {code}: {message}")]
