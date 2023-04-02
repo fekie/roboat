@@ -1,4 +1,4 @@
-use crate::validation::validate_request_result;
+use crate::validation::{parse_to_raw, validate_request_result};
 use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
@@ -296,58 +296,36 @@ impl Client {
             .send()
             .await;
 
-        match request_result {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+        let response = validate_request_result(request_result).await?;
+        let raw = parse_to_raw::<reqwest_types::UserSalesResponse>(response).await?;
 
-                dbg!(status_code);
+        let next_page_cursor = raw.next_page_cursor;
 
-                match status_code {
-                    200 => {
-                        let raw = match response.json::<reqwest_types::UserSalesResponse>().await {
-                            Ok(x) => x,
-                            Err(_) => {
-                                return Err(RoboatError::MalformedResponse);
-                            }
-                        };
+        let mut sales = Vec::new();
 
-                        let next_page_cursor = raw.next_page_cursor;
+        for raw_sale in raw.data {
+            let sale_id = raw_sale.sale_id;
+            let asset_id = raw_sale.details.id;
+            let robux_received = raw_sale.currency.amount;
+            let is_pending = raw_sale.is_pending;
+            let user_id = raw_sale.user.id;
+            let user_display_name = raw_sale.user.user_display_name;
+            let asset_name = raw_sale.details.item_name;
 
-                        let mut sales = Vec::new();
+            let sale = UserSale {
+                sale_id,
+                asset_id,
+                robux_received,
+                is_pending,
+                user_id,
+                user_display_name,
+                asset_name,
+            };
 
-                        for raw_sale in raw.data {
-                            let sale_id = raw_sale.sale_id;
-                            let asset_id = raw_sale.details.id;
-                            let robux_received = raw_sale.currency.amount;
-                            let is_pending = raw_sale.is_pending;
-                            let user_id = raw_sale.user.id;
-                            let user_display_name = raw_sale.user.user_display_name;
-                            let asset_name = raw_sale.details.item_name;
-
-                            let sale = UserSale {
-                                sale_id,
-                                asset_id,
-                                robux_received,
-                                is_pending,
-                                user_id,
-                                user_display_name,
-                                asset_name,
-                            };
-
-                            sales.push(sale);
-                        }
-
-                        Ok((sales, next_page_cursor))
-                    }
-                    400 => Err(RoboatError::BadRequest),
-                    401 => Err(RoboatError::InvalidRoblosecurity),
-                    429 => Err(RoboatError::TooManyRequests),
-                    500 => Err(RoboatError::InternalServerError),
-                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
-                }
-            }
-            Err(e) => Err(RoboatError::ReqwestError(e)),
+            sales.push(sale);
         }
+
+        Ok((sales, next_page_cursor))
     }
 
     pub(crate) async fn put_limited_on_sale_internal(

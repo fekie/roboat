@@ -1,5 +1,6 @@
 use crate::{RoboatError, XCSRF_HEADER};
 use reqwest::Response;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 /// Roblox's error response used when a status code of 403 is given. Only the first error
@@ -95,19 +96,6 @@ async fn process_400(request_response: Response) -> RoboatError {
     }
 }
 
-/// Takes the result of a `reqwest` request and catches any possible errors, whether it be
-/// a non-200 status code or a `reqwest` error.
-///
-/// If this returns successfully, the response is guaranteed to have a status code of 200.
-pub(crate) async fn validate_request_result(
-    request_result: Result<Response, reqwest::Error>,
-) -> Result<Response, RoboatError> {
-    match request_result {
-        Ok(response) => handle_non_200_status_codes(response).await,
-        Err(e) => Err(RoboatError::ReqwestError(e)),
-    }
-}
-
 async fn handle_non_200_status_codes(request_response: Response) -> Result<Response, RoboatError> {
     let status_code = request_response.status().as_u16();
 
@@ -121,4 +109,31 @@ async fn handle_non_200_status_codes(request_response: Response) -> Result<Respo
         503 => Err(RoboatError::RobloxOutage),
         _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
     }
+}
+
+/// Takes the result of a `reqwest` request and catches any possible errors, whether it be
+/// a non-200 status code or a `reqwest` error.
+///
+/// If this returns successfully, the response is guaranteed to have a status code of 200.
+pub(crate) async fn validate_request_result(
+    request_result: Result<Response, reqwest::Error>,
+) -> Result<Response, RoboatError> {
+    match request_result {
+        Ok(response) => handle_non_200_status_codes(response).await,
+        Err(e) => Err(RoboatError::ReqwestError(e)),
+    }
+}
+
+/// Parses a json from a [`reqwest::Response`] into a response struct, returning an error if the response is malformed.
+pub(crate) async fn parse_to_raw<T: DeserializeOwned>(
+    response: Response,
+) -> Result<T, RoboatError> {
+    let response_struct = match response.json::<T>().await {
+        Ok(x) => x,
+        Err(_) => {
+            return Err(RoboatError::MalformedResponse);
+        }
+    };
+
+    Ok(response_struct)
 }
