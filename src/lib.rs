@@ -56,7 +56,7 @@
 //!
 //! ## Example 2
 //!
-//! This code snippet allows you view the lowest price of a limited item by
+//! This code snippet allows you to view the lowest price of a limited item by
 //! fetching a list of reseller listings.
 //!
 //! ```no_run
