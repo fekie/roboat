@@ -1,5 +1,3 @@
-use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR};
-use reqwest::header;
 use serde::{Deserialize, Serialize};
 
 const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
@@ -20,57 +18,47 @@ pub(crate) struct UserInformation {
     pub display_name: String,
 }
 
-impl Client {
-    /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
-    /// Roblosecurity inside the client.
-    ///
-    /// This is only for internal use. Use [`Client::user_id`], [`Client::username`], and [`Client::display_name`] instead.
-    ///
-    /// # Notes
-    /// * Requires a valid roblosecurity.
-    pub(crate) async fn user_information_internal(&self) -> Result<UserInformation, RoboatError> {
-        let roblosecurity = match self.roblosecurity() {
-            Some(roblosecurity) => roblosecurity,
-            None => return Err(RoboatError::RoblosecurityNotSet),
-        };
+mod internal {
+    use super::{UserInformation, USER_DETAILS_API};
+    use crate::validation::{parse_to_raw, validate_request_result};
+    use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR};
+    use reqwest::header;
 
-        let request_result = self
-            .reqwest_client
-            .get(USER_DETAILS_API)
-            .header(
-                header::COOKIE,
-                format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity),
-            )
-            .send()
-            .await;
+    impl Client {
+        /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
+        /// Roblosecurity inside the client.
+        ///
+        /// This is only for internal use. Use [`Client::user_id`], [`Client::username`], and [`Client::display_name`] instead.
+        ///
+        /// # Notes
+        /// * Requires a valid roblosecurity.
+        pub(crate) async fn user_information_internal(
+            &self,
+        ) -> Result<UserInformation, RoboatError> {
+            let roblosecurity = match self.roblosecurity() {
+                Some(roblosecurity) => roblosecurity,
+                None => return Err(RoboatError::RoblosecurityNotSet),
+            };
 
-        match request_result {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+            let request_result = self
+                .reqwest_client
+                .get(USER_DETAILS_API)
+                .header(
+                    header::COOKIE,
+                    format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity),
+                )
+                .send()
+                .await;
 
-                match status_code {
-                    200 => {
-                        let user_information: UserInformation = match response.json().await {
-                            Ok(x) => x,
-                            Err(_) => return Err(RoboatError::MalformedResponse),
-                        };
+            let response = validate_request_result(request_result).await?;
+            let user_information = parse_to_raw::<UserInformation>(response).await?;
 
-                        // Cache results.
-                        *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);
-                        *self.username.lock().unwrap() = Some(user_information.username.clone());
-                        *self.display_name.lock().unwrap() =
-                            Some(user_information.display_name.clone());
+            // Cache results.
+            *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);
+            *self.username.lock().unwrap() = Some(user_information.username.clone());
+            *self.display_name.lock().unwrap() = Some(user_information.display_name.clone());
 
-                        Ok(user_information)
-                    }
-                    400 => Err(RoboatError::BadRequest),
-                    401 => Err(RoboatError::InvalidRoblosecurity),
-                    429 => Err(RoboatError::TooManyRequests),
-                    500 => Err(RoboatError::InternalServerError),
-                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
-                }
-            }
-            Err(e) => Err(RoboatError::ReqwestError(e)),
+            Ok(user_information)
         }
     }
 }

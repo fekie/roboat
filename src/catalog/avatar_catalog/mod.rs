@@ -1,4 +1,3 @@
-use crate::XCSRF_HEADER;
 use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -452,126 +451,102 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
 }
 
 impl Client {
-    async fn item_details_internal(
+    /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * This endpoint will accept up to 120 items at a time.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Argument Notes
+    /// * The `id` parameter is that acts differently for this endpoint than others.
+    /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
+    /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::catalog::avatar_catalog::ItemArgs;
+    /// use roboat::catalog::avatar_catalog::ItemType;
+    /// use roboat::Client;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = Client::new();
+    ///
+    /// let asset = ItemArgs {
+    ///     item_type: ItemType::Asset,
+    ///     id: 1365767,
+    /// };
+    ///
+    /// let bundle = ItemArgs {
+    ///    item_type: ItemType::Bundle,
+    ///    id: 39,
+    /// };
+    ///
+    /// let items = vec![asset, bundle];
+    /// let details = client.item_details(items).await?;
+    /// println!("Item Name: {}", details[0].name);
+    /// println!("Bundle Name: {}", details[1].name);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn item_details(
         &self,
         items: Vec<ItemArgs>,
     ) -> Result<Vec<ItemDetails>, RoboatError> {
-        let request_body = reqwest_types::ItemDetailsReqBody {
-            // Convert the ItemParameters to te reqwest ItemParametersReq
-            items: items
-                .iter()
-                .map(|x| reqwest_types::ItemArgsReq::from(*x))
-                .collect(),
-        };
+        match self.item_details_internal(items.clone()).await {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf);
 
-        let request_result = self
-            .reqwest_client
-            .post(ITEM_DETAILS_API)
-            .header(XCSRF_HEADER, self.xcsrf())
-            .json(&request_body)
-            .send()
-            .await;
-
-        match request_result {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
-
-                match status_code {
-                    200 => {
-                        let raw: reqwest_types::ItemDetailsResponse = match response.json().await {
-                            Ok(x) => x,
-                            Err(_) => return Err(RoboatError::MalformedResponse),
-                        };
-
-                        let mut item_details = Vec::new();
-
-                        for raw_details in raw.data {
-                            let details = ItemDetails::try_from(raw_details)?;
-                            item_details.push(details);
-                        }
-
-                        Ok(item_details)
-                    }
-                    400 => Err(RoboatError::BadRequest),
-                    403 => {
-                        let new_xcsrf = match response.headers().get(XCSRF_HEADER) {
-                            Some(x) => x.to_str().unwrap().to_string(),
-                            None => return Err(RoboatError::XcsrfNotReturned),
-                        };
-
-                        Err(RoboatError::InvalidXcsrf(new_xcsrf))
-                    }
-                    429 => Err(RoboatError::TooManyRequests),
-                    500 => Err(RoboatError::InternalServerError),
-                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
+                    self.item_details_internal(items).await
                 }
-            }
-            Err(e) => Err(RoboatError::ReqwestError(e)),
+                _ => Err(e),
+            },
         }
     }
 }
 
-mod external {
+mod internal {
+    use super::{reqwest_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
+    use crate::validation::{parse_to_raw, validate_request_result};
+    use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
-
-    #[allow(unused_imports)]
-    use super::{ItemArgs, ItemDetails, ItemType};
+    use std::convert::TryFrom;
 
     impl Client {
-        /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
-        ///
-        /// # Notes
-        /// * Does not require a valid roblosecurity.
-        /// * This endpoint will accept up to 120 items at a time.
-        /// * Will repeat once if the x-csrf-token is invalid.
-        ///
-        /// # Argument Notes
-        /// * The `id` parameter is that acts differently for this endpoint than others.
-        /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
-        /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
-        ///
-        /// # Example
-        /// ```no_run
-        /// use roboat::catalog::avatar_catalog::ItemArgs;
-        /// use roboat::catalog::avatar_catalog::ItemType;
-        /// use roboat::Client;
-        ///
-        /// # #[tokio::main]
-        /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-        /// let client = Client::new();
-        ///
-        /// let asset = ItemArgs {
-        ///     item_type: ItemType::Asset,
-        ///     id: 1365767,
-        /// };
-        ///
-        /// let bundle = ItemArgs {
-        ///    item_type: ItemType::Bundle,
-        ///    id: 39,
-        /// };
-        ///
-        /// let items = vec![asset, bundle];
-        /// let details = client.item_details(items).await?;
-        /// println!("Item Name: {}", details[0].name);
-        /// println!("Bundle Name: {}", details[1].name);
-        /// # Ok(())
-        /// # }
-        /// ```
-        pub async fn item_details(
+        pub(super) async fn item_details_internal(
             &self,
             items: Vec<ItemArgs>,
         ) -> Result<Vec<ItemDetails>, RoboatError> {
-            match self.item_details_internal(items.clone()).await {
-                Ok(x) => Ok(x),
-                Err(e) => match e {
-                    RoboatError::InvalidXcsrf(new_xcsrf) => {
-                        self.set_xcsrf(new_xcsrf);
+            let request_body = reqwest_types::ItemDetailsReqBody {
+                // Convert the ItemParameters to te reqwest ItemParametersReq
+                items: items
+                    .iter()
+                    .map(|x| reqwest_types::ItemArgsReq::from(*x))
+                    .collect(),
+            };
 
-                        self.item_details_internal(items).await
-                    }
-                    _ => Err(e),
-                },
+            let request_result = self
+                .reqwest_client
+                .post(ITEM_DETAILS_API)
+                .header(XCSRF_HEADER, self.xcsrf())
+                .json(&request_body)
+                .send()
+                .await;
+
+            let response = validate_request_result(request_result).await?;
+            let raw = parse_to_raw::<reqwest_types::ItemDetailsResponse>(response).await?;
+
+            let mut item_details = Vec::new();
+
+            for raw_details in raw.data {
+                let details = ItemDetails::try_from(raw_details)?;
+                item_details.push(details);
             }
+
+            Ok(item_details)
         }
     }
 }
