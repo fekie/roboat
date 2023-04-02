@@ -4,6 +4,8 @@
 
 [![](https://dcbadge.vercel.app/api/server/QmBEgPaFSD)](https://discord.gg/QmBEgPaFSD)
 
+<img align="right" src="images/icon.png" height="150px" alt="roboat logo">
+
 # roboat
 A high performance interface for the Roblox API.
 
