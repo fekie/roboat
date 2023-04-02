@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
+const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search"
 
 /// Basic information about the account of the Roblosecurity. Retrieved
 /// from <https://users.roblox.com/v1/users/authenticated>.
@@ -54,6 +55,7 @@ pub (crate) struct UserSearch {
 
 mod internal {
     use super::{UserInformation, USER_DETAILS_API};
+    use super::{UserSearch, USERS_SEARCH_API};
     use crate::{Client, RoboatError};
     use reqwest::header;
 
@@ -86,6 +88,28 @@ mod internal {
             *self.display_name.lock().unwrap() = Some(user_information.display_name.clone());
 
             Ok(user_information)
+        }
+
+        pub(crate) async fn users_search_internal(
+            &self,
+        ) -> Result<UserSearch, RoboatError> {
+
+            //todo pass parameters
+            let request_result = self
+                .reqwest_client
+                .get(USERS_SEARCH_API)
+                .send()
+                .await;
+
+            let response = Self::validate_request_result(request_result).await?;
+            let user_search = Self::parse_to_raw::<UserSearch>(response).await?;
+
+            // Cache results.
+            *self.previous_page_cursor.lock().unwrap() = Some(user_search.previous_page_cursor.clone());
+            *self.next_page_cursor.lock().unwrap() = Some(user_search.next_page_cursor.clone());
+            *self.data.lock().unwrap() = Some(user_search.data.clone());
+
+            Ok(user_search)
         }
     }
 }
