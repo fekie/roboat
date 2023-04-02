@@ -30,6 +30,14 @@ impl Client {
         Self::default()
     }
 
+    /// Creates a new [`Client`] with a roblosecurity already set.
+    pub fn with_roblosecurity(roblosecurity: String) -> Self {
+        Self {
+            roblosecurity: Mutex::new(Some(roblosecurity)),
+            ..Default::default()
+        }
+    }
+
     /// Creates a new [`Client`] providing a custom [`reqwest::Client`].
     /// Custom [`reqwest::Client`]s are used for configuring proxies.
     pub fn with_reqwest_client(reqwest_client: reqwest::Client) -> Self {
