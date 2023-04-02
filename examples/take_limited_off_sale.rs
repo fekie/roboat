@@ -14,8 +14,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let client = Client::new();
-    client.set_roblosecurity(args.roblosecurity);
+    let client = Client::with_roblosecurity(args.roblosecurity);
 
     let item_id = args.item_id;
     let uaid = args.uaid;

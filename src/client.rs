@@ -110,8 +110,7 @@ impl Client {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use roboat::Client;
     ///
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
+    /// let client = Client::with_roblosecurity("my_roblosecurity".to_string());
     /// let roblosecurity = client.roblosecurity()?;
     /// assert_eq!(roblosecurity, "my_roblosecurity".to_string());
     /// # Ok(())
