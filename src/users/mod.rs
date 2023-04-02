@@ -20,6 +20,40 @@ pub(crate) struct UserInformation {
     pub display_name: String,
 }
 
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub(crate) struct UserSearchUserInformation {
+    #[serde(rename(deserialize = "id"))]
+    #[serde(rename(deserialize = "user_id"))]
+    pub user_id: u64,
+    #[serde(rename(deserialize = "name"))]
+    #[serde(rename(deserialize = "username"))]
+    pub username: String,
+    #[serde(rename(deserialize = "hasVerifiedBadge"))]
+    #[serde(rename(deserialize = "has_verified_badge"))]
+    pub has_verified_badge: bool,
+    #[serde(rename(deserialize = "previousUsernames"))]
+    #[serde(rename(deserialize = "previous_usernames"))]
+    pub previous_usernames: Vec<String>,
+    #[serde(rename(deserialize = "displayName"))]
+    #[serde(rename(deserialize = "display_name"))]
+    pub display_name: String,
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub (crate) struct UserSearch {
+    #[serde(rename(deserialize = "previousPageCursor"))]
+    #[serde(rename(deserialize = "previous_page_cursor"))]
+    pub previous_page_cursor: String,
+    #[serde(rename(deserialize = "nextPageCursor"))]
+    #[serde(rename(deserialize = "next_page_cursor"))]
+    pub next_page_cursor: String,
+    #[serde(rename(deserialize = "data"))]
+    #[serde(rename(deserialize = "data"))]
+    pub data: Vec<UserSearchUserInformation>,
+}
+ 
 impl Client {
     /// Grabs information about the user from <https://catalog.roblox.com/v1/catalog/items/details> using the
     /// Roblosecurity inside the client.
