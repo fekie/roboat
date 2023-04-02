@@ -64,7 +64,7 @@ This code snippet allows you view the lowest price of a limited item by
 fetching a list of reseller listings.
 
 ```rust
-// Replace value this with your own roblosecurity token.
+// Replace this value with your own roblosecurity token.
 const ROBLOSECURITY: &str = "your-roblosecurity-token";
 
 #[tokio::main]
@@ -88,7 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 This code snippet allows you to get your current robux, id, username, and display name.
 
 ```rust
-// Replace value this with your own roblosecurity token.
+// Replace this value with your own roblosecurity token.
 const ROBLOSECURITY: &str = "your-roblosecurity-token";
 
 #[tokio::main]
