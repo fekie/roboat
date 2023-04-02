@@ -20,8 +20,7 @@ pub(crate) struct UserInformation {
 
 mod internal {
     use super::{UserInformation, USER_DETAILS_API};
-    use crate::validation::{parse_to_raw, validate_request_result};
-    use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR};
+    use crate::{Client, RoboatError};
     use reqwest::header;
 
     impl Client {
@@ -35,23 +34,17 @@ mod internal {
         pub(crate) async fn user_information_internal(
             &self,
         ) -> Result<UserInformation, RoboatError> {
-            let roblosecurity = match self.roblosecurity() {
-                Some(roblosecurity) => roblosecurity,
-                None => return Err(RoboatError::RoblosecurityNotSet),
-            };
+            let cookie = self.create_cookie_string()?;
 
             let request_result = self
                 .reqwest_client
                 .get(USER_DETAILS_API)
-                .header(
-                    header::COOKIE,
-                    format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity),
-                )
+                .header(header::COOKIE, cookie)
                 .send()
                 .await;
 
-            let response = validate_request_result(request_result).await?;
-            let user_information = parse_to_raw::<UserInformation>(response).await?;
+            let response = Self::validate_request_result(request_result).await?;
+            let user_information = Self::parse_to_raw::<UserInformation>(response).await?;
 
             // Cache results.
             *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);

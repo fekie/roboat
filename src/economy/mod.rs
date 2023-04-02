@@ -1,5 +1,4 @@
-use crate::validation::{parse_to_raw, validate_request_result};
-use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR};
+use crate::{Client, Limit, RoboatError};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
@@ -86,11 +85,7 @@ impl Client {
     pub async fn robux(&self) -> Result<u64, RoboatError> {
         let user_id = self.user_id().await?;
         let formatted_url = format!("{}{}{}", ROBUX_API_PART_1, user_id, ROBUX_API_PART_2);
-        let roblosecurity = match self.roblosecurity() {
-            Some(roblosecurity) => roblosecurity,
-            None => return Err(RoboatError::RoblosecurityNotSet),
-        };
-        let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+        let cookie = self.create_cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -99,8 +94,8 @@ impl Client {
             .send()
             .await;
 
-        let response = validate_request_result(request_result).await?;
-        let raw = parse_to_raw::<reqwest_types::CurrencyResponse>(response).await?;
+        let response = Self::validate_request_result(request_result).await?;
+        let raw = Self::parse_to_raw::<reqwest_types::CurrencyResponse>(response).await?;
 
         let robux = raw.robux;
 
@@ -147,16 +142,12 @@ impl Client {
     ) -> Result<(Vec<Listing>, Option<String>), RoboatError> {
         let limit = limit.to_u64();
         let cursor = cursor.unwrap_or_default();
-        let roblosecurity = match self.roblosecurity() {
-            Some(roblosecurity) => roblosecurity,
-            None => return Err(RoboatError::RoblosecurityNotSet),
-        };
+        let cookie = self.create_cookie_string()?;
 
         let formatted_url = format!(
             "{}{}{}?cursor={}&limit={}",
             RESELLERS_API_PART_1, item_id, RESELLERS_API_PART_2, cursor, limit
         );
-        let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
 
         let request_result = self
             .reqwest_client
@@ -165,8 +156,8 @@ impl Client {
             .send()
             .await;
 
-        let response = validate_request_result(request_result).await?;
-        let raw = parse_to_raw::<reqwest_types::ResellersResponse>(response).await?;
+        let response = Self::validate_request_result(request_result).await?;
+        let raw = Self::parse_to_raw::<reqwest_types::ResellersResponse>(response).await?;
 
         let next_page_cursor = raw.next_page_cursor;
 
@@ -238,10 +229,6 @@ impl Client {
         let cursor = cursor.unwrap_or_default();
 
         let user_id = self.user_id().await?;
-        let roblosecurity = match self.roblosecurity() {
-            Some(roblosecurity) => roblosecurity,
-            None => return Err(RoboatError::RoblosecurityNotSet),
-        };
 
         let formatted_url = format!(
             "{}{}{}?cursor={}&limit={}&transactionType={}",
@@ -253,7 +240,7 @@ impl Client {
             USER_SALES_TRANSACTION_TYPE
         );
 
-        let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+        let cookie = self.create_cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -262,8 +249,8 @@ impl Client {
             .send()
             .await;
 
-        let response = validate_request_result(request_result).await?;
-        let raw = parse_to_raw::<reqwest_types::UserSalesResponse>(response).await?;
+        let response = Self::validate_request_result(request_result).await?;
+        let raw = Self::parse_to_raw::<reqwest_types::UserSalesResponse>(response).await?;
 
         let next_page_cursor = raw.next_page_cursor;
 
@@ -391,8 +378,7 @@ impl Client {
 
 mod internal {
     use super::{TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2};
-    use crate::validation::validate_request_result;
-    use crate::{Client, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER};
+    use crate::{Client, RoboatError, XCSRF_HEADER};
     use reqwest::header;
 
     impl Client {
@@ -402,17 +388,12 @@ mod internal {
             uaid: u64,
             price: u64,
         ) -> Result<(), RoboatError> {
-            let roblosecurity = match self.roblosecurity() {
-                Some(roblosecurity) => roblosecurity,
-                None => return Err(RoboatError::RoblosecurityNotSet),
-            };
-
             let formatted_url = format!(
                 "{}{}{}{}",
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+            let cookie = self.create_cookie_string()?;
 
             let json = serde_json::json!({
                 "price": price,
@@ -427,7 +408,7 @@ mod internal {
                 .send()
                 .await;
 
-            let _ = validate_request_result(request_result).await?;
+            let _ = Self::validate_request_result(request_result).await?;
 
             // We don't need to do anything, we just need a 200 status code.
 
@@ -439,17 +420,12 @@ mod internal {
             item_id: u64,
             uaid: u64,
         ) -> Result<(), RoboatError> {
-            let roblosecurity = match self.roblosecurity() {
-                Some(roblosecurity) => roblosecurity,
-                None => return Err(RoboatError::RoblosecurityNotSet),
-            };
-
             let formatted_url = format!(
                 "{}{}{}{}",
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = format!("{}={}", ROBLOSECURITY_COOKIE_STR, roblosecurity);
+            let cookie = self.create_cookie_string()?;
 
             let json = serde_json::json!({});
 
@@ -462,7 +438,7 @@ mod internal {
                 .send()
                 .await;
 
-            let _ = validate_request_result(request_result).await?;
+            let _ = Self::validate_request_result(request_result).await?;
 
             // We don't need to do anything, we just need a 200 status code.
 

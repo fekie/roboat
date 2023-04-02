@@ -94,20 +94,26 @@ impl Client {
     }
 
     /// Returns a copy of the Roblosecurity stored in the client.
-    /// If the Roblosecurity has not been set, `None` is returned.
+    /// If the Roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
     ///
     /// # Example
     ///
     /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use roboat::Client;
     ///
     /// let client = Client::new();
     /// client.set_roblosecurity("my_roblosecurity".to_string());
-    /// let roblosecurity = client.roblosecurity();
-    /// assert_eq!(roblosecurity, Some("my_roblosecurity".to_string()));
+    /// let roblosecurity = client.roblosecurity()?;
+    /// assert_eq!(roblosecurity, "my_roblosecurity".to_string());
+    /// # Ok(())
+    /// # }
     /// ```
-    pub fn roblosecurity(&self) -> Option<String> {
-        self.roblosecurity.lock().unwrap().clone()
+    pub fn roblosecurity(&self) -> Result<String, RoboatError> {
+        match self.roblosecurity.lock().unwrap().clone() {
+            Some(roblosecurity) => Ok(roblosecurity),
+            None => Err(RoboatError::RoblosecurityNotSet),
+        }
     }
 
     /// Sets the xcsrf token of the client.
@@ -138,5 +144,11 @@ impl Client {
     /// ```
     pub fn xcsrf(&self) -> String {
         self.xcsrf.lock().unwrap().clone()
+    }
+
+    /// Creates a string for the cookie header using the roblosecurity.
+    /// If the roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
+    pub(crate) fn create_cookie_string(&self) -> Result<String, RoboatError> {
+        Ok(format!(".ROBLOSECURITY={}", self.roblosecurity()?))
     }
 }

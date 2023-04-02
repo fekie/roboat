@@ -30,6 +30,8 @@ pub mod catalog;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://presence.roblox.com/*>.
+pub mod presence;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 mod validation;
@@ -37,13 +39,12 @@ mod validation;
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
+// todo: add with_roblosecurity for client
 
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
-// Used in the cookie header.
-const ROBLOSECURITY_COOKIE_STR: &str = ".ROBLOSECURITY";
 
 /// The maximum amount of instances to return from an endpoint.
 #[allow(missing_docs)]

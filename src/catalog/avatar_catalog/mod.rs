@@ -510,7 +510,6 @@ impl Client {
 
 mod internal {
     use super::{reqwest_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
-    use crate::validation::{parse_to_raw, validate_request_result};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
     use std::convert::TryFrom;
@@ -536,8 +535,8 @@ mod internal {
                 .send()
                 .await;
 
-            let response = validate_request_result(request_result).await?;
-            let raw = parse_to_raw::<reqwest_types::ItemDetailsResponse>(response).await?;
+            let response = Self::validate_request_result(request_result).await?;
+            let raw = Self::parse_to_raw::<reqwest_types::ItemDetailsResponse>(response).await?;
 
             let mut item_details = Vec::new();
 
