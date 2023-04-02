@@ -21,6 +21,8 @@ and is capable of making requests in parallel.
     - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
 * Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
+* Presence API - [`presence.roblox.com/*`]
+    - Register Presence - `/v1/presence/register-app-presence`
 
 # Related Crates
 This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).

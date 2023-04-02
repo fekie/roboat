@@ -17,6 +17,8 @@
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
+//! * Presence API
+//!   - Register Presence - [`Client::register_presence`]
 
 #![warn(missing_docs)]
 
