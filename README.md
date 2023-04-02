@@ -18,6 +18,7 @@ and is capable of making requests in parallel.
     - Resellers - `/v1/assets/{item_id}/resellers`
     - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
     - Put Limited On Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
+    - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
 * Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
 
