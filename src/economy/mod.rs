@@ -1,4 +1,4 @@
-use crate::response_processing::process_403;
+use crate::validation::validate_request_result;
 use crate::{Client, Limit, RoboatError, ROBLOSECURITY_COOKIE_STR, XCSRF_HEADER};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
@@ -381,23 +381,11 @@ impl Client {
             .send()
             .await;
 
-        match request_result {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+        let _ = validate_request_result(request_result).await?;
 
-                match status_code {
-                    // The item was successfully put on sale.
-                    200 => Ok(()),
-                    400 => Err(RoboatError::BadRequest),
-                    401 => Err(RoboatError::InvalidRoblosecurity),
-                    403 => Err(process_403(response).await),
-                    429 => Err(RoboatError::TooManyRequests),
-                    500 => Err(RoboatError::InternalServerError),
-                    _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
-                }
-            }
-            Err(e) => Err(RoboatError::ReqwestError(e)),
-        }
+        // We don't need to do anything, we just need a 200 status code.
+
+        Ok(())
     }
 }
 

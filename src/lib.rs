@@ -29,9 +29,9 @@ pub mod catalog;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
-mod response_processing;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+mod validation;
 
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
