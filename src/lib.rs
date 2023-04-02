@@ -37,6 +37,7 @@ mod validation;
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, sell limited item, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
+// todo: add with_roblosecurity for client
 
 use serde::{Deserialize, Serialize};
 
