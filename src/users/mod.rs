@@ -116,8 +116,8 @@ mod internal {
         }
 
         let result = UserList{
-            user_search.previous_page_cursor,
-            user_search.next_page_cursor,
+            previous_page_cursor: user_search.previous_page_cursor,
+            next_page_cursor: user_search.next_page_cursor,
             data: users
         };
             Ok(result)
