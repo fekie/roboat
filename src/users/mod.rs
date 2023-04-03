@@ -19,6 +19,7 @@ pub(crate) struct UserInformation {
     pub display_name: String,
 }
 
+#[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct User {
     pub user_id: u64,
@@ -28,7 +29,7 @@ pub struct User {
     pub previous_usernames: Vec<String>,
 }
 
-
+#[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct UserList {
     pub previous_page_cursor: String,

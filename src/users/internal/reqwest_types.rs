@@ -17,12 +17,9 @@ pub(super) struct UserSearchUserInformationRaw {
 #[derive(Serialize, Deserialize)]
 pub (super) struct UserSearchResponse {
     #[serde(rename(deserialize = "previousPageCursor"))]
-    #[serde(rename(deserialize = "previous_page_cursor"))]
     pub previous_page_cursor: String,
     #[serde(rename(deserialize = "nextPageCursor"))]
-    #[serde(rename(deserialize = "next_page_cursor"))]
     pub next_page_cursor: String,
-    #[serde(rename(deserialize = "data"))]
     #[serde(rename(deserialize = "data"))]
     pub data: Vec<UserSearchUserInformationRaw>,
 }
