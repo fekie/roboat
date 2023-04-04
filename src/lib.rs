@@ -23,7 +23,7 @@
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
-//!  - Trades List - [`Client::trades`]
+//!   - Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
@@ -123,7 +123,7 @@ mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
-pub mod presence;
+mod presence;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
@@ -135,6 +135,12 @@ mod validation;
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
 // todo: make enums copy
+// todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
+// todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
+// todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
+// todo: make it so roblosecurity cant be changed
+// todo: make it so users know that username and display name are cached and only id should be used for differentiating stuff.
+// todo: try refactoring with cognitive complexity extension
 
 use serde::{Deserialize, Serialize};
 

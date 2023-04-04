@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub(super) struct UserSearchResponse {
     #[serde(rename(deserialize = "previousPageCursor"))]
-    pub previous_page_cursor: String,
+    pub previous_page_cursor: Option<String>,
     #[serde(rename(deserialize = "nextPageCursor"))]
     pub next_page_cursor: String,
     #[serde(rename(deserialize = "data"))]
