@@ -1,4 +1,4 @@
-use crate::{Client, Limit, RoboatError};
+use crate::{Client, RoboatError};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +11,7 @@ const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
 /// from <https://users.roblox.com/v1/users/authenticated>.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub(crate) struct UserInformation {
+pub(crate) struct ClientUserInformation {
     #[serde(rename(deserialize = "id"))]
     #[serde(rename(deserialize = "user_id"))]
     pub user_id: u64,
@@ -49,7 +49,7 @@ impl Client {
     ///
     /// # Notes
     /// * Requires a valid roblosecurity.
-    pub(crate) async fn user_information_internal(&self) -> Result<UserInformation, RoboatError> {
+    ) -> Result<ClientUserInformation, RoboatError> {
         let cookie = self.create_cookie_string()?;
 
         let request_result = self

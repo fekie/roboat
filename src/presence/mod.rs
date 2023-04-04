@@ -15,6 +15,7 @@ impl Client {
     /// * Will return `Ok(())` if presence was successfully registered.
     ///
     /// # Example
+    ///
     /// ```no_run
     /// use roboat::Client;
     ///
