@@ -76,7 +76,7 @@ mod internal {
             Ok(user_information)
         }
 
-        pub(crate) async fn users_search_internal(
+        pub async fn users_search(
             &self,
             keyword: String,
             limit: Limit,
