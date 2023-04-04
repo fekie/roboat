@@ -5,6 +5,9 @@
 //! that a [`Client`] is designed to work with proxies, as well as make
 //! multiple requests in parallel. All API calls are made through a [`Client`].
 //!
+//! Extensive documentation is used throughout this crate.
+//! All public methods in this crate are documented and have at least one corresponding example.
+//!
 //! # Covered Endpoints
 //! * Catalog API
 //!    - Item Details - [`Client::item_details`]
@@ -19,6 +22,8 @@
 //! (all of them use the same endpoint internally and cache the results)
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//! * Trades API
+//!  - Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
@@ -119,6 +124,8 @@ mod client;
 pub mod economy;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
 pub mod presence;
+/// A module for endpoints prefixed with <https://trades.roblox.com/*>.
+pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
 mod validation;
@@ -126,6 +133,8 @@ mod validation;
 // todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
+// todo: add usage to readme
+// todo: make enums copy
 
 use serde::{Deserialize, Serialize};
 
