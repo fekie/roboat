@@ -123,7 +123,7 @@ mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
-pub mod presence;
+mod presence;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
