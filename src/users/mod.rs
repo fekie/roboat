@@ -76,6 +76,10 @@ mod internal {
             Ok(user_information)
         }
 
+        // todo: make external example
+        // todo: make it use roblosecurity if available
+        // todo: write docs with doc example
+        // todo: note the previous todos are for this one shark guy and should be resolved within a couple of days (or ill handle it)
         pub async fn users_search(
             &self,
             keyword: String,
