@@ -1,6 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+pub(super) struct UserSearchResponse {
+    #[serde(rename(deserialize = "previousPageCursor"))]
+    pub previous_page_cursor: String,
+    #[serde(rename(deserialize = "nextPageCursor"))]
+    pub next_page_cursor: String,
+    #[serde(rename(deserialize = "data"))]
+    pub data: Vec<UserSearchUserInformationRaw>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub(super) struct UserSearchUserInformationRaw {
     #[serde(rename(deserialize = "id"))]
     pub user_id: u64,
@@ -12,14 +22,4 @@ pub(super) struct UserSearchUserInformationRaw {
     pub previous_usernames: Vec<String>,
     #[serde(rename(deserialize = "displayName"))]
     pub display_name: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub (super) struct UserSearchResponse {
-    #[serde(rename(deserialize = "previousPageCursor"))]
-    pub previous_page_cursor: String,
-    #[serde(rename(deserialize = "nextPageCursor"))]
-    pub next_page_cursor: String,
-    #[serde(rename(deserialize = "data"))]
-    pub data: Vec<UserSearchUserInformationRaw>,
 }

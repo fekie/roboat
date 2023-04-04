@@ -38,9 +38,8 @@ pub struct UserList {
 }
 
 mod internal {
-
-    use super::{User, UserList, UserInformation ,USER_DETAILS_API};
-    use super::{USERS_SEARCH_API};
+    use super::USERS_SEARCH_API;
+    use super::{User, UserInformation, UserList, USER_DETAILS_API};
     use crate::{Client, Limit, RoboatError};
     use reqwest::header;
 
@@ -81,46 +80,41 @@ mod internal {
             &self,
             keyword: String,
             limit: Limit,
-            cursor: Option<String>
+            cursor: Option<String>,
         ) -> Result<UserList, RoboatError> {
+            let limit = limit.to_u64();
+            let cursor = cursor.unwrap_or_default();
 
-        let limit = limit.to_u64();
-        let cursor = cursor.unwrap_or_default();
+            let formatted_url = format!(
+                "{}?keyword={}&limit={}&cursor={}",
+                USERS_SEARCH_API, keyword, limit, cursor
+            );
 
-        let formatted_url = format!(
-            "{}?keyword={}&limit={}&cursor={}",
-            USERS_SEARCH_API,  keyword, limit, cursor
-        );
-
-            let request_result = self
-                .reqwest_client
-                .get(formatted_url)
-                .send()
-                .await;
+            let request_result = self.reqwest_client.get(formatted_url).send().await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let user_search = Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
+            let user_search =
+                Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
 
+            let mut users = Vec::new();
 
-        let mut users = Vec::new();
+            for user in user_search.data {
+                let user_data = User {
+                    user_id: user.user_id,
+                    username: user.username,
+                    display_name: user.display_name,
+                    has_verified_badge: user.has_verified_badge,
+                    previous_usernames: user.previous_usernames,
+                };
 
-        for user in user_search.data {
-            let userData = User{
-                user_id: user.user_id,
-                username: user.username,
-                display_name: user.display_name,
-                has_verified_badge: user.has_verified_badge,
-                previous_usernames: user.previous_usernames
+                users.push(user_data);
+            }
+
+            let result = UserList {
+                previous_page_cursor: user_search.previous_page_cursor,
+                next_page_cursor: user_search.next_page_cursor,
+                data: users,
             };
-
-            users.push(userData);
-        }
-
-        let result = UserList{
-            previous_page_cursor: user_search.previous_page_cursor,
-            next_page_cursor: user_search.next_page_cursor,
-            data: users
-        };
             Ok(result)
         }
     }
