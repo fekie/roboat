@@ -28,6 +28,8 @@ All public methods in this crate are documented and have at least one correspond
     - User Information - `/v1/users/authenticated`
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - `/v1/presence/register-app-presence`
+* Trades API - [`trades.roblox.com/*]
+    - Trades List - `/v1/trades/{trade_type}`
 
 # Quick Start Examples
 

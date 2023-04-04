@@ -22,6 +22,8 @@
 //! (all of them use the same endpoint internally and cache the results)
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//! * Trades API
+//!  - Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
