@@ -5,6 +5,9 @@
 //! that a [`Client`] is designed to work with proxies, as well as make
 //! multiple requests in parallel. All API calls are made through a [`Client`].
 //!
+//! Extensive documentation is used throughout this crate.
+//! All public methods in this crate are documented and have at least one corresponding example.
+//!
 //! # Covered Endpoints
 //! * Catalog API
 //!    - Item Details - [`Client::item_details`]

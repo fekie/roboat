@@ -12,6 +12,9 @@ A high performance interface for the Roblox API.
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
 
+Extensive documentation is used throughout this crate. 
+All public methods in this crate are documented and have at least one corresponding example.
+
 # Covered Endpoints
 * Catalog API - [`catalog.roblox.com/*`]
     - Item Details - `/v1/catalog/items/details`
