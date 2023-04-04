@@ -23,7 +23,7 @@
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
-//!  - Trades List - [`Client::trades`]
+//!   - Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
