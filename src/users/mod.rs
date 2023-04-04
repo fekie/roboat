@@ -97,12 +97,12 @@ mod internal {
             let request_result = self.reqwest_client.get(formatted_url).send().await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let user_search =
-                Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
+
+            let raw = Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
 
             let mut users = Vec::new();
 
-            for user in user_search.data {
+            for user in raw.data {
                 let user_data = User {
                     user_id: user.user_id,
                     username: user.username,
@@ -115,10 +115,11 @@ mod internal {
             }
 
             let result = UserList {
-                previous_page_cursor: user_search.previous_page_cursor,
-                next_page_cursor: user_search.next_page_cursor,
+                previous_page_cursor: raw.previous_page_cursor,
+                next_page_cursor: raw.next_page_cursor,
                 data: users,
             };
+
             Ok(result)
         }
     }
