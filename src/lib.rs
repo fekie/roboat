@@ -19,6 +19,7 @@
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
+//!   - User Search - [`Client::user_search`]
 //! (all of them use the same endpoint internally and cache the results)
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
@@ -141,6 +142,13 @@ mod validation;
 // todo: make it so roblosecurity cant be changed
 // todo: make it so users know that username and display name are cached and only id should be used for differentiating stuff.
 // todo: try refactoring with cognitive complexity extension
+// todo: try serde alias
+// todo: fix coverage docs
+// todo: figure out authtickets
+// todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
+// todo: make it so roblosecurity and reqwest client can be set on creation
+// todo: test an rwlock instead of mutex
+// todo: add ugc limited buying
 
 use serde::{Deserialize, Serialize};
 

@@ -26,6 +26,7 @@ All public methods in this crate are documented and have at least one correspond
     - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
 * Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
+    - User Search - `/v1/users/search`
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - `/v1/presence/register-app-presence`
 * Trades API - [`trades.roblox.com/*`]
