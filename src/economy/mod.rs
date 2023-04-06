@@ -110,7 +110,6 @@ impl Client {
     ///
     /// # Argument Notes
     /// * The cursor is used to get the a certain page of results. If you want the starting page, use `None`.
-    /// * The default `limit` is [`Limit::Ten`].
     ///
     /// # Return Value Notes
     /// * The first value is a vector of reseller listings.
@@ -191,7 +190,6 @@ impl Client {
     ///
     /// # Argument Notes
     /// * The cursor is used to get the a certain page of results. If you want the starting page, use `None`.
-    /// * The default `limit` is [`Limit::Hundred`].
     ///
     /// # Return Value Notes
     /// * The first value is a vector of user sales.

@@ -137,8 +137,6 @@ mod validation;
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
-// todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
-// todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
 // todo: figure out authtickets
 // todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
 // todo: add ugc limited buying
@@ -148,7 +146,9 @@ use serde::{Deserialize, Serialize};
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
 
-/// The maximum amount of instances to return from an endpoint.
+/// The maximum amount of instances to return from an endpoint. Used as a parameter in various methods that call
+/// endpoints. This is an enum instead of an integer as these are the only values that are accepted by Roblox
+/// for the limit parameter.
 #[allow(missing_docs)]
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
