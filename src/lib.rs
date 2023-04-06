@@ -136,29 +136,19 @@ mod validation;
 // todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
-// todo: make enums copy
-// todo: how to construct a Client isn't clear.
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
-// todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
-// todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
-// todo: make it so roblosecurity cant be changed
-// todo: make it so users know that username and display name are cached and only id should be used for differentiating stuff.
-// todo: try refactoring with cognitive complexity extension
-// todo: try serde alias
 // todo: figure out authtickets
 // todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
-// todo: make it so roblosecurity and reqwest client can be set on creation
-// todo: test an rwlock instead of mutex
 // todo: add ugc limited buying
-// todo: use #[serde(rename_all = "camelCase")] instead of #[serde(rename = "x")]
-// todo: add a force refresh method on the client builder
 
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
 
-/// The maximum amount of instances to return from an endpoint.
+/// The maximum amount of instances to return from an endpoint. Used as a parameter in various methods that call
+/// endpoints. This is an enum instead of an integer as these are the only values that are accepted by Roblox
+/// for the limit parameter.
 #[allow(missing_docs)]
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
@@ -183,6 +173,7 @@ impl Limit {
 }
 
 /// The universal error used in this crate.
+#[non_exhaustive]
 #[derive(thiserror::Error, Debug, Default)]
 pub enum RoboatError {
     /// Used when an endpoint returns status code 429.

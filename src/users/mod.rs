@@ -1,5 +1,5 @@
 use crate::{Client, RoboatError};
-use reqwest::header;
+use reqwest::header::{self, HeaderValue};
 use serde::{Deserialize, Serialize};
 
 mod reqwest_types;
@@ -12,14 +12,11 @@ const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub(crate) struct ClientUserInformation {
-    #[serde(rename(deserialize = "id"))]
-    #[serde(rename(deserialize = "user_id"))]
+    #[serde(alias = "id")]
     pub user_id: u64,
-    #[serde(rename(deserialize = "name"))]
-    #[serde(rename(deserialize = "username"))]
+    #[serde(alias = "name")]
     pub username: String,
-    #[serde(rename(deserialize = "displayName"))]
-    #[serde(rename(deserialize = "display_name"))]
+    #[serde(alias = "displayName")]
     pub display_name: String,
 }
 
@@ -45,7 +42,7 @@ impl Client {
     pub(crate) async fn user_information_internal(
         &self,
     ) -> Result<ClientUserInformation, RoboatError> {
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -58,18 +55,11 @@ impl Client {
         let user_information = Self::parse_to_raw::<ClientUserInformation>(response).await?;
 
         // Cache results.
-        self.set_user_id(user_information.user_id as u64).await;
-        self.set_username(user_information.username.clone()).await;
-        self.set_display_name(user_information.display_name.clone())
-            .await;
+        self.set_user_information(user_information.clone()).await;
 
         Ok(user_information)
     }
 
-    // todo: make external example
-    // todo: make it use roblosecurity if available
-    // todo: write docs with doc example
-    // todo: note the previous todos are for this one shark guy and should be resolved within a couple of days (or ill handle it)
     /// Searches for a user using <https://users.roblox.com/v1/users/search>.
     ///
     /// # Notes
@@ -104,12 +94,13 @@ impl Client {
     /// ```
     pub async fn user_search(&self, keyword: String) -> Result<Vec<User>, RoboatError> {
         let formatted_url = format!("{}?keyword={}", USERS_SEARCH_API, keyword);
-        let roblosecurity = self.create_cookie_string().unwrap_or_default();
+
+        let cookie_string = self.cookie_string().unwrap_or(HeaderValue::from_static(""));
 
         let request_result = self
             .reqwest_client
             .get(formatted_url)
-            .header(header::COOKIE, roblosecurity)
+            .header(header::COOKIE, cookie_string)
             .send()
             .await;
 
@@ -120,8 +111,8 @@ impl Client {
 
         for user in raw.data {
             let user_data = User {
-                user_id: user.user_id,
-                username: user.username,
+                user_id: user.id,
+                username: user.name,
                 display_name: user.display_name,
                 has_verified_badge: user.has_verified_badge,
                 previous_usernames: user.previous_usernames,

@@ -86,7 +86,7 @@ impl Client {
     pub async fn robux(&self) -> Result<u64, RoboatError> {
         let user_id = self.user_id().await?;
         let formatted_url = format!("{}{}{}", ROBUX_API_PART_1, user_id, ROBUX_API_PART_2);
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -110,7 +110,6 @@ impl Client {
     ///
     /// # Argument Notes
     /// * The cursor is used to get the a certain page of results. If you want the starting page, use `None`.
-    /// * The default `limit` is [`Limit::Ten`].
     ///
     /// # Return Value Notes
     /// * The first value is a vector of reseller listings.
@@ -144,7 +143,7 @@ impl Client {
     ) -> Result<(Vec<Listing>, Option<String>), RoboatError> {
         let limit = limit.to_u64();
         let cursor = cursor.unwrap_or_default();
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let formatted_url = format!(
             "{}{}{}?cursor={}&limit={}",
@@ -191,7 +190,6 @@ impl Client {
     ///
     /// # Argument Notes
     /// * The cursor is used to get the a certain page of results. If you want the starting page, use `None`.
-    /// * The default `limit` is [`Limit::Hundred`].
     ///
     /// # Return Value Notes
     /// * The first value is a vector of user sales.
@@ -243,7 +241,7 @@ impl Client {
             USER_SALES_TRANSACTION_TYPE
         );
 
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -260,13 +258,13 @@ impl Client {
         let mut sales = Vec::new();
 
         for raw_sale in raw.data {
-            let sale_id = raw_sale.sale_id;
+            let sale_id = raw_sale.id;
             let asset_id = raw_sale.details.id;
             let robux_received = raw_sale.currency.amount;
             let is_pending = raw_sale.is_pending;
-            let user_id = raw_sale.user.id;
-            let user_display_name = raw_sale.user.user_display_name;
-            let asset_name = raw_sale.details.item_name;
+            let user_id = raw_sale.agent.id;
+            let user_display_name = raw_sale.agent.name;
+            let asset_name = raw_sale.details.name;
 
             let sale = UserSale {
                 sale_id,
@@ -398,7 +396,7 @@ mod internal {
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = self.create_cookie_string()?;
+            let cookie = self.cookie_string()?;
 
             let json = serde_json::json!({
                 "price": price,
@@ -430,7 +428,7 @@ mod internal {
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = self.create_cookie_string()?;
+            let cookie = self.cookie_string()?;
 
             let json = serde_json::json!({});
 

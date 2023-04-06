@@ -98,7 +98,7 @@ impl Client {
         let limit = limit.to_u64();
         let cursor = cursor.unwrap_or_default();
 
-        let roblosecurity = self.create_cookie_string()?;
+        let cookie_string = self.cookie_string()?;
 
         let trade_type_str = match trade_type {
             TradeType::Inbound => "inbound",
@@ -115,7 +115,7 @@ impl Client {
         let request_result = self
             .reqwest_client
             .get(&formatted_url)
-            .header(header::COOKIE, roblosecurity)
+            .header(header::COOKIE, cookie_string)
             .send()
             .await;
 

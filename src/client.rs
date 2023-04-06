@@ -1,4 +1,6 @@
+use crate::users::ClientUserInformation;
 use crate::RoboatError;
+use reqwest::header::HeaderValue;
 // We use tokio's version of rwlock so that readers to not starve writers on linux.
 use tokio::sync::RwLock;
 
@@ -46,16 +48,12 @@ use tokio::sync::RwLock;
 /// ```
 #[derive(Debug, Default)]
 pub struct Client {
-    /// The cookie used for authentication.
-    pub(crate) roblosecurity: Option<String>,
+    /// The full cookie that includes the roblosecurity token.
+    pub(crate) cookie_string: Option<HeaderValue>,
     /// The field holding the value for the X-CSRF-TOKEN header used in and returned by endpoints.
     pub(crate) xcsrf: RwLock<String>,
-    /// The user id of the user. Not modifiable by user.
-    pub(crate) user_id: RwLock<Option<u64>>,
-    /// The username of the user. Not modifiable by user.
-    pub(crate) username: RwLock<Option<String>>,
-    /// The display name of the user. Not modifiable by user.
-    pub(crate) display_name: RwLock<Option<String>>,
+    /// Holds the user id, username, and display name of the user.
+    pub(crate) user_information: RwLock<Option<ClientUserInformation>>,
     /// A Reqwest HTTP client used to send web requests.
     pub(crate) reqwest_client: reqwest::Client,
 }
@@ -69,16 +67,19 @@ pub struct ClientBuilder {
 
 impl Client {
     /// Returns the user id of the user. If the user id is not cached, it will be fetched from Roblox first.
+    ///
+    /// The user id should be the only thing used to differentiate between accounts as
+    /// username and display name can change.
     pub async fn user_id(&self) -> Result<u64, RoboatError> {
-        let guard = self.user_id.read().await;
-        let user_id_opt = *guard;
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match user_id_opt {
-            Some(user_id) => Ok(user_id),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.user_id),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.user_id)
             }
@@ -86,16 +87,18 @@ impl Client {
     }
 
     /// Returns the username of the user. If the username is not cached, it will be fetched from Roblox first.
+    ///
+    /// Username can change (although rarely). For this reason only user id should be used for differentiating accounts.
     pub async fn username(&self) -> Result<String, RoboatError> {
-        let guard = self.username.read().await;
-        let username_opt = guard.clone();
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match username_opt {
-            Some(username) => Ok(username),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.username.clone()),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.username)
             }
@@ -103,16 +106,18 @@ impl Client {
     }
 
     /// Returns the display name of the user. If the display name is not cached, it will be fetched from Roblox first.
+    ///
+    /// Display name can change. For this reason only user id should be used for differentiating accounts.
     pub async fn display_name(&self) -> Result<String, RoboatError> {
-        let guard = self.display_name.read().await;
-        let display_name_opt = guard.clone();
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match display_name_opt {
-            Some(display_name) => Ok(display_name),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.display_name.clone()),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.display_name)
             }
@@ -121,20 +126,8 @@ impl Client {
 
     /// Used in [`Client::user_information_internal`]. This is implemented in the client
     /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_user_id(&self, user_id: u64) {
-        *self.user_id.write().await = Some(user_id);
-    }
-
-    /// Used in [`Client::user_information_internal`]. This is implemented in the client
-    /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_username(&self, username: String) {
-        *self.username.write().await = Some(username);
-    }
-
-    /// Used in [`Client::user_information_internal`]. This is implemented in the client
-    /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_display_name(&self, display_name: String) {
-        *self.display_name.write().await = Some(display_name);
+    pub(crate) async fn set_user_information(&self, user_information: ClientUserInformation) {
+        *self.user_information.write().await = Some(user_information);
     }
 
     /// Sets the xcsrf token of the client. Remember to .await this method.
@@ -147,14 +140,13 @@ impl Client {
         self.xcsrf.read().await.clone()
     }
 
-    /// Creates a string for the cookie header using the roblosecurity.
+    /// Returns a copy of the cookie string stored in the client.
     /// If the roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
-    pub(crate) fn create_cookie_string(&self) -> Result<String, RoboatError> {
-        // We can continue to keep the reader lock as this function will never request a write lock.
-        let roblosecurity_opt = &self.roblosecurity;
+    pub(crate) fn cookie_string(&self) -> Result<HeaderValue, RoboatError> {
+        let cookie_string_opt = &self.cookie_string;
 
-        match roblosecurity_opt {
-            Some(roblosecurity) => Ok(format!(".ROBLOSECURITY={}", roblosecurity)),
+        match cookie_string_opt {
+            Some(cookie) => Ok(cookie.clone()),
             None => Err(RoboatError::RoblosecurityNotSet),
         }
     }
@@ -205,9 +197,22 @@ impl ClientBuilder {
     /// ```
     pub fn build(self) -> Client {
         Client {
-            roblosecurity: self.roblosecurity,
+            cookie_string: self
+                .roblosecurity
+                .as_ref()
+                .map(|x| create_cookie_string_header(x)),
             reqwest_client: self.reqwest_client.unwrap_or_default(),
             ..Default::default()
         }
     }
+}
+
+fn create_cookie_string_header(roblosecurity: &str) -> HeaderValue {
+    // We panic here because I really really really hope that nobody is using invalid characters in their roblosecurity.
+    let mut header = HeaderValue::from_str(&format!(".ROBLOSECURITY={}", roblosecurity))
+        .expect("Invalid roblosecurity characters.");
+
+    header.set_sensitive(true);
+
+    header
 }
