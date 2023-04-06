@@ -173,6 +173,7 @@ impl Limit {
 }
 
 /// The universal error used in this crate.
+#[non_exhaustive]
 #[derive(thiserror::Error, Debug, Default)]
 pub enum RoboatError {
     /// Used when an endpoint returns status code 429.
