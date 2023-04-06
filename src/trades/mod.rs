@@ -38,7 +38,9 @@ pub struct Trade {
 
 /// The status of a Roblox trade. [`Self::Open`] is the status for both
 /// inbound and outbound trades.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
 #[allow(missing_docs)]
 pub enum TradeStatus {
     Open,
