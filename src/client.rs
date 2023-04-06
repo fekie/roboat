@@ -1,3 +1,4 @@
+use crate::users::ClientUserInformation;
 use crate::RoboatError;
 // We use tokio's version of rwlock so that readers to not starve writers on linux.
 use tokio::sync::RwLock;
@@ -50,12 +51,8 @@ pub struct Client {
     pub(crate) roblosecurity: Option<String>,
     /// The field holding the value for the X-CSRF-TOKEN header used in and returned by endpoints.
     pub(crate) xcsrf: RwLock<String>,
-    /// The user id of the user. Not modifiable by user.
-    pub(crate) user_id: RwLock<Option<u64>>,
-    /// The username of the user. Not modifiable by user.
-    pub(crate) username: RwLock<Option<String>>,
-    /// The display name of the user. Not modifiable by user.
-    pub(crate) display_name: RwLock<Option<String>>,
+    /// Holds the user id, username, and display name of the user.
+    pub(crate) user_information: RwLock<Option<ClientUserInformation>>,
     /// A Reqwest HTTP client used to send web requests.
     pub(crate) reqwest_client: reqwest::Client,
 }
@@ -73,15 +70,15 @@ impl Client {
     /// The user id should be the only thing used to differentiate between accounts as
     /// username and display name can change.
     pub async fn user_id(&self) -> Result<u64, RoboatError> {
-        let guard = self.user_id.read().await;
-        let user_id_opt = *guard;
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match user_id_opt {
-            Some(user_id) => Ok(user_id),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.user_id),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.user_id)
             }
@@ -92,15 +89,15 @@ impl Client {
     ///
     /// Username can change (although rarely). For this reason only user id should be used for differentiating accounts.
     pub async fn username(&self) -> Result<String, RoboatError> {
-        let guard = self.username.read().await;
-        let username_opt = guard.clone();
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match username_opt {
-            Some(username) => Ok(username),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.username.clone()),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.username)
             }
@@ -111,15 +108,15 @@ impl Client {
     ///
     /// Display name can change. For this reason only user id should be used for differentiating accounts.
     pub async fn display_name(&self) -> Result<String, RoboatError> {
-        let guard = self.display_name.read().await;
-        let display_name_opt = guard.clone();
+        let guard = self.user_information.read().await;
+        let user_information_opt = &*guard;
 
-        // Drop the read lock in case this thread grabs the writer lock later in the function.
-        drop(guard);
-
-        match display_name_opt {
-            Some(display_name) => Ok(display_name),
+        match user_information_opt {
+            Some(user_information) => Ok(user_information.display_name.clone()),
             None => {
+                // Drop the read lock as the writer lock will be requested.
+                drop(guard);
+
                 let user_info = self.user_information_internal().await?;
                 Ok(user_info.display_name)
             }
@@ -128,20 +125,8 @@ impl Client {
 
     /// Used in [`Client::user_information_internal`]. This is implemented in the client
     /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_user_id(&self, user_id: u64) {
-        *self.user_id.write().await = Some(user_id);
-    }
-
-    /// Used in [`Client::user_information_internal`]. This is implemented in the client
-    /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_username(&self, username: String) {
-        *self.username.write().await = Some(username);
-    }
-
-    /// Used in [`Client::user_information_internal`]. This is implemented in the client
-    /// module as we do not want other modules to have to interact with the rwlock directly.
-    pub(crate) async fn set_display_name(&self, display_name: String) {
-        *self.display_name.write().await = Some(display_name);
+    pub(crate) async fn set_user_information(&self, user_information: ClientUserInformation) {
+        *self.user_information.write().await = Some(user_information);
     }
 
     /// Sets the xcsrf token of the client. Remember to .await this method.

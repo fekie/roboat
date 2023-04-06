@@ -55,10 +55,7 @@ impl Client {
         let user_information = Self::parse_to_raw::<ClientUserInformation>(response).await?;
 
         // Cache results.
-        self.set_user_id(user_information.user_id as u64).await;
-        self.set_username(user_information.username.clone()).await;
-        self.set_display_name(user_information.display_name.clone())
-            .await;
+        self.set_user_information(user_information.clone()).await;
 
         Ok(user_information)
     }
