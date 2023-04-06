@@ -11,17 +11,11 @@ use tokio::sync::RwLock;
 ///
 /// # Construction Examples
 ///
-/// ## Without Authentication or a Custom Reqwest Client
+/// ## Without Roblosecurity or a Custom Reqwest Client
 /// ```
 /// use roboat::ClientBuilder;
 ///
 /// let client = ClientBuilder::new().build();
-/// ```
-/// or
-/// ```
-/// use roboat::Client;
-///
-/// let client = Client::default();
 /// ```
 ///
 /// ## With a Roblosecurity
