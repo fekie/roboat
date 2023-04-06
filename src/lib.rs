@@ -143,6 +143,7 @@ mod validation;
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
 // todo: add ugc limited buying
+// todo: make feature that allows reqwest crate to not collide.
 
 use serde::{Deserialize, Serialize};
 
