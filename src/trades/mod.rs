@@ -38,9 +38,7 @@ pub struct Trade {
 
 /// The status of a Roblox trade. [`Self::Open`] is the status for both
 /// inbound and outbound trades.
-#[derive(
-    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
-)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub enum TradeStatus {
     Open,
@@ -69,15 +67,13 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::ClientBuilder;
+    /// use roboat::Client;
     /// use roboat::trades::TradeType;
     /// use roboat::Limit;
     ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
-    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
     ///
     /// let trade_type = TradeType::Inbound;
     /// let limit = Limit::Ten;

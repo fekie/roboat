@@ -19,8 +19,8 @@
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
-//! (all of them use the same endpoint internally and cache the results)
 //!   - User Search - [`Client::user_search`]
+//! (all of them use the same endpoint internally and cache the results)
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
@@ -38,7 +38,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
 //!
 //!     let robux = client.robux().await?;
 //!     let user_id = client.user_id().await?;
@@ -65,7 +65,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
 //!
 //!     let item_id = 1365767;
 //!     let limit = roboat::Limit::Ten;
@@ -88,7 +88,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().build();
+//!     let client = roboat::Client::new();
 //!
 //!     let item = ItemArgs {
 //!         item_type: ItemType::Asset,
@@ -117,7 +117,6 @@
 pub use reqwest;
 
 pub use client::Client;
-pub use client::ClientBuilder;
 
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
@@ -137,7 +136,6 @@ mod validation;
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
 // todo: make enums copy
-// todo: how to construct a Client isn't clear.
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
 // todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
@@ -145,13 +143,12 @@ mod validation;
 // todo: make it so users know that username and display name are cached and only id should be used for differentiating stuff.
 // todo: try refactoring with cognitive complexity extension
 // todo: try serde alias
+// todo: fix coverage docs
 // todo: figure out authtickets
 // todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
 // todo: make it so roblosecurity and reqwest client can be set on creation
 // todo: test an rwlock instead of mutex
 // todo: add ugc limited buying
-// todo: use #[serde(rename_all = "camelCase")] instead of #[serde(rename = "x")]
-// todo: add a force refresh method on the client builder
 
 use serde::{Deserialize, Serialize};
 

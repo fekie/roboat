@@ -1,5 +1,5 @@
 use clap::Parser;
-use roboat::ClientBuilder;
+use roboat::Client;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -10,9 +10,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let client = ClientBuilder::new()
-        .roblosecurity(args.roblosecurity)
-        .build();
+    let client = Client::with_roblosecurity(args.roblosecurity);
 
     println!("Username: {}", client.username().await?);
     println!("Display Name: {}", client.display_name().await?);

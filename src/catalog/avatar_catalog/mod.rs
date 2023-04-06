@@ -395,7 +395,7 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
         let description = value.description.ok_or(RoboatError::MalformedResponse)?;
         let product_id = value.product_id.ok_or(RoboatError::MalformedResponse)?;
         let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
-        let item_statuses = value.item_status.ok_or(RoboatError::MalformedResponse)?;
+        let item_statuses = value.item_statuses.ok_or(RoboatError::MalformedResponse)?;
 
         let item_restrictions = value
             .item_restrictions
@@ -406,7 +406,7 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
             .ok_or(RoboatError::MalformedResponse)?;
 
         let creator_user_id = value
-            .creator_target_id
+            .creator_user_id
             .ok_or(RoboatError::MalformedResponse)?;
 
         let creator_name = value
@@ -467,11 +467,11 @@ impl Client {
     /// ```no_run
     /// use roboat::catalog::avatar_catalog::ItemArgs;
     /// use roboat::catalog::avatar_catalog::ItemType;
-    /// use roboat::ClientBuilder;
+    /// use roboat::Client;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
+    /// let client = Client::new();
     ///
     /// let asset = ItemArgs {
     ///     item_type: ItemType::Asset,
@@ -498,7 +498,7 @@ impl Client {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf).await;
+                    self.set_xcsrf(new_xcsrf);
 
                     self.item_details_internal(items).await
                 }
@@ -530,7 +530,7 @@ mod internal {
             let request_result = self
                 .reqwest_client
                 .post(ITEM_DETAILS_API)
-                .header(XCSRF_HEADER, self.xcsrf().await)
+                .header(XCSRF_HEADER, self.xcsrf())
                 .json(&request_body)
                 .send()
                 .await;

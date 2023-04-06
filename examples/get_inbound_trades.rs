@@ -1,6 +1,6 @@
 use clap::Parser;
 use roboat::trades::TradeType;
-use roboat::ClientBuilder;
+use roboat::Client;
 use roboat::Limit;
 
 #[derive(Parser, Debug)]
@@ -12,9 +12,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    let client = ClientBuilder::new()
-        .roblosecurity(args.roblosecurity)
-        .build();
+    let client = Client::with_roblosecurity(args.roblosecurity);
 
     let trade_type = TradeType::Inbound;
     let limit = Limit::Ten;
