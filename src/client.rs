@@ -69,6 +69,9 @@ pub struct ClientBuilder {
 
 impl Client {
     /// Returns the user id of the user. If the user id is not cached, it will be fetched from Roblox first.
+    ///
+    /// The user id should be the only thing used to differentiate between accounts as
+    /// username and display name can change.
     pub async fn user_id(&self) -> Result<u64, RoboatError> {
         let guard = self.user_id.read().await;
         let user_id_opt = *guard;
@@ -86,6 +89,8 @@ impl Client {
     }
 
     /// Returns the username of the user. If the username is not cached, it will be fetched from Roblox first.
+    ///
+    /// Username can change (although rarely). For this reason only user id should be used for differentiating accounts.
     pub async fn username(&self) -> Result<String, RoboatError> {
         let guard = self.username.read().await;
         let username_opt = guard.clone();
@@ -103,6 +108,8 @@ impl Client {
     }
 
     /// Returns the display name of the user. If the display name is not cached, it will be fetched from Roblox first.
+    ///
+    /// Display name can change. For this reason only user id should be used for differentiating accounts.
     pub async fn display_name(&self) -> Result<String, RoboatError> {
         let guard = self.display_name.read().await;
         let display_name_opt = guard.clone();
