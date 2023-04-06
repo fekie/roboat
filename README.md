@@ -44,7 +44,7 @@ const ROBLOSECURITY: &str = "your-roblosecurity-token";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+    let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
 
     let robux = client.robux().await?;
     let user_id = client.user_id().await?;
@@ -71,7 +71,7 @@ const ROBLOSECURITY: &str = "your-roblosecurity-token";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+    let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
 
     let item_id = 1365767;
     let limit = roboat::Limit::Ten;
@@ -94,7 +94,7 @@ use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = roboat::Client::new();
+    let client = roboat::ClientBuilder::new().build();
 
     let item = ItemArgs {
         item_type: ItemType::Asset,

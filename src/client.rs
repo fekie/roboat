@@ -68,32 +68,6 @@ pub struct ClientBuilder {
 }
 
 impl Client {
-    /* /// Creates a new [`Client`] with no authentication nor a custom `reqwest` client.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Creates a new [`Client`] with a roblosecurity already set.
-    pub fn with_roblosecurity(roblosecurity: String) -> Self {
-        Self {
-            roblosecurity: Mutex::new(Some(roblosecurity)),
-            ..Default::default()
-        }
-    }
-
-    /// Creates a new [`Client`] providing a custom [`reqwest::Client`].
-    /// Custom [`reqwest::Client`]s are used for configuring proxies.
-    pub fn with_reqwest_client(reqwest_client: reqwest::Client) -> Self {
-        Self {
-            roblosecurity: Mutex::new(None),
-            xcsrf: Mutex::new(String::new()),
-            user_id: Mutex::new(None),
-            username: Mutex::new(None),
-            display_name: Mutex::new(None),
-            reqwest_client,
-        }
-    } */
-
     /// Returns the user id of the user. If the user id is not cached, it will be fetched from Roblox first.
     pub async fn user_id(&self) -> Result<u64, RoboatError> {
         let guard = self.user_id.read().await;
