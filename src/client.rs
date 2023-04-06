@@ -1,5 +1,6 @@
 use crate::users::ClientUserInformation;
 use crate::RoboatError;
+use reqwest::header::HeaderValue;
 // We use tokio's version of rwlock so that readers to not starve writers on linux.
 use tokio::sync::RwLock;
 
@@ -47,8 +48,8 @@ use tokio::sync::RwLock;
 /// ```
 #[derive(Debug, Default)]
 pub struct Client {
-    /// The cookie used for authentication.
-    pub(crate) roblosecurity: Option<String>,
+    /// The full cookie that includes the roblosecurity token.
+    pub(crate) cookie_string: Option<HeaderValue>,
     /// The field holding the value for the X-CSRF-TOKEN header used in and returned by endpoints.
     pub(crate) xcsrf: RwLock<String>,
     /// Holds the user id, username, and display name of the user.
@@ -139,14 +140,13 @@ impl Client {
         self.xcsrf.read().await.clone()
     }
 
-    /// Creates a string for the cookie header using the roblosecurity.
+    /// Returns a copy of the cookie string stored in the client.
     /// If the roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
-    pub(crate) fn create_cookie_string(&self) -> Result<String, RoboatError> {
-        // We can continue to keep the reader lock as this function will never request a write lock.
-        let roblosecurity_opt = &self.roblosecurity;
+    pub(crate) fn cookie_string(&self) -> Result<HeaderValue, RoboatError> {
+        let cookie_string_opt = &self.cookie_string;
 
-        match roblosecurity_opt {
-            Some(roblosecurity) => Ok(format!(".ROBLOSECURITY={}", roblosecurity)),
+        match cookie_string_opt {
+            Some(cookie) => Ok(cookie.clone()),
             None => Err(RoboatError::RoblosecurityNotSet),
         }
     }
@@ -197,9 +197,22 @@ impl ClientBuilder {
     /// ```
     pub fn build(self) -> Client {
         Client {
-            roblosecurity: self.roblosecurity,
+            cookie_string: self
+                .roblosecurity
+                .as_ref()
+                .map(|x| create_cookie_string_header(x)),
             reqwest_client: self.reqwest_client.unwrap_or_default(),
             ..Default::default()
         }
     }
+}
+
+fn create_cookie_string_header(roblosecurity: &str) -> HeaderValue {
+    // We panic here because I really really really hope that nobody is using invalid characters in their roblosecurity.
+    let mut header = HeaderValue::from_str(&format!(".ROBLOSECURITY={}", roblosecurity))
+        .expect("Invalid roblosecurity characters.");
+
+    header.set_sensitive(true);
+
+    header
 }

@@ -54,7 +54,7 @@ mod internal {
 
     impl Client {
         pub(super) async fn register_presence_internal(&self) -> Result<(), RoboatError> {
-            let cookie = self.create_cookie_string()?;
+            let cookie = self.cookie_string()?;
 
             let json = serde_json::json!({
                 "location": "Home",

@@ -86,7 +86,7 @@ impl Client {
     pub async fn robux(&self) -> Result<u64, RoboatError> {
         let user_id = self.user_id().await?;
         let formatted_url = format!("{}{}{}", ROBUX_API_PART_1, user_id, ROBUX_API_PART_2);
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -143,7 +143,7 @@ impl Client {
     ) -> Result<(Vec<Listing>, Option<String>), RoboatError> {
         let limit = limit.to_u64();
         let cursor = cursor.unwrap_or_default();
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let formatted_url = format!(
             "{}{}{}?cursor={}&limit={}",
@@ -241,7 +241,7 @@ impl Client {
             USER_SALES_TRANSACTION_TYPE
         );
 
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -396,7 +396,7 @@ mod internal {
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = self.create_cookie_string()?;
+            let cookie = self.cookie_string()?;
 
             let json = serde_json::json!({
                 "price": price,
@@ -428,7 +428,7 @@ mod internal {
                 TOGGLE_SALE_API_PART_1, item_id, TOGGLE_SALE_API_PART_2, uaid
             );
 
-            let cookie = self.create_cookie_string()?;
+            let cookie = self.cookie_string()?;
 
             let json = serde_json::json!({});
 

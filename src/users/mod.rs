@@ -1,5 +1,5 @@
 use crate::{Client, RoboatError};
-use reqwest::header;
+use reqwest::header::{self, HeaderValue};
 use serde::{Deserialize, Serialize};
 
 mod reqwest_types;
@@ -42,7 +42,7 @@ impl Client {
     pub(crate) async fn user_information_internal(
         &self,
     ) -> Result<ClientUserInformation, RoboatError> {
-        let cookie = self.create_cookie_string()?;
+        let cookie = self.cookie_string()?;
 
         let request_result = self
             .reqwest_client
@@ -94,12 +94,13 @@ impl Client {
     /// ```
     pub async fn user_search(&self, keyword: String) -> Result<Vec<User>, RoboatError> {
         let formatted_url = format!("{}?keyword={}", USERS_SEARCH_API, keyword);
-        let roblosecurity = self.create_cookie_string().unwrap_or_default();
+
+        let cookie_string = self.cookie_string().unwrap_or(HeaderValue::from_static(""));
 
         let request_result = self
             .reqwest_client
             .get(formatted_url)
-            .header(header::COOKIE, roblosecurity)
+            .header(header::COOKIE, cookie_string)
             .send()
             .await;
 
