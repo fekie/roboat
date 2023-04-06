@@ -38,7 +38,9 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::ClientBuilder::new()
+//!         .roblosecurity(ROBLOSECURITY.to_string())
+//!         .build();
 //!
 //!     let robux = client.robux().await?;
 //!     let user_id = client.user_id().await?;
@@ -65,7 +67,9 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::ClientBuilder::new()
+//!         .roblosecurity(ROBLOSECURITY.to_string())
+//!         .build();
 //!
 //!     let item_id = 1365767;
 //!     let limit = roboat::Limit::Ten;
@@ -138,8 +142,8 @@ mod validation;
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
-// todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
 // todo: add ugc limited buying
+// todo: make feature that allows reqwest crate to not collide.
 
 use serde::{Deserialize, Serialize};
 
