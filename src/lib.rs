@@ -19,8 +19,8 @@
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
-//!   - User Search - [`Client::user_search`]
 //! (all of them use the same endpoint internally and cache the results)
+//!   - User Search - [`Client::user_search`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
