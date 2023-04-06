@@ -136,22 +136,14 @@ mod validation;
 // todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
-// todo: make enums copy
-// todo: how to construct a Client isn't clear.
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
 // todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
-// todo: make it so roblosecurity cant be changed
-// todo: make it so users know that username and display name are cached and only id should be used for differentiating stuff.
-// todo: try refactoring with cognitive complexity extension
-// todo: try serde alias
 // todo: figure out authtickets
 // todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
 // todo: make it so roblosecurity and reqwest client can be set on creation
 // todo: test an rwlock instead of mutex
 // todo: add ugc limited buying
-// todo: use #[serde(rename_all = "camelCase")] instead of #[serde(rename = "x")]
-// todo: add a force refresh method on the client builder
 
 use serde::{Deserialize, Serialize};
 
