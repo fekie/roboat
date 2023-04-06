@@ -1,28 +1,74 @@
 use crate::RoboatError;
-use std::sync::Mutex;
+// We use tokio's version of rwlock so that readers to not starve writers on linux.
+use tokio::sync::RwLock;
 
 /// A client used for making requests to the Roblox API.
 ///
 /// The client stores the roblosecurity cookie, X-CSRF-TOKEN header, and an HTTPS client to send web
-/// requests.
+/// requests. The client also caches the user id, username, and display name of the user.
+///
+/// Constructed using a [`ClientBuilder`].
+///
+/// # Construction Examples
+///
+/// ## Without Roblosecurity or a Custom Reqwest Client
+/// ```
+/// use roboat::ClientBuilder;
+///
+/// let client = ClientBuilder::new().build();
+/// ```
+///
+/// ## With a Roblosecurity
+/// ```
+/// use roboat::ClientBuilder;
+///
+/// const ROBLOSECURITY: &str = "roblosecurity";
+///
+/// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+/// ```
+///
+/// ## With a Custom Reqwest Client
+/// ```
+/// use roboat::ClientBuilder;
+///
+/// let reqwest_client = reqwest::Client::new();
+/// let client = ClientBuilder::new().reqwest_client(reqwest_client).build();
+/// ```
+///
+/// ## With a Roblosecurity and a Custom Reqwest Client
+/// ```
+/// use roboat::ClientBuilder;
+///
+/// const ROBLOSECURITY: &str = "roblosecurity";
+///
+/// let reqwest_client = reqwest::Client::new();
+/// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).reqwest_client(reqwest_client).build();
+/// ```
 #[derive(Debug, Default)]
 pub struct Client {
     /// The cookie used for authentication.
-    pub(crate) roblosecurity: Mutex<Option<String>>,
+    pub(crate) roblosecurity: Option<String>,
     /// The field holding the value for the X-CSRF-TOKEN header used in and returned by endpoints.
-    pub(crate) xcsrf: Mutex<String>,
+    pub(crate) xcsrf: RwLock<String>,
     /// The user id of the user. Not modifiable by user.
-    pub(crate) user_id: Mutex<Option<u64>>,
+    pub(crate) user_id: RwLock<Option<u64>>,
     /// The username of the user. Not modifiable by user.
-    pub(crate) username: Mutex<Option<String>>,
+    pub(crate) username: RwLock<Option<String>>,
     /// The display name of the user. Not modifiable by user.
-    pub(crate) display_name: Mutex<Option<String>>,
+    pub(crate) display_name: RwLock<Option<String>>,
     /// A Reqwest HTTP client used to send web requests.
     pub(crate) reqwest_client: reqwest::Client,
 }
 
+/// A builder used for constructing a [`Client`]. Constructed using [`ClientBuilder::new`].
+#[derive(Clone, Debug, Default)]
+pub struct ClientBuilder {
+    roblosecurity: Option<String>,
+    reqwest_client: Option<reqwest::Client>,
+}
+
 impl Client {
-    /// Creates a new [`Client`] with no authentication nor a custom `reqwest` client.
+    /* /// Creates a new [`Client`] with no authentication nor a custom `reqwest` client.
     pub fn new() -> Self {
         Self::default()
     }
@@ -46,11 +92,16 @@ impl Client {
             display_name: Mutex::new(None),
             reqwest_client,
         }
-    }
+    } */
 
     /// Returns the user id of the user. If the user id is not cached, it will be fetched from Roblox first.
     pub async fn user_id(&self) -> Result<u64, RoboatError> {
-        let user_id_opt = *self.user_id.lock().unwrap();
+        let guard = self.user_id.read().await;
+        let user_id_opt = *guard;
+
+        // Drop the read lock in case this thread grabs the writer lock later in the function.
+        drop(guard);
+
         match user_id_opt {
             Some(user_id) => Ok(user_id),
             None => {
@@ -62,7 +113,12 @@ impl Client {
 
     /// Returns the username of the user. If the username is not cached, it will be fetched from Roblox first.
     pub async fn username(&self) -> Result<String, RoboatError> {
-        let username_opt = self.username.lock().unwrap().clone();
+        let guard = self.username.read().await;
+        let username_opt = guard.clone();
+
+        // Drop the read lock in case this thread grabs the writer lock later in the function.
+        drop(guard);
+
         match username_opt {
             Some(username) => Ok(username),
             None => {
@@ -74,7 +130,12 @@ impl Client {
 
     /// Returns the display name of the user. If the display name is not cached, it will be fetched from Roblox first.
     pub async fn display_name(&self) -> Result<String, RoboatError> {
-        let display_name_opt = self.display_name.lock().unwrap().clone();
+        let guard = self.display_name.read().await;
+        let display_name_opt = guard.clone();
+
+        // Drop the read lock in case this thread grabs the writer lock later in the function.
+        drop(guard);
+
         match display_name_opt {
             Some(display_name) => Ok(display_name),
             None => {
@@ -84,75 +145,95 @@ impl Client {
         }
     }
 
-    /// Sets the Roblosecurity string for the client.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use roboat::Client;
-    ///
-    /// let client = Client::new();
-    /// client.set_roblosecurity("my_roblosecurity".to_string());
-    /// ```
-    pub fn set_roblosecurity(&self, roblosecurity: String) {
-        *self.roblosecurity.lock().unwrap() = Some(roblosecurity);
+    /// Used in [`Client::user_information_internal`]. This is implemented in the client
+    /// module as we do not want other modules to have to interact with the rwlock directly.
+    pub(crate) async fn set_user_id(&self, user_id: u64) {
+        *self.user_id.write().await = Some(user_id);
     }
 
-    /// Returns a copy of the Roblosecurity stored in the client.
-    /// If the Roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use roboat::Client;
-    ///
-    /// let client = Client::with_roblosecurity("my_roblosecurity".to_string());
-    /// let roblosecurity = client.roblosecurity()?;
-    /// assert_eq!(roblosecurity, "my_roblosecurity".to_string());
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub fn roblosecurity(&self) -> Result<String, RoboatError> {
-        match self.roblosecurity.lock().unwrap().clone() {
-            Some(roblosecurity) => Ok(roblosecurity),
-            None => Err(RoboatError::RoblosecurityNotSet),
-        }
+    /// Used in [`Client::user_information_internal`]. This is implemented in the client
+    /// module as we do not want other modules to have to interact with the rwlock directly.
+    pub(crate) async fn set_username(&self, username: String) {
+        *self.username.write().await = Some(username);
     }
 
-    /// Sets the xcsrf token of the client.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use roboat::Client;
-    ///
-    /// let client = Client::new();
-    /// client.set_xcsrf("my_xcsrf".to_string());
-    /// ```
-    pub fn set_xcsrf(&self, xcsrf: String) {
-        *self.xcsrf.lock().unwrap() = xcsrf;
+    /// Used in [`Client::user_information_internal`]. This is implemented in the client
+    /// module as we do not want other modules to have to interact with the rwlock directly.
+    pub(crate) async fn set_display_name(&self, display_name: String) {
+        *self.display_name.write().await = Some(display_name);
     }
 
-    /// Returns a copy of the xcsrf stored in the client.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use roboat::Client;
-    ///
-    /// let client = Client::new();
-    /// client.set_xcsrf("my_xcsrf".to_string());
-    /// let xcsrf = client.xcsrf();
-    /// assert_eq!(xcsrf, "my_xcsrf".to_string());
-    /// ```
-    pub fn xcsrf(&self) -> String {
-        self.xcsrf.lock().unwrap().clone()
+    /// Sets the xcsrf token of the client. Remember to .await this method.
+    pub(crate) async fn set_xcsrf(&self, xcsrf: String) {
+        *self.xcsrf.write().await = xcsrf;
+    }
+
+    /// Returns a copy of the xcsrf stored in the client. Remember to .await this method.
+    pub(crate) async fn xcsrf(&self) -> String {
+        self.xcsrf.read().await.clone()
     }
 
     /// Creates a string for the cookie header using the roblosecurity.
     /// If the roblosecurity has not been set, [`RoboatError::RoblosecurityNotSet`] is returned.
     pub(crate) fn create_cookie_string(&self) -> Result<String, RoboatError> {
-        Ok(format!(".ROBLOSECURITY={}", self.roblosecurity()?))
+        // We can continue to keep the reader lock as this function will never request a write lock.
+        let roblosecurity_opt = &self.roblosecurity;
+
+        match roblosecurity_opt {
+            Some(roblosecurity) => Ok(format!(".ROBLOSECURITY={}", roblosecurity)),
+            None => Err(RoboatError::RoblosecurityNotSet),
+        }
+    }
+}
+
+impl ClientBuilder {
+    /// Creates a new [`ClientBuilder`].
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the roblosecurity for the client.
+    ///
+    /// # Example
+    /// ```rust
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    /// ```
+    pub fn roblosecurity(mut self, roblosecurity: String) -> Self {
+        self.roblosecurity = Some(roblosecurity);
+        self
+    }
+
+    /// Sets the [`reqwest::Client`] for the client.
+    ///
+    /// # Example
+    /// ```rust
+    /// use roboat::ClientBuilder;
+    ///
+    /// let reqwest_client = reqwest::Client::new();
+    /// let client = ClientBuilder::new().reqwest_client(reqwest_client).build();
+    /// ```
+    pub fn reqwest_client(mut self, reqwest_client: reqwest::Client) -> Self {
+        self.reqwest_client = Some(reqwest_client);
+        self
+    }
+
+    /// Builds the [`Client`]. This consumes the builder.
+    ///
+    /// # Example
+    /// ```rust
+    /// use roboat::ClientBuilder;
+    ///
+    /// let client = ClientBuilder::new().build();
+    /// ```
+    pub fn build(self) -> Client {
+        Client {
+            roblosecurity: self.roblosecurity,
+            reqwest_client: self.reqwest_client.unwrap_or_default(),
+            ..Default::default()
+        }
     }
 }

@@ -17,11 +17,13 @@ impl Client {
     /// # Example
     ///
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// match client.register_presence().await {
     ///    Ok(_) => println!("Successfully registered presence!"),
@@ -35,7 +37,7 @@ impl Client {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf);
+                    self.set_xcsrf(new_xcsrf).await;
 
                     self.register_presence_internal().await
                 }
@@ -62,7 +64,7 @@ mod internal {
                 .reqwest_client
                 .post(REGISTER_PRESENCE_API)
                 .header(header::COOKIE, cookie)
-                .header(XCSRF_HEADER, self.xcsrf())
+                .header(XCSRF_HEADER, self.xcsrf().await)
                 .json(&json)
                 .send()
                 .await;

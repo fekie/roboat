@@ -1,5 +1,5 @@
 use clap::Parser;
-use roboat::Client;
+use roboat::ClientBuilder;
 use roboat::Limit;
 
 #[derive(Parser, Debug)]
@@ -12,7 +12,9 @@ struct Args {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
-    let client = Client::with_roblosecurity(args.roblosecurity);
+    let client = ClientBuilder::new()
+        .roblosecurity(args.roblosecurity)
+        .build();
 
     let item_id = 1365767;
     let limit = Limit::Ten;
