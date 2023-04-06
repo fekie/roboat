@@ -38,7 +38,9 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::ClientBuilder::new()
+//!         .roblosecurity(ROBLOSECURITY.to_string())
+//!         .build();
 //!
 //!     let robux = client.robux().await?;
 //!     let user_id = client.user_id().await?;
@@ -65,7 +67,9 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+//!     let client = roboat::ClientBuilder::new()
+//!         .roblosecurity(ROBLOSECURITY.to_string())
+//!         .build();
 //!
 //!     let item_id = 1365767;
 //!     let limit = roboat::Limit::Ten;
