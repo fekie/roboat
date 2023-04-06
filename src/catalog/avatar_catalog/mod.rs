@@ -144,11 +144,9 @@ pub enum CreatorType {
 pub enum PriceStatus {
     #[default]
     Free,
-    #[serde(rename(deserialize = "Off Sale"))]
-    #[serde(rename(deserialize = "Offsale"))]
+    #[serde(alias = "Off Sale")]
     Offsale,
-    #[serde(rename(deserialize = "No Resellers"))]
-    #[serde(rename(deserialize = "NoResellers"))]
+    #[serde(alias = "No Resellers")]
     NoResellers,
 }
 
@@ -247,12 +245,10 @@ pub enum Subcategory {
 )]
 pub struct PremiumPricing {
     /// The discount percentage in the form of a value from 0-100.
-    #[serde(rename(deserialize = "premiumDiscountPercentage"))]
-    #[serde(rename(deserialize = "premium_discount_percentage"))]
+    #[serde(alias = "premiumDiscountPercentage")]
     pub premium_discount_percentage: u64,
     /// The price of the item for premium users.
-    #[serde(rename(deserialize = "premiumPriceInRobux"))]
-    #[serde(rename(deserialize = "premium_price_in_robux"))]
+    #[serde(alias = "premiumPriceInRobux")]
     pub premium_price_in_robux: u64,
 }
 

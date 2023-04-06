@@ -260,13 +260,13 @@ impl Client {
         let mut sales = Vec::new();
 
         for raw_sale in raw.data {
-            let sale_id = raw_sale.sale_id;
+            let sale_id = raw_sale.id;
             let asset_id = raw_sale.details.id;
             let robux_received = raw_sale.currency.amount;
             let is_pending = raw_sale.is_pending;
-            let user_id = raw_sale.user.id;
-            let user_display_name = raw_sale.user.user_display_name;
-            let asset_name = raw_sale.details.item_name;
+            let user_id = raw_sale.agent.id;
+            let user_display_name = raw_sale.agent.name;
+            let asset_name = raw_sale.details.name;
 
             let sale = UserSale {
                 sale_id,

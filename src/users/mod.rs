@@ -12,14 +12,11 @@ const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub(crate) struct ClientUserInformation {
-    #[serde(rename(deserialize = "id"))]
-    #[serde(rename(deserialize = "user_id"))]
+    #[serde(alias = "id")]
     pub user_id: u64,
-    #[serde(rename(deserialize = "name"))]
-    #[serde(rename(deserialize = "username"))]
+    #[serde(alias = "name")]
     pub username: String,
-    #[serde(rename(deserialize = "displayName"))]
-    #[serde(rename(deserialize = "display_name"))]
+    #[serde(alias = "displayName")]
     pub display_name: String,
 }
 
@@ -120,8 +117,8 @@ impl Client {
 
         for user in raw.data {
             let user_data = User {
-                user_id: user.user_id,
-                username: user.username,
+                user_id: user.id,
+                username: user.name,
                 display_name: user.display_name,
                 has_verified_badge: user.has_verified_badge,
                 previous_usernames: user.previous_usernames,
