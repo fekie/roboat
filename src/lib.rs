@@ -142,7 +142,6 @@ mod validation;
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
-// todo: censor roblosecurity in client debug impl with auth_value.set_sensitive(true)
 // todo: add ugc limited buying
 
 use serde::{Deserialize, Serialize};
