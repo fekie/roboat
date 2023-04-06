@@ -395,7 +395,7 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
         let description = value.description.ok_or(RoboatError::MalformedResponse)?;
         let product_id = value.product_id.ok_or(RoboatError::MalformedResponse)?;
         let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
-        let item_statuses = value.item_statuses.ok_or(RoboatError::MalformedResponse)?;
+        let item_statuses = value.item_status.ok_or(RoboatError::MalformedResponse)?;
 
         let item_restrictions = value
             .item_restrictions
@@ -406,7 +406,7 @@ impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
             .ok_or(RoboatError::MalformedResponse)?;
 
         let creator_user_id = value
-            .creator_user_id
+            .creator_target_id
             .ok_or(RoboatError::MalformedResponse)?;
 
         let creator_name = value
