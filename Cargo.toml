@@ -15,7 +15,7 @@ reqwest = { version = "0.11.14", default-features=false, features = ["rustls-tls
 thiserror = "1.0.40"
 serde = {version="1.0.136", features=["derive"]}
 serde_json = "1.0.94"
+tokio = { version = "1.27.0", features = ["full"] }
 
 [dev-dependencies]
-tokio = { version = "1.27.0", features = ["full"] }
 clap = { version = "4.1.13", features = ["derive"] }

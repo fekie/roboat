@@ -58,9 +58,10 @@ impl Client {
         let user_information = Self::parse_to_raw::<ClientUserInformation>(response).await?;
 
         // Cache results.
-        *self.user_id.lock().unwrap() = Some(user_information.user_id as u64);
-        *self.username.lock().unwrap() = Some(user_information.username.clone());
-        *self.display_name.lock().unwrap() = Some(user_information.display_name.clone());
+        self.set_user_id(user_information.user_id as u64).await;
+        self.set_username(user_information.username.clone()).await;
+        self.set_display_name(user_information.display_name.clone())
+            .await;
 
         Ok(user_information)
     }
@@ -80,14 +81,14 @@ impl Client {
     /// # Example
     ///
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
     ///
     /// const ROBLOSECURITY: &str = "roblosecurity";
     /// const KEYWORD: &str = "linkmon";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity(ROBLOSECURITY.to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let keyword = "linkmon".to_string();
     /// let users = client.user_search(keyword).await?;

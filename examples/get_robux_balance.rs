@@ -1,5 +1,5 @@
 use clap::Parser;
-use roboat::Client;
+use roboat::ClientBuilder;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -11,7 +11,9 @@ struct Args {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
-    let client = Client::with_roblosecurity(args.roblosecurity);
+    let client = ClientBuilder::new()
+        .roblosecurity(args.roblosecurity)
+        .build();
 
     let user = client.username().await?;
     let robux = client.robux().await?;

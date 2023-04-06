@@ -38,7 +38,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
 //!
 //!     let robux = client.robux().await?;
 //!     let user_id = client.user_id().await?;
@@ -65,7 +65,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::Client::with_roblosecurity(ROBLOSECURITY.to_string());
+//!     let client = roboat::ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
 //!
 //!     let item_id = 1365767;
 //!     let limit = roboat::Limit::Ten;
@@ -88,7 +88,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let client = roboat::Client::new();
+//!     let client = roboat::ClientBuilder::new().build();
 //!
 //!     let item = ItemArgs {
 //!         item_type: ItemType::Asset,
@@ -117,6 +117,7 @@
 pub use reqwest;
 
 pub use client::Client;
+pub use client::ClientBuilder;
 
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
@@ -136,6 +137,7 @@ mod validation;
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
 // todo: make enums copy
+// todo: how to construct a Client isn't clear.
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: https://docs.rs/roboat/0.8.1/roboat/enum.Limit.html This is a weird type — why does it exist, why not an integer? If it is part of the API requirements then say so. Maybe make it #[non_exhaustive].
 // todo: A couple of client methods say “The default limit is Limit::Ten.” but the Limit isn't actually optional
@@ -149,6 +151,7 @@ mod validation;
 // todo: test an rwlock instead of mutex
 // todo: add ugc limited buying
 // todo: use #[serde(rename_all = "camelCase")] instead of #[serde(rename = "x")]
+// todo: add a force refresh method on the client builder
 
 use serde::{Deserialize, Serialize};
 

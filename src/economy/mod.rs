@@ -70,11 +70,13 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let robux = client.robux().await?;
     /// println!("Robux: {}", robux);
@@ -117,11 +119,13 @@ impl Client {
     /// # Example
     /// ```no_run
     /// use roboat::Limit;
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let item_id = 1365767;
     /// let limit = Limit::Ten;
@@ -196,11 +200,13 @@ impl Client {
     /// # Example
     /// ```no_run
     /// use roboat::Limit;
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let limit = Limit::Ten;
     /// let cursor = None;
@@ -289,11 +295,13 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let item_id = 123456789;
     /// let uaid = 987654321;
@@ -319,7 +327,7 @@ impl Client {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf);
+                    self.set_xcsrf(new_xcsrf).await;
 
                     self.put_limited_on_sale_internal(item_id, uaid, price)
                         .await
@@ -340,11 +348,13 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let item_id = 123456789;
     /// let uaid = 987654321;
@@ -361,7 +371,7 @@ impl Client {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf);
+                    self.set_xcsrf(new_xcsrf).await;
 
                     self.take_limited_off_sale_internal(item_id, uaid).await
                 }
@@ -398,7 +408,7 @@ mod internal {
                 .reqwest_client
                 .patch(formatted_url)
                 .header(header::COOKIE, cookie)
-                .header(XCSRF_HEADER, self.xcsrf())
+                .header(XCSRF_HEADER, self.xcsrf().await)
                 .json(&json)
                 .send()
                 .await;
@@ -428,7 +438,7 @@ mod internal {
                 .reqwest_client
                 .patch(formatted_url)
                 .header(header::COOKIE, cookie)
-                .header(XCSRF_HEADER, self.xcsrf())
+                .header(XCSRF_HEADER, self.xcsrf().await)
                 .json(&json)
                 .send()
                 .await;

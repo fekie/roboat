@@ -69,13 +69,15 @@ impl Client {
     ///
     /// # Example
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
     /// use roboat::trades::TradeType;
     /// use roboat::Limit;
     ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::with_roblosecurity("roblosecurity".to_string());
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
     /// let trade_type = TradeType::Inbound;
     /// let limit = Limit::Ten;

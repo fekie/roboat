@@ -1,6 +1,6 @@
 use roboat::catalog::avatar_catalog::ItemArgs;
 use roboat::catalog::avatar_catalog::ItemType;
-use roboat::Client;
+use roboat::ClientBuilder;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let items = vec![item_1, item_2, item_3, item_4, item_5, item_6];
 
-    let client = Client::new();
+    let client = ClientBuilder::new().build();
     let details = client.item_details(items).await?;
 
     println!(

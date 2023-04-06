@@ -467,11 +467,11 @@ impl Client {
     /// ```no_run
     /// use roboat::catalog::avatar_catalog::ItemArgs;
     /// use roboat::catalog::avatar_catalog::ItemType;
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = Client::new();
+    /// let client = ClientBuilder::new().build();
     ///
     /// let asset = ItemArgs {
     ///     item_type: ItemType::Asset,
@@ -498,7 +498,7 @@ impl Client {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf);
+                    self.set_xcsrf(new_xcsrf).await;
 
                     self.item_details_internal(items).await
                 }
@@ -530,7 +530,7 @@ mod internal {
             let request_result = self
                 .reqwest_client
                 .post(ITEM_DETAILS_API)
-                .header(XCSRF_HEADER, self.xcsrf())
+                .header(XCSRF_HEADER, self.xcsrf().await)
                 .json(&request_body)
                 .send()
                 .await;
