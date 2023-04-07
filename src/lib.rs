@@ -144,6 +144,9 @@ mod validation;
 // todo: figure out authtickets
 // todo: add ugc limited buying
 // todo: make feature that allows reqwest crate to not collide.
+// todo: hide reqwest types
+// todo: rename reqwest_types.rs to request_types.rs
+// todo: list what errors can be returned by each method
 
 use serde::{Deserialize, Serialize};
 
