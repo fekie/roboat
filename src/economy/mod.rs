@@ -18,6 +18,50 @@ const TOGGLE_SALE_API_PART_2: &str = "/resellable-copies/";
 
 const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
 
+/// Custom Roblox errors that occur when using [`Client::purchase_limited`].
+#[derive(
+    thiserror::Error,
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
+pub enum PurchaseLimitedError {
+    /// Thrown when the user has a pending transaction.
+    /// However, Roblox will also throw this when it doesn't know what error to give.
+    /// If you are trying to keep buying a limited item, ignore this error and try again until
+    /// [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    #[default]
+    #[error("Pending Transaction.")]
+    PendingTransaction,
+    /// Thrown when the user tries to buy a limited item that is not for sale.
+    /// There is no point in retrying after this error.
+    #[error("Item Not For Sale.")]
+    ItemNotForSale,
+    /// Thrown when the user does not have enough robux to buy the item.
+    /// There is no point in retrying after this error.
+    #[error("Not Enough Robux.")]
+    NotEnoughRobux,
+    /// Thrown when the user tries to buy an item for an incorrect price (or the seller
+    /// somehow changed the price really fast). If this error is thrown, I would keep trying to
+    /// buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    #[error("Price Changed")]
+    PriceChanged,
+    /// Thrown when the user tries to buy their own item. There is no point in retrying after.
+    #[error("Cannot Buy Own Item")]
+    CannotBuyOwnItem,
+    /// Thrown when an unknown error occurs. If this error is thrown, I would keep
+    /// trying to buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    #[error("Unknown Roblox Error Message: {0}")]
+    UnknownRobloxErrorMsg(String),
+}
+
 /// A reseller of a resale listing.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
@@ -378,6 +422,45 @@ impl Client {
         }
     }
 
+    // todo: add manual xcsrf refreshing and talk about it here
+    /// Purchases a limited (including limited u) using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Return Value Notes
+    /// * Will return `Ok(())` if the limited was successfully purchased.
+    ///
+    /// # Argument Notes
+    /// * `product_id` if the product id of the limited, NOT the item id.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    /// * [`RoboatError::PurchaseLimitedError`] - Nested inside this error, all variants of [`PurchaseLimitedError`] may be thrown.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let product_id = 12345679;
+    /// let seller_id = 5656565656;
+    /// let uaid = 987654321;
+    /// let price = 5000;
+    ///
+    /// let _ = client.purchase_limited(product_id, seller_id, uaid, price).await?;
+    /// println!("Successfully Purchased!");
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn purchase_limited(
         &self,
         product_id: u64,
@@ -404,7 +487,9 @@ impl Client {
 }
 
 mod internal {
-    use super::{TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2};
+    use super::{
+        reqwest_types, PurchaseLimitedError, TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2,
+    };
     use crate::{Client, RoboatError, CONTENT_TYPE, USER_AGENT, XCSRF_HEADER};
     use reqwest::header;
 
@@ -504,11 +589,36 @@ mod internal {
                 .send()
                 .await;
 
-            let _ = Self::validate_request_result(request_result).await?;
+            let response = Self::validate_request_result(request_result).await?;
 
-            // We don't need to do anything, we just need a 200 status code.
+            let raw =
+                Self::parse_to_raw::<reqwest_types::PurchaseLimitedResponse>(response).await?;
 
-            unimplemented!()
+            match raw.purchased {
+                true => Ok(()),
+                false => match raw.error_msg.as_str() {
+                    "You have a pending transaction. Please wait 1 minute and try again." => Err(
+                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::CannotBuyOwnItem),
+                    ),
+                    "You already own this item." => Err(RoboatError::PurchaseLimitedError(
+                        PurchaseLimitedError::CannotBuyOwnItem,
+                    )),
+                    "This item is not for sale." => Err(RoboatError::PurchaseLimitedError(
+                        PurchaseLimitedError::ItemNotForSale,
+                    )),
+                    "You do not have enough Robux to purchase this item." => Err(
+                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::NotEnoughRobux),
+                    ),
+                    "This item has changed price. Please try again." => Err(
+                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::PriceChanged),
+                    ),
+                    _ => Err(RoboatError::PurchaseLimitedError(
+                        PurchaseLimitedError::UnknownRobloxErrorMsg(
+                            raw.error_msg.as_str().to_string(),
+                        ),
+                    )),
+                },
+            }
         }
     }
 }

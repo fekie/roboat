@@ -148,6 +148,7 @@ mod validation;
 // todo: rename reqwest_types.rs to request_types.rs
 // todo: list what errors can be returned by each method
 
+use economy::PurchaseLimitedError;
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
@@ -195,10 +196,6 @@ pub enum RoboatError {
     /// Used when an endpoint returns status code 500.
     #[error("Internal Server Error")]
     InternalServerError,
-    /// Used when an endpoint returns status code 503. Roblox commonly throws these
-    /// when they are having an outage.
-    #[error("Roblox Outage")]
-    RobloxOutage,
     /// Used when an endpoint returns status code 400 and does not embed an error.
     /// This is used when the server cannot process the data sent, whether
     /// it be because it is in the wrong format or it contains too much data.
@@ -213,12 +210,14 @@ pub enum RoboatError {
     /// Error code 0.
     #[error("Invalid Roblosecurity")]
     InvalidRoblosecurity,
+    // todo: remove this in favor of just keeping the message and code
     /// Returned when the endpoint returns a 401 status code, with Roblox saying that the
     /// user does not own the asset (e.g., in the case of selling an item).
     ///
     /// Roblox error code 9.
     #[error("User Does Not Own Asset")]
     UserDoesNotOwnAsset,
+    // todo: remove this in favor of just keeping the message and code
     /// Returned when the endpoint returns a 400 status code with Roblox saying that the
     /// asset id is invalid. Although it says asset id, it is used for uaid as well.
     ///
@@ -254,6 +253,9 @@ pub enum RoboatError {
     /// a new xcsrf.
     #[error("Missing Xcsrf")]
     XcsrfNotReturned,
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_limited`].
+    #[error("{0}")]
+    PurchaseLimitedError(PurchaseLimitedError),
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),

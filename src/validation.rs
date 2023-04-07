@@ -97,6 +97,7 @@ impl Client {
         }
     }
 
+    /// Jump to the [Examples](crate#examples) section.
     async fn handle_non_200_status_codes(
         request_response: Response,
     ) -> Result<Response, RoboatError> {
@@ -109,7 +110,6 @@ impl Client {
             403 => Err(Self::process_403(request_response).await),
             429 => Err(RoboatError::TooManyRequests),
             500 => Err(RoboatError::InternalServerError),
-            503 => Err(RoboatError::RobloxOutage),
             _ => Err(RoboatError::UnidentifiedStatusCode(status_code)),
         }
     }
