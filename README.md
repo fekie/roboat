@@ -138,6 +138,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+# More Examples
+More examples can be found in the [examples](examples) directory.
+
 # Related Crates
 This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
 
