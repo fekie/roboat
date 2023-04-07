@@ -2,7 +2,7 @@ use crate::{Client, Limit, RoboatError};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
-mod reqwest_types;
+mod request_types;
 
 const ROBUX_API_PART_1: &str = "https://economy.roblox.com/v1/users/";
 const ROBUX_API_PART_2: &str = "/currency";
@@ -140,7 +140,7 @@ impl Client {
             .await;
 
         let response = Self::validate_request_result(request_result).await?;
-        let raw = Self::parse_to_raw::<reqwest_types::CurrencyResponse>(response).await?;
+        let raw = Self::parse_to_raw::<request_types::CurrencyResponse>(response).await?;
 
         let robux = raw.robux;
 
@@ -202,7 +202,7 @@ impl Client {
             .await;
 
         let response = Self::validate_request_result(request_result).await?;
-        let raw = Self::parse_to_raw::<reqwest_types::ResellersResponse>(response).await?;
+        let raw = Self::parse_to_raw::<request_types::ResellersResponse>(response).await?;
 
         let next_page_cursor = raw.next_page_cursor;
 
@@ -295,7 +295,7 @@ impl Client {
             .await;
 
         let response = Self::validate_request_result(request_result).await?;
-        let raw = Self::parse_to_raw::<reqwest_types::UserSalesResponse>(response).await?;
+        let raw = Self::parse_to_raw::<request_types::UserSalesResponse>(response).await?;
 
         let next_page_cursor = raw.next_page_cursor;
 
@@ -488,7 +488,7 @@ impl Client {
 
 mod internal {
     use super::{
-        reqwest_types, PurchaseLimitedError, TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2,
+        request_types, PurchaseLimitedError, TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2,
     };
     use crate::{Client, RoboatError, CONTENT_TYPE, USER_AGENT, XCSRF_HEADER};
     use reqwest::header;
@@ -592,7 +592,7 @@ mod internal {
             let response = Self::validate_request_result(request_result).await?;
 
             let raw =
-                Self::parse_to_raw::<reqwest_types::PurchaseLimitedResponse>(response).await?;
+                Self::parse_to_raw::<request_types::PurchaseLimitedResponse>(response).await?;
 
             match raw.purchased {
                 true => Ok(()),
