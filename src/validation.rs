@@ -41,7 +41,6 @@ impl Client {
                 match error_response.errors.first() {
                     Some(error) => match error.code {
                         0 => RoboatError::InvalidXcsrf(xcsrf),
-                        9 => RoboatError::UserDoesNotOwnAsset,
                         _ => RoboatError::UnknownRobloxErrorCode {
                             code: error.code,
                             message: error.message.clone(),
@@ -63,7 +62,6 @@ impl Client {
                 match error_response.errors.first() {
                     Some(error) => match error.code {
                         0 => RoboatError::XcsrfNotReturned,
-                        9 => RoboatError::UserDoesNotOwnAsset,
                         _ => RoboatError::UnknownRobloxErrorCode {
                             code: error.code,
                             message: error.message.clone(),
@@ -86,12 +84,9 @@ impl Client {
         };
 
         match error_response.errors.first() {
-            Some(error) => match error.code {
-                5 => RoboatError::AssetIdIsInvalid,
-                _ => RoboatError::UnknownRobloxErrorCode {
-                    code: error.code,
-                    message: error.message.clone(),
-                },
+            Some(error) => RoboatError::UnknownRobloxErrorCode {
+                code: error.code,
+                message: error.message.clone(),
             },
             None => RoboatError::BadRequest,
         }

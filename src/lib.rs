@@ -207,28 +207,14 @@ pub enum RoboatError {
     /// This is also used as the backup error when an endpoint returns a 401 status code
     /// but the error cannot be parsed from the response.
     ///
-    /// Error code 0.
+    /// Roblox error code 0.
     #[error("Invalid Roblosecurity")]
     InvalidRoblosecurity,
-    // todo: remove this in favor of just keeping the message and code
-    /// Returned when the endpoint returns a 401 status code, with Roblox saying that the
-    /// user does not own the asset (e.g., in the case of selling an item).
-    ///
-    /// Roblox error code 9.
-    #[error("User Does Not Own Asset")]
-    UserDoesNotOwnAsset,
-    // todo: remove this in favor of just keeping the message and code
-    /// Returned when the endpoint returns a 400 status code with Roblox saying that the
-    /// asset id is invalid. Although it says asset id, it is used for uaid as well.
-    ///
-    /// Roblox error code 5.
-    #[error("Asset Id / UAID Is Invalid")]
-    AssetIdIsInvalid,
     /// Returned when the endpoint returns a 401 status code, but the error response
     /// contains an unknown Roblox error code.
     #[error("Unknown Roblox Error Code {code}: {message}")]
     UnknownRobloxErrorCode {
-        /// The error code returned by roblox.
+        /// The error code (not status code) returned by roblox.
         code: u16,
         /// The error message returned by roblox.
         message: String,
