@@ -377,11 +377,35 @@ impl Client {
             },
         }
     }
+
+    pub async fn purchase_limited(
+        &self,
+        product_id: u64,
+        seller_id: u64,
+        uaid: u64,
+        price: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .purchase_limited_internal(product_id, price, seller_id, uaid)
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.purchase_limited_internal(product_id, price, seller_id, uaid)
+                        .await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
     use super::{TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2};
-    use crate::{Client, RoboatError, XCSRF_HEADER};
+    use crate::{Client, RoboatError, CONTENT_TYPE, USER_AGENT, XCSRF_HEADER};
     use reqwest::header;
 
     impl Client {
@@ -446,6 +470,45 @@ mod internal {
             // We don't need to do anything, we just need a 200 status code.
 
             Ok(())
+        }
+
+        pub(super) async fn purchase_limited_internal(
+            &self,
+            product_id: u64,
+            price: u64,
+            seller_id: u64,
+            uaid: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = format!(
+                "https://economy.roblox.com/v1/purchases/products/{}",
+                product_id
+            );
+
+            let cookie = self.cookie_string()?;
+
+            let json = serde_json::json!({
+                "expectedCurrency": 1,
+                "expectedPrice": price,
+                "expectedSellerId": seller_id,
+                "userAssetId": uaid,
+            });
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, self.xcsrf().await)
+                .header(header::USER_AGENT, USER_AGENT)
+                .header(header::CONTENT_TYPE, CONTENT_TYPE)
+                .json(&json)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // We don't need to do anything, we just need a 200 status code.
+
+            unimplemented!()
         }
     }
 }

@@ -152,6 +152,11 @@ use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
+// The user agent used for fussy endpoints.
+const USER_AGENT: &str =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0";
+// The content type used for fussy endpoints.
+const CONTENT_TYPE: &str = "application/json;charset=utf-8";
 
 /// The maximum amount of instances to return from an endpoint. Used as a parameter in various methods that call
 /// endpoints. This is an enum instead of an integer as these are the only values that are accepted by Roblox
