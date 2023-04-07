@@ -41,6 +41,12 @@ pub(super) struct ItemDetailsRaw {
     /// Because of this, it is not included in the public struct until
     /// we know what it is.
     pub off_sale_deadline: Option<serde_json::Value>,
+    /// Only exists for "new" limiteds.
+    pub collectible_item_id: Option<String>,
+    /// Only exists for "new" limiteds.
+    pub total_quantity: Option<u64>,
+    /// Only exists for "new" limiteds.
+    pub units_available_for_consumption: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
