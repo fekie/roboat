@@ -24,6 +24,7 @@ All public methods in this crate are documented and have at least one correspond
     - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
     - Put Limited On Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
     - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
+    - Purchase Limited - `/v1/purchases/products/{product_id}`
 * Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
     - User Search - `/v1/users/search`
