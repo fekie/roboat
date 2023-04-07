@@ -464,6 +464,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
 
 impl Client {
     /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
+    /// This now supports "new" limiteds (which include ugc limiteds).
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
