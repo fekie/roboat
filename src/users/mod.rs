@@ -2,7 +2,7 @@ use crate::{Client, RoboatError};
 use reqwest::header::{self, HeaderValue};
 use serde::{Deserialize, Serialize};
 
-mod reqwest_types;
+mod request_types;
 
 const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
 const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
@@ -105,7 +105,7 @@ impl Client {
             .await;
 
         let response = Self::validate_request_result(request_result).await?;
-        let raw = Self::parse_to_raw::<reqwest_types::UserSearchResponse>(response).await?;
+        let raw = Self::parse_to_raw::<request_types::UserSearchResponse>(response).await?;
 
         let mut users = Vec::new();
 

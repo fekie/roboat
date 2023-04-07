@@ -2,7 +2,7 @@ use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
-mod reqwest_types;
+mod request_types;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
 
@@ -365,10 +365,10 @@ impl TryFrom<u64> for BundleType {
     }
 }
 
-impl TryFrom<reqwest_types::ItemDetailsRaw> for ItemDetails {
+impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
     type Error = RoboatError;
 
-    fn try_from(value: reqwest_types::ItemDetailsRaw) -> Result<Self, Self::Error> {
+    fn try_from(value: request_types::ItemDetailsRaw) -> Result<Self, Self::Error> {
         let asset_type = match value.asset_type {
             Some(asset_type_id) => {
                 let asset_type = AssetType::try_from(asset_type_id)?;
@@ -505,7 +505,7 @@ impl Client {
 }
 
 mod internal {
-    use super::{reqwest_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
+    use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
     use std::convert::TryFrom;
@@ -515,11 +515,11 @@ mod internal {
             &self,
             items: Vec<ItemArgs>,
         ) -> Result<Vec<ItemDetails>, RoboatError> {
-            let request_body = reqwest_types::ItemDetailsReqBody {
+            let request_body = request_types::ItemDetailsReqBody {
                 // Convert the ItemParameters to te reqwest ItemParametersReq
                 items: items
                     .iter()
-                    .map(|x| reqwest_types::ItemArgsReq::from(*x))
+                    .map(|x| request_types::ItemArgsReq::from(*x))
                     .collect(),
             };
 
@@ -532,7 +532,7 @@ mod internal {
                 .await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let raw = Self::parse_to_raw::<reqwest_types::ItemDetailsResponse>(response).await?;
+            let raw = Self::parse_to_raw::<request_types::ItemDetailsResponse>(response).await?;
 
             let mut item_details = Vec::new();
 

@@ -46,6 +46,25 @@ use tokio::sync::RwLock;
 /// let reqwest_client = reqwest::Client::new();
 /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).reqwest_client(reqwest_client).build();
 /// ```
+///
+/// # Standard Errors
+/// The errors that can be returned by any of `Client`'s methods are:
+/// - [`RoboatError::TooManyRequests`]
+/// - [`RoboatError::InternalServerError`]
+/// - [`RoboatError::BadRequest`]
+/// - [`RoboatError::UnknownRobloxErrorCode`]
+/// - [`RoboatError::UnidentifiedStatusCode`]
+/// - [`RoboatError::ReqwestError`]
+///
+/// # Auth Required Errors
+/// The errors that can be returned by any of `Client`'s methods that require authentication are:
+/// - [`RoboatError::InvalidRoblosecurity`]
+/// - [`RoboatError::RoblosecurityNotSet`]
+///
+/// # X-CSRF-TOKEN Required Errors
+/// The errors that can be returned by any of `Client`'s methods that require the X-CSRF-TOKEN header are:
+/// - [`RoboatError::InvalidXcsrf`]
+/// - [`RoboatError::XcsrfNotReturned`]
 #[derive(Debug, Default)]
 pub struct Client {
     /// The full cookie that includes the roblosecurity token.

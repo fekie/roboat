@@ -2,7 +2,7 @@ use crate::{Client, Limit, RoboatError};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
-mod reqwest_types;
+mod request_types;
 
 const INBOUND_TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
 
@@ -120,7 +120,7 @@ impl Client {
             .await;
 
         let response = Self::validate_request_result(request_result).await?;
-        let raw = Self::parse_to_raw::<reqwest_types::InboundTradesResponse>(response).await?;
+        let raw = Self::parse_to_raw::<request_types::InboundTradesResponse>(response).await?;
 
         let mut trades = Vec::new();
 

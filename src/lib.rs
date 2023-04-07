@@ -17,6 +17,7 @@
 //!   - User Sales - [`Client::user_sales`]
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
+//!   - Purchase Limited - [`Client::purchase_limited`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
@@ -120,8 +121,8 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
-pub use client::Client;
-pub use client::ClientBuilder;
+pub use client::{Client, ClientBuilder};
+pub use economy::PurchaseLimitedError;
 
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
@@ -144,11 +145,19 @@ mod validation;
 // todo: figure out authtickets
 // todo: add ugc limited buying
 // todo: make feature that allows reqwest crate to not collide.
+// todo: hide reqwest types
+// todo: rename reqwest_types.rs to request_types.rs
+// todo: list what errors can be returned by each method
 
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
+// The user agent used for fussy endpoints.
+const USER_AGENT: &str =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0";
+// The content type used for fussy endpoints.
+const CONTENT_TYPE: &str = "application/json;charset=utf-8";
 
 /// The maximum amount of instances to return from an endpoint. Used as a parameter in various methods that call
 /// endpoints. This is an enum instead of an integer as these are the only values that are accepted by Roblox
@@ -176,7 +185,7 @@ impl Limit {
     }
 }
 
-/// The universal error used in this crate.
+/// The universal error used in this crate. Encapsulates any sub-errors used in this crate.
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug, Default)]
 pub enum RoboatError {
@@ -187,10 +196,6 @@ pub enum RoboatError {
     /// Used when an endpoint returns status code 500.
     #[error("Internal Server Error")]
     InternalServerError,
-    /// Used when an endpoint returns status code 503. Roblox commonly throws these
-    /// when they are having an outage.
-    #[error("Roblox Outage")]
-    RobloxOutage,
     /// Used when an endpoint returns status code 400 and does not embed an error.
     /// This is used when the server cannot process the data sent, whether
     /// it be because it is in the wrong format or it contains too much data.
@@ -202,26 +207,14 @@ pub enum RoboatError {
     /// This is also used as the backup error when an endpoint returns a 401 status code
     /// but the error cannot be parsed from the response.
     ///
-    /// Error code 0.
+    /// Roblox error code 0.
     #[error("Invalid Roblosecurity")]
     InvalidRoblosecurity,
-    /// Returned when the endpoint returns a 401 status code, with Roblox saying that the
-    /// user does not own the asset (e.g., in the case of selling an item).
-    ///
-    /// Roblox error code 9.
-    #[error("User Does Not Own Asset")]
-    UserDoesNotOwnAsset,
-    /// Returned when the endpoint returns a 400 status code with Roblox saying that the
-    /// asset id is invalid. Although it says asset id, it is used for uaid as well.
-    ///
-    /// Roblox error code 5.
-    #[error("Asset Id / UAID Is Invalid")]
-    AssetIdIsInvalid,
     /// Returned when the endpoint returns a 401 status code, but the error response
     /// contains an unknown Roblox error code.
     #[error("Unknown Roblox Error Code {code}: {message}")]
     UnknownRobloxErrorCode {
-        /// The error code returned by roblox.
+        /// The error code (not status code) returned by roblox.
         code: u16,
         /// The error message returned by roblox.
         message: String,
@@ -246,6 +239,9 @@ pub enum RoboatError {
     /// a new xcsrf.
     #[error("Missing Xcsrf")]
     XcsrfNotReturned,
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_limited`].
+    #[error("{0}")]
+    PurchaseLimitedError(PurchaseLimitedError),
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),

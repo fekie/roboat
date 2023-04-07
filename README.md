@@ -12,8 +12,11 @@ A high performance interface for the Roblox API.
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
 
+# Documentation
 Extensive documentation is used throughout this crate. 
 All public methods in this crate are documented and have at least one corresponding example.
+
+Documentation can be found [here](https://docs.rs/roboat/).
 
 # Covered Endpoints
 * Catalog API - [`catalog.roblox.com/*`]
@@ -24,6 +27,7 @@ All public methods in this crate are documented and have at least one correspond
     - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
     - Put Limited On Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
     - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
+    - Purchase Limited - `/v1/purchases/products/{product_id}`
 * Users API - [`users.roblox.com/*`]
     - User Information - `/v1/users/authenticated`
     - User Search - `/v1/users/search`
@@ -31,6 +35,19 @@ All public methods in this crate are documented and have at least one correspond
     - Register Presence - `/v1/presence/register-app-presence`
 * Trades API - [`trades.roblox.com/*`]
     - Trades List - `/v1/trades/{trade_type}`
+
+# Setup
+You can add the latest version of roboat to your project by running:
+```bash
+cargo add roboat
+```
+
+Alternatively, you can add a specific version of roboat to your project by adding the crate to your `Cargo.toml`:
+
+```toml
+[dependencies]
+roboat = "0.11.0"
+```
 
 # Quick Start Examples
 

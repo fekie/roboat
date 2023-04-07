@@ -81,3 +81,10 @@ pub(super) enum CurrencyTypeRaw {
 pub(super) enum TransactionTypeRaw {
     Sale,
 }
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PurchaseLimitedResponse {
+    pub purchased: bool,
+    pub error_msg: String,
+}
