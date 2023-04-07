@@ -120,8 +120,8 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
-pub use client::Client;
-pub use client::ClientBuilder;
+pub use client::{Client, ClientBuilder};
+pub use economy::PurchaseLimitedError;
 
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
@@ -148,7 +148,6 @@ mod validation;
 // todo: rename reqwest_types.rs to request_types.rs
 // todo: list what errors can be returned by each method
 
-use economy::PurchaseLimitedError;
 use serde::{Deserialize, Serialize};
 
 // Used in reqwest header keys.
@@ -185,7 +184,7 @@ impl Limit {
     }
 }
 
-/// The universal error used in this crate.
+/// The universal error used in this crate. Encapsulates any sub-errors used in this crate.
 #[non_exhaustive]
 #[derive(thiserror::Error, Debug, Default)]
 pub enum RoboatError {
