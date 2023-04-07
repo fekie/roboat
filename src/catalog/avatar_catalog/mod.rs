@@ -254,9 +254,11 @@ pub struct PremiumPricing {
     pub premium_price_in_robux: u64,
 }
 
-/// The details of an item. Retrieved from <https://catalog.roblox.com/v1/catalog/items/details>.
+/// A struct containing all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
+///
+/// This struct can be parsed into details structs.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub struct ItemDetails {
+pub struct FullItemDetails {
     /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
     pub id: u64,
     /// The type of item (Asset or Bundle).
@@ -282,8 +284,8 @@ pub struct ItemDetails {
     pub creator_has_verified_badge: bool,
     /// The type of creator that created the item (User or Group).
     pub creator_type: CreatorType,
-    /// The id of the creator. The value is 1 if the creator is Roblox.
-    pub creator_user_id: u64,
+    /// The id (group or user) of the creator. The value is 1 if the creator is Roblox.
+    pub creator_id: u64,
     /// The name of the creator. The value is "Roblox" if the creator is Roblox.
     pub creator_name: String,
     /// Coincides with price if the item is a non-limited,
@@ -374,7 +376,7 @@ impl TryFrom<u64> for BundleType {
     }
 }
 
-impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
+impl TryFrom<request_types::ItemDetailsRaw> for FullItemDetails {
     type Error = RoboatError;
 
     fn try_from(value: request_types::ItemDetailsRaw) -> Result<Self, Self::Error> {
@@ -410,7 +412,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             .creator_has_verified_badge
             .ok_or(RoboatError::MalformedResponse)?;
 
-        let creator_user_id = value
+        let creator_id = value
             .creator_target_id
             .ok_or(RoboatError::MalformedResponse)?;
 
@@ -449,7 +451,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             item_restrictions,
             creator_has_verified_badge,
             creator_type,
-            creator_user_id,
+            creator_id,
             creator_name,
             price,
             favorite_count,
@@ -516,7 +518,7 @@ impl Client {
     pub async fn item_details(
         &self,
         items: Vec<ItemArgs>,
-    ) -> Result<Vec<ItemDetails>, RoboatError> {
+    ) -> Result<Vec<FullItemDetails>, RoboatError> {
         match self.item_details_internal(items.clone()).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
@@ -532,16 +534,17 @@ impl Client {
 }
 
 mod internal {
-    use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
+    use super::{request_types, FullItemDetails, ItemArgs, ITEM_DETAILS_API};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
     use std::convert::TryFrom;
 
     impl Client {
+        /// Used internally to fetch the details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         pub(super) async fn item_details_internal(
             &self,
             items: Vec<ItemArgs>,
-        ) -> Result<Vec<ItemDetails>, RoboatError> {
+        ) -> Result<Vec<FullItemDetails>, RoboatError> {
             let request_body = request_types::ItemDetailsReqBody {
                 // Convert the ItemParameters to te reqwest ItemParametersReq
                 items: items
@@ -564,7 +567,7 @@ mod internal {
             let mut item_details = Vec::new();
 
             for raw_details in raw.data {
-                let details = ItemDetails::try_from(raw_details)?;
+                let details = FullItemDetails::try_from(raw_details)?;
                 item_details.push(details);
             }
 
