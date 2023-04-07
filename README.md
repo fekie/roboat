@@ -46,7 +46,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.11.0"
+roboat = "0.11.1"
 ```
 
 # Quick Start Examples
@@ -137,6 +137,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())   
 }
 ```
+
+# More Examples
+More examples can be found in the [examples](examples) directory.
 
 # Related Crates
 This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
