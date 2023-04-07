@@ -123,6 +123,8 @@ pub enum ItemRestriction {
     LimitedUnique,
     Limited,
     Rthro,
+    /// Appears to be used only for "new" limiteds (including ugc limiteds).
+    Collectible,
 }
 
 /// Type of creator that created the item (User or Group)
@@ -268,12 +270,12 @@ pub struct ItemDetails {
     /// The description of the item.
     pub description: String,
     /// The product id of the item. This is different from the asset/bundle id.
-    /// This is most notably used when buying limiteds.
-    pub product_id: u64,
+    /// This is most notably used when buying limiteds. Is not used for "new" limiteds.
+    pub product_id: Option<u64>,
     /// Only exists if the [`ItemDetails::item_type`] is a [`ItemType::Asset`].
     pub genres: Option<Vec<Genre>>,
-    /// The statuses of an item (e.g., New, Sale)
-    pub item_statuses: Vec<ItemStatus>,
+    /// The statuses of an item (e.g., New, Sale). Does not exist on "new" limiteds.
+    pub item_statuses: Option<Vec<ItemStatus>>,
     /// The restrictions on an item (e.g., ThirteenPlus, Limited).
     pub item_restrictions: Vec<ItemRestriction>,
     /// Whether the creator is verified by Roblox.
@@ -298,6 +300,13 @@ pub struct ItemDetails {
     pub price_status: Option<PriceStatus>,
     /// Only exists if the item has special premium pricing.
     pub premium_pricing: Option<PremiumPricing>,
+    /// The remaining stock of an item. Only applies to "new" limiteds.
+    pub remaining_stock: Option<u64>,
+    /// The total stock of an item. Only applies to "new" limiteds.
+    pub total_stock: Option<u64>,
+    /// The id needed to purchase a "new" limited. This replaces the
+    /// product id. Although this is an id, this is a String instead of a u64.
+    pub collectible_item_id: Option<String>,
 }
 
 /// Holds information used to retrieve data from the [`Client::item_details`] endpoint.
@@ -389,9 +398,9 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
         let item_type = value.item_type.ok_or(RoboatError::MalformedResponse)?;
         let name = value.name.ok_or(RoboatError::MalformedResponse)?;
         let description = value.description.ok_or(RoboatError::MalformedResponse)?;
-        let product_id = value.product_id.ok_or(RoboatError::MalformedResponse)?;
+        let product_id = value.product_id;
         let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
-        let item_statuses = value.item_status.ok_or(RoboatError::MalformedResponse)?;
+        let item_statuses = value.item_status;
 
         let item_restrictions = value
             .item_restrictions
@@ -423,6 +432,10 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             None => value.lowest_price,
         };
 
+        let remaining_stock = value.units_available_for_consumption;
+        let total_stock = value.total_quantity;
+        let collectible_item_id = value.collectible_item_id;
+
         Ok(Self {
             id,
             item_type,
@@ -442,6 +455,9 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             favorite_count,
             price_status,
             premium_pricing,
+            remaining_stock,
+            total_stock,
+            collectible_item_id,
         })
     }
 }
@@ -459,7 +475,8 @@ impl Client {
     /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
     /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
     ///
-    /// # Example
+    /// # Examples
+    ///
     /// ```no_run
     /// use roboat::catalog::avatar_catalog::ItemArgs;
     /// use roboat::catalog::avatar_catalog::ItemType;
@@ -479,10 +496,19 @@ impl Client {
     ///    id: 39,
     /// };
     ///
+    /// let ugc_limited = ItemArgs {
+    ///    item_type: ItemType::Asset,
+    ///    id: 13032232281,
+    /// };
+    ///
     /// let items = vec![asset, bundle];
     /// let details = client.item_details(items).await?;
+    ///
     /// println!("Item Name: {}", details[0].name);
     /// println!("Bundle Name: {}", details[1].name);
+    /// println!("UGC Limited Name: {} / UGC Limited Collectible ID: {}", details[2].name,
+    ///     details[2].collectible_item_id.as_ref().ok_or("No collectible ID")?);
+    ///
     /// # Ok(())
     /// # }
     /// ```

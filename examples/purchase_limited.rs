@@ -37,7 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?
         .pop()
         .unwrap()
-        .product_id;
+        .product_id
+        .expect("Item cannot be a \"new\" limited. Run purchase_ugc_limited instead.");
 
     let result = client
         .purchase_limited(product_id, seller_id, uaid, price)
