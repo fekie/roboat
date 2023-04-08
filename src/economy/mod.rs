@@ -423,7 +423,8 @@ impl Client {
     }
 
     // todo: add manual xcsrf refreshing and talk about it here
-    /// Purchases a limited (including limited u) using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
+    /// Purchases a limited using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
+    /// Only works on tradeable (legacy) limiteds.
     ///
     /// # Notes
     /// * Requires a valid roblosecurity.
@@ -461,7 +462,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn purchase_limited(
+    pub async fn purchase_tradable_limited(
         &self,
         product_id: u64,
         seller_id: u64,

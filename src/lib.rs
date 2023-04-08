@@ -17,7 +17,7 @@
 //!   - User Sales - [`Client::user_sales`]
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
-//!   - Purchase Limited - [`Client::purchase_limited`]
+//!   - Purchase Tradable Limited - [`Client::purchase_limited`]
 //! * Users API
 //!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
 //! (all of them use the same endpoint internally and cache the results)
