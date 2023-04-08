@@ -10,27 +10,27 @@
 //!
 //! # Coverage
 //! * Catalog API
-//!    - Item Details - [`Client::item_details`]
-//!    - Product ID - [`Client::product_id`]  
-//!    - Product ID Bulk - [`Client::product_id_bulk`]
-//!    - Collectible Item ID - [`Client::collectible_item_id`]
-//!    - Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
+//!   - Fetch Item Details - [`Client::item_details`]
+//!   - Fetch Product ID - [`Client::product_id`]  
+//!   - Fetch Product ID Bulk - [`Client::product_id_bulk`]
+//!   - Fetch Collectible Item ID - [`Client::collectible_item_id`]
+//!   - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
 //! * Economy API
-//!   - Robux Balance - [`Client::robux`]
-//!   - Resellers - [`Client::resellers`]
-//!   - User Sales - [`Client::user_sales`]
+//!   - Fetch Robux Balance - [`Client::robux`]
+//!   - Fetch Resellers - [`Client::resellers`]
+//!   - Fetch User Sales - [`Client::user_sales`]
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
-//!   - Purchase Tradable Limited - [`Client::purchase_limited`]
+//!   - Purchase Tradable Limited - [`Client::purchase_tradable_limited`]
 //! * Users API
-//!   - User ID - [`Client::user_id`]
-//!   - Username - [`Client::username`]
-//!   - Display Name - [`Client::display_name`]
+//!   - Fetch User ID - [`Client::user_id`]
+//!   - Fetch Username - [`Client::username`]
+//!   - Fetch Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
-//!   - Trades List - [`Client::trades`]
+//!   - Fetch Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
