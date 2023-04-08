@@ -258,7 +258,7 @@ pub struct PremiumPricing {
 ///
 /// This struct can be parsed into details structs.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub struct FullItemDetails {
+pub struct ItemDetails {
     /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
     pub id: u64,
     /// The type of item (Asset or Bundle).
@@ -376,7 +376,7 @@ impl TryFrom<u64> for BundleType {
     }
 }
 
-impl TryFrom<request_types::ItemDetailsRaw> for FullItemDetails {
+impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
     type Error = RoboatError;
 
     fn try_from(value: request_types::ItemDetailsRaw) -> Result<Self, Self::Error> {
@@ -518,7 +518,7 @@ impl Client {
     pub async fn item_details(
         &self,
         items: Vec<ItemArgs>,
-    ) -> Result<Vec<FullItemDetails>, RoboatError> {
+    ) -> Result<Vec<ItemDetails>, RoboatError> {
         match self.item_details_internal(items.clone()).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
@@ -531,20 +531,152 @@ impl Client {
             },
         }
     }
+
+    /// Fetches the product ID of an item (must be an asset). Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>)
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    pub async fn product_id(&self, item_id: u64) -> Result<u64, RoboatError> {
+        let item = ItemArgs {
+            item_type: ItemType::Asset,
+            id: item_id,
+        };
+
+        let details = self.item_details(vec![item]).await?;
+
+        details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .product_id
+            .ok_or(RoboatError::MalformedResponse)
+    }
+
+    /// Fetches the product ID of multiple items (must be an asset). More efficient than calling [`Client::product_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id_1 = 12345679;
+    /// let item_id_2 = 987654321;
+    ///
+    /// let product_ids = client.product_id_bulk(vec![item_id_1, item_id_2]).await?;
+    ///
+    /// let product_id_1 = product_ids.get(0).ok_or("No product ID 1")?;
+    /// let product_id_2 = product_ids.get(1).ok_or("No product ID 2")?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn product_id_bulk(&self, item_ids: Vec<u64>) -> Result<Vec<u64>, RoboatError> {
+        let item_ids_len = item_ids.len();
+
+        let mut items = Vec::new();
+
+        for item_id in item_ids {
+            let item = ItemArgs {
+                item_type: ItemType::Asset,
+                id: item_id,
+            };
+
+            items.push(item);
+        }
+
+        let details = self.item_details(items).await?;
+
+        let product_ids = details
+            .iter()
+            .filter_map(|x| x.product_id)
+            .collect::<Vec<u64>>();
+
+        if product_ids.len() != item_ids_len {
+            return Err(RoboatError::MalformedResponse);
+        }
+
+        Ok(product_ids)
+    }
+
+    /// Fetches the collectible item id of a multiple non-tradeable limited (including ugc limiteds).
+    /// More efficient than calling [`Client::product_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    pub async fn collectible_item_id(&self, item_id: u64) -> Result<String, RoboatError> {
+        let item = ItemArgs {
+            item_type: ItemType::Asset,
+            id: item_id,
+        };
+
+        let details = self.item_details(vec![item]).await?;
+
+        details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .collectible_item_id
+            .clone()
+            .ok_or(RoboatError::MalformedResponse)
+    }
+
+    /// Fetches the collectible item ids of multiple non-tradeable limiteds (including ugc limiteds).
+    /// More efficient than calling [`Client::collectible_item_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    pub async fn collectible_item_id_bulk(
+        &self,
+        item_ids: Vec<u64>,
+    ) -> Result<Vec<String>, RoboatError> {
+        let item_ids_len = item_ids.len();
+
+        let mut items = Vec::new();
+
+        for item_id in item_ids {
+            let item = ItemArgs {
+                item_type: ItemType::Asset,
+                id: item_id,
+            };
+
+            items.push(item);
+        }
+
+        let details = self.item_details(items).await?;
+
+        let collectible_item_ids = details
+            .iter()
+            .filter_map(|x| x.collectible_item_id.clone())
+            .collect::<Vec<String>>();
+
+        if collectible_item_ids.len() != item_ids_len {
+            return Err(RoboatError::MalformedResponse);
+        }
+
+        Ok(collectible_item_ids)
+    }
 }
 
 mod internal {
-    use super::{request_types, FullItemDetails, ItemArgs, ITEM_DETAILS_API};
+    use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
-    use std::convert::TryFrom;
 
     impl Client {
         /// Used internally to fetch the details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         pub(super) async fn item_details_internal(
             &self,
             items: Vec<ItemArgs>,
-        ) -> Result<Vec<FullItemDetails>, RoboatError> {
+        ) -> Result<Vec<ItemDetails>, RoboatError> {
             let request_body = request_types::ItemDetailsReqBody {
                 // Convert the ItemParameters to te reqwest ItemParametersReq
                 items: items
@@ -567,7 +699,7 @@ mod internal {
             let mut item_details = Vec::new();
 
             for raw_details in raw.data {
-                let details = FullItemDetails::try_from(raw_details)?;
+                let details = ItemDetails::try_from(raw_details)?;
                 item_details.push(details);
             }
 
