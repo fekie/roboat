@@ -244,7 +244,7 @@ pub enum RoboatError {
     /// a new xcsrf.
     #[error("Missing Xcsrf")]
     XcsrfNotReturned,
-    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_limited`].
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
     PurchaseLimitedError(PurchaseLimitedError),
     /// Used for any reqwest error that occurs.

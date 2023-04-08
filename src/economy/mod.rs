@@ -18,7 +18,7 @@ const TOGGLE_SALE_API_PART_2: &str = "/resellable-copies/";
 
 const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
 
-/// Custom Roblox errors that occur when using [`Client::purchase_limited`].
+/// Custom Roblox errors that occur when using [`Client::purchase_tradable_limited`].
 #[derive(
     thiserror::Error,
     Debug,
