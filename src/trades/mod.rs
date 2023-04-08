@@ -67,6 +67,10 @@ impl Client {
     /// * Requires a valid roblosecurity.
     /// * Trades are ordered newest to oldest.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;

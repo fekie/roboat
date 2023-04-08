@@ -8,24 +8,29 @@
 //! Extensive documentation is used throughout this crate.
 //! All public methods in this crate are documented and have at least one corresponding example.
 //!
-//! # Covered Endpoints
+//! # Coverage
 //! * Catalog API
-//!    - Item Details - [`Client::item_details`]
+//!   - Fetch Item Details - [`Client::item_details`]
+//!   - Fetch Product ID - [`Client::product_id`]  
+//!   - Fetch Product ID Bulk - [`Client::product_id_bulk`]
+//!   - Fetch Collectible Item ID - [`Client::collectible_item_id`]
+//!   - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
 //! * Economy API
-//!   - Robux Balance - [`Client::robux`]
-//!   - Resellers - [`Client::resellers`]
-//!   - User Sales - [`Client::user_sales`]
+//!   - Fetch Robux Balance - [`Client::robux`]
+//!   - Fetch Resellers - [`Client::resellers`]
+//!   - Fetch User Sales - [`Client::user_sales`]
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
-//!   - Purchase Limited - [`Client::purchase_limited`]
+//!   - Purchase Tradable Limited - [`Client::purchase_tradable_limited`]
 //! * Users API
-//!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
-//! (all of them use the same endpoint internally and cache the results)
+//!   - Fetch User ID - [`Client::user_id`]
+//!   - Fetch Username - [`Client::username`]
+//!   - Fetch Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
-//!   - Trades List - [`Client::trades`]
+//!   - Fetch Trades List - [`Client::trades`]
 //!
 //! # Quick Start Examples
 //!
@@ -239,7 +244,7 @@ pub enum RoboatError {
     /// a new xcsrf.
     #[error("Missing Xcsrf")]
     XcsrfNotReturned,
-    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_limited`].
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
     PurchaseLimitedError(PurchaseLimitedError),
     /// Used for any reqwest error that occurs.

@@ -12,29 +12,37 @@ A high performance interface for the Roblox API.
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
 
+Note that this crate is currently economy-focused, meaning that endpoints related to items and trades are currently prioritized.
+
 # Documentation
 Extensive documentation is used throughout this crate. 
 All public methods in this crate are documented and have at least one corresponding example.
 
 Documentation can be found [here](https://docs.rs/roboat/).
 
-# Covered Endpoints
+# Coverage
 * Catalog API - [`catalog.roblox.com/*`]
-    - Item Details - `/v1/catalog/items/details`
+    - Fetch Item Details - [`Client::item_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.item_details)
+    - Fetch Product ID - [`Client::product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.product_id)
+    - Fetch Product ID Bulk - [`Client::product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.product_id_bulk)
+    - Fetch Collectible Item ID - [`Client::collectible_item_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id)
+    - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id_bulk)
 * Economy API - [`economy.roblox.com/*`]
-    - Robux Balance - `/v1/users/{user_id}/currency`
-    - Resellers - `/v1/assets/{item_id}/resellers`
-    - User Sales - `/v2/users/{user_id}/transactions?transactionType=Sale`
-    - Put Limited On Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
-    - Take Limited Off Sale - `/v1/assets/{item_id}/resellable-copies/{uaid}`
-    - Purchase Limited - `/v1/purchases/products/{product_id}`
+    - Fetch Robux Balance - [`Client::robux`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.robux)
+    - Fetch Resellers - [`Client::resellers`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.resellers)
+    - Fetch User Sales - [`Client::user_sales`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_sales)
+    - Put Limited On Sale - [`Client::put_limited_on_sale`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.put_limited_on_sale)
+    - Take Limited Off Sale - [`Client::take_limited_off_sale`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.take_limited_off_sale)
+    - Purchase Tradable Limited - [`Client::purchase_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_tradable_limited)
 * Users API - [`users.roblox.com/*`]
-    - User Information - `/v1/users/authenticated`
-    - User Search - `/v1/users/search`
+    - Fetch User ID - [`Client::user_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_id)
+    - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
+    - Fetch Display Name - [`Client::display_name`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.display_name)
+    - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
 * Presence API - [`presence.roblox.com/*`]
-    - Register Presence - `/v1/presence/register-app-presence`
+    - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
 * Trades API - [`trades.roblox.com/*`]
-    - Trades List - `/v1/trades/{trade_type}`
+    - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
 
 # Setup
 You can add the latest version of roboat to your project by running:
@@ -46,7 +54,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.12"
+roboat = "0.13.0"
 ```
 
 # Quick Start Examples

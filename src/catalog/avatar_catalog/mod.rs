@@ -254,7 +254,9 @@ pub struct PremiumPricing {
     pub premium_price_in_robux: u64,
 }
 
-/// The details of an item. Retrieved from <https://catalog.roblox.com/v1/catalog/items/details>.
+/// A struct containing all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
+///
+/// This struct can be parsed into details structs.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ItemDetails {
     /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
@@ -282,8 +284,8 @@ pub struct ItemDetails {
     pub creator_has_verified_badge: bool,
     /// The type of creator that created the item (User or Group).
     pub creator_type: CreatorType,
-    /// The id of the creator. The value is 1 if the creator is Roblox.
-    pub creator_user_id: u64,
+    /// The id (group or user) of the creator. The value is 1 if the creator is Roblox.
+    pub creator_id: u64,
     /// The name of the creator. The value is "Roblox" if the creator is Roblox.
     pub creator_name: String,
     /// Coincides with price if the item is a non-limited,
@@ -410,7 +412,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             .creator_has_verified_badge
             .ok_or(RoboatError::MalformedResponse)?;
 
-        let creator_user_id = value
+        let creator_id = value
             .creator_target_id
             .ok_or(RoboatError::MalformedResponse)?;
 
@@ -449,7 +451,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             item_restrictions,
             creator_has_verified_badge,
             creator_type,
-            creator_user_id,
+            creator_id,
             creator_name,
             price,
             favorite_count,
@@ -475,6 +477,10 @@ impl Client {
     /// * The `id` parameter is that acts differently for this endpoint than others.
     /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
     /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
     ///
     /// # Examples
     ///
@@ -529,15 +535,230 @@ impl Client {
             },
         }
     }
+
+    /// Fetches the product ID of an item (must be an asset). Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>)
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id = 12345679;
+    ///
+    /// let product_id = client.product_id(item_id).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn product_id(&self, item_id: u64) -> Result<u64, RoboatError> {
+        let item = ItemArgs {
+            item_type: ItemType::Asset,
+            id: item_id,
+        };
+
+        let details = self.item_details(vec![item]).await?;
+
+        details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .product_id
+            .ok_or(RoboatError::MalformedResponse)
+    }
+
+    /// Fetches the product ID of multiple items (must be an asset). More efficient than calling [`Client::product_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * This endpoint will accept up to 120 items at a time.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id_1 = 12345679;
+    /// let item_id_2 = 987654321;
+    ///
+    /// let product_ids = client.product_id_bulk(vec![item_id_1, item_id_2]).await?;
+    ///
+    /// let product_id_1 = product_ids.get(0).ok_or("No product ID 1")?;
+    /// let product_id_2 = product_ids.get(1).ok_or("No product ID 2")?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn product_id_bulk(&self, item_ids: Vec<u64>) -> Result<Vec<u64>, RoboatError> {
+        let item_ids_len = item_ids.len();
+
+        let mut items = Vec::new();
+
+        for item_id in item_ids {
+            let item = ItemArgs {
+                item_type: ItemType::Asset,
+                id: item_id,
+            };
+
+            items.push(item);
+        }
+
+        let details = self.item_details(items).await?;
+
+        let product_ids = details
+            .iter()
+            .filter_map(|x| x.product_id)
+            .collect::<Vec<u64>>();
+
+        if product_ids.len() != item_ids_len {
+            return Err(RoboatError::MalformedResponse);
+        }
+
+        Ok(product_ids)
+    }
+
+    /// Fetches the collectible item id of a multiple non-tradeable limited (including ugc limiteds).
+    /// More efficient than calling [`Client::product_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id = 12345679;
+    ///
+    /// let collectible_item_id = client.collectible_item_id(item_id).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn collectible_item_id(&self, item_id: u64) -> Result<String, RoboatError> {
+        let item = ItemArgs {
+            item_type: ItemType::Asset,
+            id: item_id,
+        };
+
+        let details = self.item_details(vec![item]).await?;
+
+        details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .collectible_item_id
+            .clone()
+            .ok_or(RoboatError::MalformedResponse)
+    }
+
+    /// Fetches the collectible item ids of multiple non-tradeable limiteds (including ugc limiteds).
+    /// More efficient than calling [`Client::collectible_item_id`] repeatedly.
+    /// Uses [`Client::item_details`] internally
+    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * This endpoint will accept up to 120 items at a time.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id_1 = 12345679;
+    /// let item_id_2 = 987654321;
+    ///
+    /// let collectible_item_ids = client.collectible_item_id_bulk(vec![item_id_1, item_id_2]).await?;
+    ///
+    /// let collectible_item_id_1 = collectible_item_ids.get(0).ok_or("No collectible item ID 1")?;
+    /// let collectible_item_id_2 = collectible_item_ids.get(1).ok_or("No collectible item ID 2")?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn collectible_item_id_bulk(
+        &self,
+        item_ids: Vec<u64>,
+    ) -> Result<Vec<String>, RoboatError> {
+        let item_ids_len = item_ids.len();
+
+        let mut items = Vec::new();
+
+        for item_id in item_ids {
+            let item = ItemArgs {
+                item_type: ItemType::Asset,
+                id: item_id,
+            };
+
+            items.push(item);
+        }
+
+        let details = self.item_details(items).await?;
+
+        let collectible_item_ids = details
+            .iter()
+            .filter_map(|x| x.collectible_item_id.clone())
+            .collect::<Vec<String>>();
+
+        if collectible_item_ids.len() != item_ids_len {
+            return Err(RoboatError::MalformedResponse);
+        }
+
+        Ok(collectible_item_ids)
+    }
 }
 
 mod internal {
     use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
-    use std::convert::TryFrom;
 
     impl Client {
+        /// Used internally to fetch the details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         pub(super) async fn item_details_internal(
             &self,
             items: Vec<ItemArgs>,

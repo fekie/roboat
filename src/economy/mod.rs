@@ -18,7 +18,7 @@ const TOGGLE_SALE_API_PART_2: &str = "/resellable-copies/";
 
 const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
 
-/// Custom Roblox errors that occur when using [`Client::purchase_limited`].
+/// Custom Roblox errors that occur when using [`Client::purchase_tradable_limited`].
 #[derive(
     thiserror::Error,
     Debug,
@@ -112,6 +112,10 @@ impl Client {
     /// # Notes
     /// * Requires a valid roblosecurity.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;
@@ -158,6 +162,10 @@ impl Client {
     /// # Return Value Notes
     /// * The first value is a vector of reseller listings.
     /// * The second value is the cursor for the next page of results. If there are no more pages, this will be `None`.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
     /// # Example
     /// ```no_run
@@ -238,6 +246,10 @@ impl Client {
     /// # Return Value Notes
     /// * The first value is a vector of user sales.
     /// * The second value is the cursor for the next page of results. If there are no more pages, this will be `None`.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
     /// # Example
     /// ```no_run
@@ -335,6 +347,11 @@ impl Client {
     /// # Return Value Notes
     /// * Will return `Ok(())` if the item was successfully put on sale.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;
@@ -388,6 +405,11 @@ impl Client {
     /// # Return Value Notes
     /// * Will return `Ok(())` if the item was successfully taken off sale.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;
@@ -423,7 +445,8 @@ impl Client {
     }
 
     // todo: add manual xcsrf refreshing and talk about it here
-    /// Purchases a limited (including limited u) using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
+    /// Purchases a limited using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
+    /// Only works on tradeable (legacy) limiteds.
     ///
     /// # Notes
     /// * Requires a valid roblosecurity.
@@ -461,7 +484,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn purchase_limited(
+    pub async fn purchase_tradable_limited(
         &self,
         product_id: u64,
         seller_id: u64,
