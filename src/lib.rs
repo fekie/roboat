@@ -8,9 +8,13 @@
 //! Extensive documentation is used throughout this crate.
 //! All public methods in this crate are documented and have at least one corresponding example.
 //!
-//! # Covered Endpoints
+//! # Coverage
 //! * Catalog API
 //!    - Item Details - [`Client::item_details`]
+//!    - Product ID - [`Client::product_id`]  
+//!    - Product ID Bulk - [`Client::product_id_bulk`]
+//!    - Collectible Item ID - [`Client::collectible_item_id`]
+//!    - Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
 //! * Economy API
 //!   - Robux Balance - [`Client::robux`]
 //!   - Resellers - [`Client::resellers`]
@@ -19,8 +23,9 @@
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //!   - Purchase Tradable Limited - [`Client::purchase_limited`]
 //! * Users API
-//!   - User Details - [`Client::user_id`], [`Client::username`], and [`Client::display_name`]
-//! (all of them use the same endpoint internally and cache the results)
+//!   - User ID - [`Client::user_id`]
+//!   - Username - [`Client::username`]
+//!   - Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
