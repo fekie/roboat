@@ -68,6 +68,10 @@ impl Client {
     /// * The cursors in this response are not used as using them is currently broken.
     /// * Limits are not used for the same reason (the endpoint does not respect them).
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
     /// # Example
     ///
     /// ```no_run

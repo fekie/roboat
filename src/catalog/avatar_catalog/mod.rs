@@ -478,6 +478,10 @@ impl Client {
     /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
     /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -535,6 +539,10 @@ impl Client {
     /// Fetches the product ID of an item (must be an asset). Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>)
     ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
@@ -573,6 +581,11 @@ impl Client {
     /// Fetches the product ID of multiple items (must be an asset). More efficient than calling [`Client::product_id`] repeatedly.
     /// Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * This endpoint will accept up to 120 items at a time.
+    /// * Will repeat once if the x-csrf-token is invalid.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
@@ -632,6 +645,10 @@ impl Client {
     /// Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
     ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
@@ -672,6 +689,11 @@ impl Client {
     /// More efficient than calling [`Client::collectible_item_id`] repeatedly.
     /// Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * This endpoint will accept up to 120 items at a time.
+    /// * Will repeat once if the x-csrf-token is invalid.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).

@@ -112,6 +112,10 @@ impl Client {
     /// # Notes
     /// * Requires a valid roblosecurity.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;
@@ -158,6 +162,10 @@ impl Client {
     /// # Return Value Notes
     /// * The first value is a vector of reseller listings.
     /// * The second value is the cursor for the next page of results. If there are no more pages, this will be `None`.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
     /// # Example
     /// ```no_run
@@ -238,6 +246,10 @@ impl Client {
     /// # Return Value Notes
     /// * The first value is a vector of user sales.
     /// * The second value is the cursor for the next page of results. If there are no more pages, this will be `None`.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
     /// # Example
     /// ```no_run
@@ -335,6 +347,11 @@ impl Client {
     /// # Return Value Notes
     /// * Will return `Ok(())` if the item was successfully put on sale.
     ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
     /// # Example
     /// ```no_run
     /// use roboat::ClientBuilder;
@@ -387,6 +404,11 @@ impl Client {
     ///
     /// # Return Value Notes
     /// * Will return `Ok(())` if the item was successfully taken off sale.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
     ///
     /// # Example
     /// ```no_run
