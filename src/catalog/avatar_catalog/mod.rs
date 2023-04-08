@@ -538,6 +538,23 @@ impl Client {
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id = 12345679;
+    ///
+    /// let product_id = client.product_id(item_id).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn product_id(&self, item_id: u64) -> Result<u64, RoboatError> {
         let item = ItemArgs {
             item_type: ItemType::Asset,
@@ -614,6 +631,27 @@ impl Client {
     /// More efficient than calling [`Client::product_id`] repeatedly.
     /// Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id = 12345679;
+    ///
+    /// let collectible_item_id = client.collectible_item_id(item_id).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn collectible_item_id(&self, item_id: u64) -> Result<String, RoboatError> {
         let item = ItemArgs {
             item_type: ItemType::Asset,
@@ -634,6 +672,32 @@ impl Client {
     /// More efficient than calling [`Client::collectible_item_id`] repeatedly.
     /// Uses [`Client::item_details`] internally
     /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let item_id_1 = 12345679;
+    /// let item_id_2 = 987654321;
+    ///
+    /// let collectible_item_ids = client.collectible_item_id_bulk(vec![item_id_1, item_id_2]).await?;
+    ///
+    /// let collectible_item_id_1 = collectible_item_ids.get(0).ok_or("No collectible item ID 1")?;
+    /// let collectible_item_id_2 = collectible_item_ids.get(1).ok_or("No collectible item ID 2")?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn collectible_item_id_bulk(
         &self,
         item_ids: Vec<u64>,
