@@ -155,6 +155,9 @@ mod validation;
 // todo: hide reqwest types
 // todo: rename reqwest_types.rs to request_types.rs
 // todo: list what errors can be returned by each method
+// todo: maybe respect cookies returned
+// todo: maybe post on devforums, reddit, maybe the rust server
+// todo: put string of parsing error in MalformedResponse
 
 use serde::{Deserialize, Serialize};
 
