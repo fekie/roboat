@@ -757,7 +757,9 @@ impl Client {
 }
 
 mod internal {
-    use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
+    use super::{
+        request_types, sort_items_by_argument_order, ItemArgs, ItemDetails, ITEM_DETAILS_API,
+    };
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
 
@@ -793,7 +795,29 @@ mod internal {
                 item_details.push(details);
             }
 
+            sort_items_by_argument_order(&mut item_details, &items);
+
             Ok(item_details)
         }
     }
+}
+
+/// Makes sure that the items are in the same order as the arguments.
+///
+/// For example, if the arguments are `[1, 2, 3]` and the resulting items are `[2, 1, 3]`,
+/// then the resulting items will be `[1, 2, 3]`.
+fn sort_items_by_argument_order(items: &mut [ItemDetails], arguments: &[ItemArgs]) {
+    items.sort_by(|a, b| {
+        let a_index = arguments
+            .iter()
+            .position(|item_args| item_args.id == a.id)
+            .unwrap_or(usize::MAX);
+
+        let b_index = arguments
+            .iter()
+            .position(|item_args| item_args.id == b.id)
+            .unwrap_or(usize::MAX);
+
+        a_index.cmp(&b_index)
+    });
 }
