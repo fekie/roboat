@@ -129,6 +129,8 @@ pub use reqwest;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseLimitedError;
 
+/// A module for endpoints prefixed with <https://apis.roblox.com/*>.
+pub mod apis;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
 mod client;
