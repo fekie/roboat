@@ -254,9 +254,9 @@ pub struct PremiumPricing {
     pub premium_price_in_robux: u64,
 }
 
-/// A struct containing all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
+/// A struct containing (mostly) all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
 ///
-/// This struct can be parsed into details structs.
+/// Returned from [`Client::item_details`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ItemDetails {
     /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
@@ -466,7 +466,11 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
 
 impl Client {
     /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
-    /// This now supports "new" limiteds (which include ugc limiteds).
+    /// This now supports "new" limiteds (which include ugc limiteds). Note that this is a messy,
+    /// all-encompassing endpoint that should only be used directly when necessary.
+    ///
+    /// Specialized endpoints that use this internally include: [`Client::product_id`], [`Client::product_id_bulk`],
+    /// [`Client::collectible_item_id`], and [`Client::collectible_item_id_bulk`].
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
@@ -753,7 +757,9 @@ impl Client {
 }
 
 mod internal {
-    use super::{request_types, ItemArgs, ItemDetails, ITEM_DETAILS_API};
+    use super::{
+        request_types, sort_items_by_argument_order, ItemArgs, ItemDetails, ITEM_DETAILS_API,
+    };
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
 
@@ -789,7 +795,29 @@ mod internal {
                 item_details.push(details);
             }
 
+            sort_items_by_argument_order(&mut item_details, &items);
+
             Ok(item_details)
         }
     }
+}
+
+/// Makes sure that the items are in the same order as the arguments.
+///
+/// For example, if the arguments are `[1, 2, 3]` and the resulting items are `[2, 1, 3]`,
+/// then the resulting items will be `[1, 2, 3]`.
+fn sort_items_by_argument_order(items: &mut [ItemDetails], arguments: &[ItemArgs]) {
+    items.sort_by(|a, b| {
+        let a_index = arguments
+            .iter()
+            .position(|item_args| item_args.id == a.id)
+            .unwrap_or(usize::MAX);
+
+        let b_index = arguments
+            .iter()
+            .position(|item_args| item_args.id == b.id)
+            .unwrap_or(usize::MAX);
+
+        a_index.cmp(&b_index)
+    });
 }

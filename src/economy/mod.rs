@@ -479,7 +479,7 @@ impl Client {
     /// let uaid = 987654321;
     /// let price = 5000;
     ///
-    /// let _ = client.purchase_limited(product_id, seller_id, uaid, price).await?;
+    /// let _ = client.purchase_tradable_limited(product_id, seller_id, uaid, price).await?;
     /// println!("Successfully Purchased!");
     /// # Ok(())
     /// # }

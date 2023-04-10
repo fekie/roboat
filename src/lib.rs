@@ -31,6 +31,10 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
+//! * Apis API (Roblox named this, not me)
+//!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
+//!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
+//!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
 //!
 //! # Quick Start Examples
 //!
@@ -129,6 +133,8 @@ pub use reqwest;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseLimitedError;
 
+/// A module for endpoints prefixed with <https://apis.roblox.com/*>.
+pub mod apis;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
 mod client;
@@ -153,6 +159,9 @@ mod validation;
 // todo: hide reqwest types
 // todo: rename reqwest_types.rs to request_types.rs
 // todo: list what errors can be returned by each method
+// todo: maybe respect cookies returned
+// todo: maybe post on devforums, reddit, maybe the rust server
+// todo: put string of parsing error in MalformedResponse
 
 use serde::{Deserialize, Serialize};
 
@@ -233,7 +242,7 @@ pub enum RoboatError {
     #[error("Unidentified Status Code {0}")]
     UnidentifiedStatusCode(u16),
     /// Used when the response from an API endpoint is malformed.
-    #[error("Malformed Response")]
+    #[error("Malformed Response. If this occurs often it may be a bug. Please report it to the issues page.")]
     MalformedResponse,
     /// Used when an endpoint rejects a request due to an invalid xcsrf.
     /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
