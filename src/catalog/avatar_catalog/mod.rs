@@ -254,9 +254,9 @@ pub struct PremiumPricing {
     pub premium_price_in_robux: u64,
 }
 
-/// A struct containing all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
+/// A struct containing (mostly) all the fields possibly returned from <https://catalog.roblox.com/v1/catalog/items/details>.
 ///
-/// This struct can be parsed into details structs.
+/// Returned from [`Client::item_details`].
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct ItemDetails {
     /// Either the asset id, or the bundle id, depending on the [`Self::item_type`].
@@ -466,7 +466,11 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
 
 impl Client {
     /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
-    /// This now supports "new" limiteds (which include ugc limiteds).
+    /// This now supports "new" limiteds (which include ugc limiteds). Note that this is a messy,
+    /// all-encompassing endpoint that should only be used directly when necessary.
+    ///
+    /// Specialized endpoints that use this internally include: [`Client::product_id`], [`Client::product_id_bulk`],
+    /// [`Client::collectible_item_id`], and [`Client::collectible_item_id_bulk`].
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
