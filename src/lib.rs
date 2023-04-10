@@ -238,7 +238,7 @@ pub enum RoboatError {
     #[error("Unidentified Status Code {0}")]
     UnidentifiedStatusCode(u16),
     /// Used when the response from an API endpoint is malformed.
-    #[error("Malformed Response")]
+    #[error("Malformed Response. If this occurs often it may be a bug. Please report it to the issues page.")]
     MalformedResponse,
     /// Used when an endpoint rejects a request due to an invalid xcsrf.
     /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
