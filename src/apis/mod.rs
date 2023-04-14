@@ -293,6 +293,57 @@ impl Client {
         Ok(collectible_product_ids)
     }
 
+    /// Fetches the id of the original creator of a non-tradable limited. This is used when buying stock
+    /// of an item (and not resellers).
+    ///
+    /// Uses [`Client::non_tradable_limited_details`] internally
+    /// (which fetches from <https://apis.roblox.com/marketplace-items/v1/items/details>)
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new()
+    ///     .roblosecurity(ROBLOSECURITY.to_string())
+    ///     .build();
+    ///
+    /// let collectible_item_id = "a4b5cb79-5218-4ca1-93fa-1e3436f595ef".to_owned();
+    /// let collectible_creator_id = client.collectible_creator_id(collectible_item_id).await?;
+    ///
+    /// println!("Collectible Creator ID: {}", collectible_creator_id);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn collectible_creator_id(
+        &self,
+        collectible_item_id: String,
+    ) -> Result<u64, RoboatError> {
+        let details = self
+            .non_tradable_limited_details(vec![collectible_item_id])
+            .await?;
+
+        let collectible_creator_id = details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .creator_id;
+
+        Ok(collectible_creator_id)
+    }
+
     /// Purchases a non-tradable limited (includes ugc limiteds) using endpoint
     /// <https://apis.roblox.com/marketplace-sales/v1/item/{collectible_item_id}/purchase-item>.
     ///
