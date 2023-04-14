@@ -47,6 +47,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.non_tradable_limited_details)
     - Fetch Collectible Product ID - [`Client::collectible_product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id)
     - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id_bulk)
+    - Fetch Collectible Creator ID - [`Client::collectible_creator_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_creator_id)
+    - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_non_tradable_limited)
 
 # Setup
 You can add the latest version of roboat to your project by running:

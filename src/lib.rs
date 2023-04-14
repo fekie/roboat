@@ -35,6 +35,8 @@
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
 //!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
+//!   - Fetch Collectible Creator ID - [`Client::collectible_creator_id`]
+//!   - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`]
 //!
 //! # Quick Start Examples
 //!
