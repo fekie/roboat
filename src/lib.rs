@@ -31,7 +31,7 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
-//! * Apis API (Roblox named this, not me)
+//! * BEDEV2 API
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
 //!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
