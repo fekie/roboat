@@ -162,6 +162,10 @@ mod validation;
 // todo: maybe respect cookies returned
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
+// todo: apparently a v2 details api does 500 items at once
+// todo: name apis api bedev2 or something
+// todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
+// todo: add method to get items from catalog
 
 use serde::{Deserialize, Serialize};
 
