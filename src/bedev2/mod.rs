@@ -367,7 +367,8 @@ impl Client {
     /// * `collectible_product_id` is the string product id of a non-tradable limited. It can be
     /// fetched using [`Client::collectible_product_id`].
     /// * `collectible_seller_id` is the user id of the seller of a non-tradable limited. It can be
-    /// fetched using [`Client::collectible_seller_id`].
+    /// fetched using [`Client::collectible_creator_id`] (currently it is unknown how to buy from a reseller
+    /// instead of the original creator as they do not exist yet).
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).

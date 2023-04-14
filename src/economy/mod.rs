@@ -37,7 +37,7 @@ pub enum PurchaseTradableLimitedError {
     /// Thrown when the user has a pending transaction.
     /// However, Roblox will also throw this when it doesn't know what error to give.
     /// If you are trying to keep buying a limited item, ignore this error and try again until
-    /// [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[default]
     #[error("Pending Transaction.")]
     PendingTransaction,
@@ -51,14 +51,14 @@ pub enum PurchaseTradableLimitedError {
     NotEnoughRobux,
     /// Thrown when the user tries to buy an item for an incorrect price (or the seller
     /// somehow changed the price really fast). If this error is thrown, I would keep trying to
-    /// buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// buy the item until [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[error("Price Changed")]
     PriceChanged,
     /// Thrown when the user tries to buy their own item. There is no point in retrying after.
     #[error("Cannot Buy Own Item")]
     CannotBuyOwnItem,
     /// Thrown when an unknown error occurs. If this error is thrown, I would keep
-    /// trying to buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// trying to buy the item until [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[error("Unknown Roblox Error Message: {0}")]
     UnknownRobloxErrorMsg(String),
 }
@@ -463,7 +463,7 @@ impl Client {
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [Auth Required Errors](#auth-required-errors).
     /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    /// * [`RoboatError::PurchaseTradableLimitedError`] - Nested inside this error, all variants of [`PurchaseLimitedError`] may be thrown.
+    /// * [`RoboatError::PurchaseTradableLimitedError`] - Nested inside this error, all variants of [`PurchaseTradableLimitedError`] may be thrown.
     ///
     /// # Example
     /// ```no_run
