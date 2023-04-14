@@ -7,6 +7,39 @@ mod request_types;
 const COLLECTIBLE_ITEM_DETAILS_API: &str =
     "https://apis.roblox.com/marketplace-items/v1/items/details";
 
+const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1: &str =
+    "https://apis.roblox.com/marketplace-sales/v1/item/";
+
+const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2: &str = "/purchase-item";
+
+/// Custom Roblox errors that occur when using [`Client::purchase_non_tradable_limited`].
+#[non_exhaustive]
+#[derive(
+    thiserror::Error,
+    Debug,
+    Default,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
+pub enum PurchaseNonTradableLimitedError {
+    /// Thrown when the price of the item is not the same as the price you're trying to buy it for.
+    #[default]
+    #[error("Price Mismatch")]
+    PriceMismatch,
+    /// Thrown when the item is sold out.
+    #[error("Sold Out")]
+    SoldOut,
+    /// Thrown when an unknown error occurs.
+    #[error("Unknown Roblox Error Message: {0}")]
+    UnknownRobloxErrorMsg(String),
+}
+
 /// A struct containing (mostly) all the fields possibly returned from <https://apis.roblox.com/marketplace-items/v1/items/details>.
 ///
 /// Returned from [`Client::non_tradable_limited_details`].
@@ -259,6 +292,143 @@ impl Client {
 
         Ok(collectible_product_ids)
     }
+
+    /// Fetches the id of the original creator of a non-tradable limited. This is used when buying stock
+    /// of an item (and not resellers).
+    ///
+    /// Uses [`Client::non_tradable_limited_details`] internally
+    /// (which fetches from <https://apis.roblox.com/marketplace-items/v1/items/details>)
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new()
+    ///     .roblosecurity(ROBLOSECURITY.to_string())
+    ///     .build();
+    ///
+    /// let collectible_item_id = "a4b5cb79-5218-4ca1-93fa-1e3436f595ef".to_owned();
+    /// let collectible_creator_id = client.collectible_creator_id(collectible_item_id).await?;
+    ///
+    /// println!("Collectible Creator ID: {}", collectible_creator_id);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn collectible_creator_id(
+        &self,
+        collectible_item_id: String,
+    ) -> Result<u64, RoboatError> {
+        let details = self
+            .non_tradable_limited_details(vec![collectible_item_id])
+            .await?;
+
+        let collectible_creator_id = details
+            .get(0)
+            .ok_or(RoboatError::MalformedResponse)?
+            .creator_id;
+
+        Ok(collectible_creator_id)
+    }
+
+    /// Purchases a non-tradable limited (includes ugc limiteds) using endpoint
+    /// <https://apis.roblox.com/marketplace-sales/v1/item/{collectible_item_id}/purchase-item>.
+    ///
+    /// # Warning
+    /// This endpoint and related endpoints may change as new things are discovered about this endpoint.
+    /// This is because no resellers can sell items yet.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    /// * Currently only tested to work when buying from users (as opposed to groups), and only tested
+    /// when buying the items from the original seller (with original stock). This is because
+    /// these are the only conditions that currently exist as of 4/14/2023.
+    ///
+    /// # Return Value Notes
+    /// * Will return `Ok(())` if the limited was successfully purchased.
+    ///
+    /// # Argument Notes
+    /// * `collectible_item_id` is the string id of a non-tradable limited. It can be
+    /// fetched using [`Client::collectible_item_id`].
+    /// * `collectible_product_id` is the string product id of a non-tradable limited. It can be
+    /// fetched using [`Client::collectible_product_id`].
+    /// * `collectible_seller_id` is the user id of the seller of a non-tradable limited. It can be
+    /// fetched using [`Client::collectible_creator_id`] (currently it is unknown how to buy from a reseller
+    /// instead of the original creator as they do not exist yet).
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    /// * [`RoboatError::PurchaseNonTradableLimitedError`] - Nested inside this error, all variants of [`PurchaseNonTradableLimitedError`] may be thrown.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let collectible_item_id = "abc".to_string();;
+    /// let collectible_product_id = "xyz".to_string();
+    /// let collectible_seller_id = 123456789;
+    /// let price = 0;
+    ///
+    /// let _ = client.purchase_non_tradable_limited(collectible_item_id, collectible_product_id, collectible_seller_id, price).await?;
+    /// println!("Successfully Purchased!");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn purchase_non_tradable_limited(
+        &self,
+        collectible_item_id: String,
+        collectible_product_id: String,
+        collectible_seller_id: u64,
+        price: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .purchase_non_tradable_limited_internal(
+                collectible_item_id.clone(),
+                collectible_product_id.clone(),
+                collectible_seller_id,
+                price,
+            )
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.purchase_non_tradable_limited_internal(
+                        collectible_item_id,
+                        collectible_product_id,
+                        collectible_seller_id,
+                        price,
+                    )
+                    .await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
@@ -266,7 +436,8 @@ mod internal {
 
     use super::{
         request_types, sort_items_by_argument_order, NonTradableLimitedDetails,
-        COLLECTIBLE_ITEM_DETAILS_API,
+        PurchaseNonTradableLimitedError, COLLECTIBLE_ITEM_DETAILS_API,
+        PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1, PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2,
     };
     use crate::{Client, RoboatError, XCSRF_HEADER};
 
@@ -303,6 +474,67 @@ mod internal {
             sort_items_by_argument_order(&mut collectible_item_details, &collectible_item_ids);
 
             Ok(collectible_item_details)
+        }
+
+        pub(super) async fn purchase_non_tradable_limited_internal(
+            &self,
+            collectible_item_id: String,
+            collectible_product_id: String,
+            seller_id: u64,
+            price: u64,
+        ) -> Result<(), RoboatError> {
+            let idempotency_key = uuid::Uuid::new_v4().to_string();
+            let client_user_id = self.user_id().await?;
+
+            let request_body = serde_json::json!({
+                "collectibleItemId": collectible_item_id,
+                "expectedCurrency": 1,
+                "expectedPrice": price,
+                "expectedPurchaserId":client_user_id,
+                "expectedPurchaserType": "User",
+                "expectedSellerId": seller_id,
+                "expectedSellerType": "User",
+                "idempotencyKey": idempotency_key,
+                "collectibleProductId": collectible_product_id,
+            });
+
+            let formatted_url = format!(
+                "{}{}{}",
+                PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1,
+                collectible_item_id,
+                PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2
+            );
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(XCSRF_HEADER, self.xcsrf().await)
+                .header(header::COOKIE, self.cookie_string()?)
+                .json(&request_body)
+                .send()
+                .await;
+
+            let response = Self::validate_request_result(request_result).await?;
+            let raw = Self::parse_to_raw::<request_types::PurchaseNonTradeableLimitedRaw>(response)
+                .await?;
+
+            if raw.purchased {
+                return Ok(());
+            }
+
+            let err_msg = raw.error_message.ok_or(RoboatError::MalformedResponse)?;
+
+            match err_msg.as_str() {
+                "PriceMismatch" => Err(RoboatError::PurchaseNonTradableLimitedError(
+                    PurchaseNonTradableLimitedError::PriceMismatch,
+                )),
+                "QuantityExhausted" => Err(RoboatError::PurchaseNonTradableLimitedError(
+                    PurchaseNonTradableLimitedError::SoldOut,
+                )),
+                _ => Err(RoboatError::PurchaseNonTradableLimitedError(
+                    PurchaseNonTradableLimitedError::UnknownRobloxErrorMsg(raw.purchase_result),
+                )),
+            }
         }
     }
 }

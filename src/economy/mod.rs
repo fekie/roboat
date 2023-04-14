@@ -19,6 +19,7 @@ const TOGGLE_SALE_API_PART_2: &str = "/resellable-copies/";
 const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
 
 /// Custom Roblox errors that occur when using [`Client::purchase_tradable_limited`].
+#[non_exhaustive]
 #[derive(
     thiserror::Error,
     Debug,
@@ -32,11 +33,11 @@ const USER_SALES_TRANSACTION_TYPE: &str = "Sale";
     Serialize,
     Deserialize,
 )]
-pub enum PurchaseLimitedError {
+pub enum PurchaseTradableLimitedError {
     /// Thrown when the user has a pending transaction.
     /// However, Roblox will also throw this when it doesn't know what error to give.
     /// If you are trying to keep buying a limited item, ignore this error and try again until
-    /// [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[default]
     #[error("Pending Transaction.")]
     PendingTransaction,
@@ -50,14 +51,14 @@ pub enum PurchaseLimitedError {
     NotEnoughRobux,
     /// Thrown when the user tries to buy an item for an incorrect price (or the seller
     /// somehow changed the price really fast). If this error is thrown, I would keep trying to
-    /// buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// buy the item until [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[error("Price Changed")]
     PriceChanged,
     /// Thrown when the user tries to buy their own item. There is no point in retrying after.
     #[error("Cannot Buy Own Item")]
     CannotBuyOwnItem,
     /// Thrown when an unknown error occurs. If this error is thrown, I would keep
-    /// trying to buy the item until [`PurchaseLimitedError::ItemNotForSale`] is thrown.
+    /// trying to buy the item until [`PurchaseTradableLimitedError::ItemNotForSale`] is thrown.
     #[error("Unknown Roblox Error Message: {0}")]
     UnknownRobloxErrorMsg(String),
 }
@@ -456,13 +457,13 @@ impl Client {
     /// * Will return `Ok(())` if the limited was successfully purchased.
     ///
     /// # Argument Notes
-    /// * `product_id` if the product id of the limited, NOT the item id.
+    /// * `product_id` is the product id of the limited, NOT the item id.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [Auth Required Errors](#auth-required-errors).
     /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    /// * [`RoboatError::PurchaseLimitedError`] - Nested inside this error, all variants of [`PurchaseLimitedError`] may be thrown.
+    /// * [`RoboatError::PurchaseTradableLimitedError`] - Nested inside this error, all variants of [`PurchaseTradableLimitedError`] may be thrown.
     ///
     /// # Example
     /// ```no_run
@@ -511,7 +512,7 @@ impl Client {
 
 mod internal {
     use super::{
-        request_types, PurchaseLimitedError, TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2,
+        request_types, PurchaseTradableLimitedError, TOGGLE_SALE_API_PART_1, TOGGLE_SALE_API_PART_2,
     };
     use crate::{Client, RoboatError, CONTENT_TYPE, USER_AGENT, XCSRF_HEADER};
     use reqwest::header;
@@ -620,23 +621,29 @@ mod internal {
             match raw.purchased {
                 true => Ok(()),
                 false => match raw.error_msg.as_str() {
-                    "You have a pending transaction. Please wait 1 minute and try again." => Err(
-                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::CannotBuyOwnItem),
-                    ),
-                    "You already own this item." => Err(RoboatError::PurchaseLimitedError(
-                        PurchaseLimitedError::CannotBuyOwnItem,
+                    "You have a pending transaction. Please wait 1 minute and try again." => {
+                        Err(RoboatError::PurchaseTradableLimitedError(
+                            PurchaseTradableLimitedError::CannotBuyOwnItem,
+                        ))
+                    }
+                    "You already own this item." => Err(RoboatError::PurchaseTradableLimitedError(
+                        PurchaseTradableLimitedError::CannotBuyOwnItem,
                     )),
-                    "This item is not for sale." => Err(RoboatError::PurchaseLimitedError(
-                        PurchaseLimitedError::ItemNotForSale,
+                    "This item is not for sale." => Err(RoboatError::PurchaseTradableLimitedError(
+                        PurchaseTradableLimitedError::ItemNotForSale,
                     )),
-                    "You do not have enough Robux to purchase this item." => Err(
-                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::NotEnoughRobux),
-                    ),
-                    "This item has changed price. Please try again." => Err(
-                        RoboatError::PurchaseLimitedError(PurchaseLimitedError::PriceChanged),
-                    ),
-                    _ => Err(RoboatError::PurchaseLimitedError(
-                        PurchaseLimitedError::UnknownRobloxErrorMsg(
+                    "You do not have enough Robux to purchase this item." => {
+                        Err(RoboatError::PurchaseTradableLimitedError(
+                            PurchaseTradableLimitedError::NotEnoughRobux,
+                        ))
+                    }
+                    "This item has changed price. Please try again." => {
+                        Err(RoboatError::PurchaseTradableLimitedError(
+                            PurchaseTradableLimitedError::PriceChanged,
+                        ))
+                    }
+                    _ => Err(RoboatError::PurchaseTradableLimitedError(
+                        PurchaseTradableLimitedError::UnknownRobloxErrorMsg(
                             raw.error_msg.as_str().to_string(),
                         ),
                     )),

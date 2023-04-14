@@ -43,10 +43,12 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
 * Trades API - [`trades.roblox.com/*`]
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
-* Apis API (Roblox named this, not me) - [`apis.roblox.com/*`] 
+* BEDEV2 API - [`apis.roblox.com/*`] 
     - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.non_tradable_limited_details)
     - Fetch Collectible Product ID - [`Client::collectible_product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id)
     - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id_bulk)
+    - Fetch Collectible Creator ID - [`Client::collectible_creator_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_creator_id)
+    - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_non_tradable_limited)
 
 # Setup
 You can add the latest version of roboat to your project by running:
@@ -58,12 +60,56 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.14.0"
+roboat = "0.15.0"
 ```
 
 # Quick Start Examples
 
-## Example 1
+## Example 1 - Purchase Free UGC Limited
+This code snippet allows you to purchase a free ugc limited.
+
+It can be modified to purchase a non-free ugc limited by changing the price.
+
+```rust
+// Replace this value with your own roblosecurity token.
+const ROBLOSECURITY: &str = "your-roblosecurity-token";
+// Replace this value with the item id of the item you want to purchase.
+const ITEM_ID: u64 = 13119979433;
+// Replace this value if you want to purchase a non-free item.
+const PRICE: u64 = 0;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = roboat::ClientBuilder::new()
+        .roblosecurity(ROBLOSECURITY.to_string())
+        .build();
+
+    let collectible_item_id = client.collectible_item_id(ITEM_ID).await?;
+
+    let collectible_product_id = client
+        .collectible_product_id(collectible_item_id.clone())
+        .await?;
+
+    let collectible_creator_id = client
+        .collectible_creator_id(collectible_item_id.clone())
+        .await?;
+
+    client
+        .purchase_non_tradable_limited(
+            collectible_item_id,
+            collectible_product_id,
+            collectible_creator_id,
+            PRICE,
+        )
+        .await?;
+
+    println!("Purchased item {} for {} robux!", ITEM_ID, PRICE);
+
+    Ok(())
+}
+```
+
+## Example 2 - Fetch User Info
 
 This code snippet allows you to get your current robux, id, username, and display name.
 
@@ -91,9 +137,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-## Example 2
+## Example 3 - Fetch Price of Tradable Limited
 
-This code snippet allows you to view the lowest price of a limited item by
+This code snippet allows you to view the lowest price of a tradable limited item by
 fetching a list of reseller listings.
 
 ```rust
@@ -118,7 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-## Example 3
+## Example 4 - Fetch Item Details
 
 This code snippet allows you to get the details of an item.
 

@@ -31,14 +31,60 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
-//! * Apis API (Roblox named this, not me)
+//! * BEDEV2 API
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
 //!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
+//!   - Fetch Collectible Creator ID - [`Client::collectible_creator_id`]
+//!   - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`]
 //!
 //! # Quick Start Examples
 //!
-//! ## Example 1
+//! ## Example 1 - Purchase Free UGC Limited
+//! This code snippet allows you to purchase a free ugc limited.
+//!
+//! It can be modified to purchase a non-free ugc limited by changing the price.
+//!
+//! ```no_run
+//! // Replace this value with your own roblosecurity token.
+//! const ROBLOSECURITY: &str = "your-roblosecurity-token";
+//! // Replace this value with the item id of the item you want to purchase.
+//! const ITEM_ID: u64 = 13119979433;
+//! // Replace this value if you want to purchase a non-free item.
+//! const PRICE: u64 = 0;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let client = roboat::ClientBuilder::new()
+//!         .roblosecurity(ROBLOSECURITY.to_string())
+//!         .build();
+//!
+//!     let collectible_item_id = client.collectible_item_id(ITEM_ID).await?;
+//!
+//!     let collectible_product_id = client
+//!         .collectible_product_id(collectible_item_id.clone())
+//!         .await?;
+//!
+//!     let collectible_creator_id = client
+//!         .collectible_creator_id(collectible_item_id.clone())
+//!         .await?;
+//!
+//!     client
+//!         .purchase_non_tradable_limited(
+//!             collectible_item_id,
+//!             collectible_product_id,
+//!             collectible_creator_id,
+//!             PRICE,
+//!         )
+//!         .await?;
+//!
+//!     println!("Purchased item {} for {} robux!", ITEM_ID, PRICE);
+//!
+//!     Ok(())   
+//! }
+//! ```
+//!
+//! ## Example 2 - Fetch User Info
 //!
 //! This code snippet allows you to get your current robux, id, username, and display name.
 //!
@@ -66,9 +112,9 @@
 //! }
 //! ```
 //!
-//! ## Example 2
+//! ## Example 3 - Fetch Price of Tradable Limited
 //!
-//! This code snippet allows you to view the lowest price of a limited item by
+//! This code snippet allows you to view the lowest price of a tradable limited item by
 //! fetching a list of reseller listings.
 //!
 //! ```no_run
@@ -93,7 +139,7 @@
 //! }
 //! ```
 //!
-//! ## Example 3
+//! ## Example 4 - Fetch Item Details
 //!
 //! This code snippet allows you to get the details of an item.
 //!
@@ -130,11 +176,12 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
+pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
-pub use economy::PurchaseLimitedError;
+pub use economy::PurchaseTradableLimitedError;
 
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
-pub mod apis;
+pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
 mod client;
@@ -162,6 +209,10 @@ mod validation;
 // todo: maybe respect cookies returned
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
+// todo: apparently a v2 details api does 500 items at once
+// todo: name apis api bedev2 or something
+// todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
+// todo: add method to get items from catalog
 
 use serde::{Deserialize, Serialize};
 
@@ -255,7 +306,10 @@ pub enum RoboatError {
     XcsrfNotReturned,
     /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
-    PurchaseLimitedError(PurchaseLimitedError),
+    PurchaseTradableLimitedError(PurchaseTradableLimitedError),
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_non_tradable_limited`].
+    #[error("{0}")]
+    PurchaseNonTradableLimitedError(PurchaseNonTradableLimitedError),
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
