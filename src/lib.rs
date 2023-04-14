@@ -130,8 +130,9 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
+pub use apis::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
-pub use economy::PurchaseLimitedError;
+pub use economy::PurchaseTradableLimitedError;
 
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
 pub mod apis;
@@ -259,7 +260,10 @@ pub enum RoboatError {
     XcsrfNotReturned,
     /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
-    PurchaseLimitedError(PurchaseLimitedError),
+    PurchaseTradableLimitedError(PurchaseTradableLimitedError),
+    /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_non_tradable_limited`].
+    #[error("{0}")]
+    PurchaseNonTradableLimitedError(PurchaseNonTradableLimitedError),
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),

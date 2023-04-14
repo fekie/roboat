@@ -22,3 +22,12 @@ pub(super) struct NonTradableLimitedDetailsRaw {
     pub asset_stock: u64,
     pub error_code: Option<u64>,
 }
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct PurchaseNonTradeableLimitedRaw {
+    pub purchase_result: String,
+    pub purchased: bool,
+    /// Error variants: null, "PriceMismatch"
+    pub error_message: Option<String>,
+}
