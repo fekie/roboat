@@ -132,12 +132,12 @@
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
 
-pub use apis::PurchaseNonTradableLimitedError;
+pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
-pub mod apis;
+pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
 mod client;
