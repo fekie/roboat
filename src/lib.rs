@@ -31,6 +31,8 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
+//! * Auth API
+//!   - Force Refresh Xcsrf - [`Client::force_refresh_xcsrf`]
 //! * BEDEV2 API
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
@@ -180,6 +182,7 @@ pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
+mod auth;
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
 pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
