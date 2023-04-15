@@ -180,6 +180,7 @@ pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
+mod auth;
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
 pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
