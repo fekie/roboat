@@ -279,7 +279,10 @@ pub struct ItemDetails {
     /// The statuses of an item (e.g., New, Sale). Does not exist on "new" limiteds.
     pub item_statuses: Option<Vec<ItemStatus>>,
     /// The restrictions on an item (e.g., ThirteenPlus, Limited).
-    pub item_restrictions: Vec<ItemRestriction>,
+    ///
+    /// If there are none and the item is a non-tradable limited, then the field does not exist.
+    /// Otherwise, the vector exists but the length is zero.
+    pub item_restrictions: Option<Vec<ItemRestriction>>,
     /// Whether the creator is verified by Roblox.
     pub creator_has_verified_badge: bool,
     /// The type of creator that created the item (User or Group).
@@ -404,9 +407,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
         let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
         let item_statuses = value.item_status;
 
-        let item_restrictions = value
-            .item_restrictions
-            .ok_or(RoboatError::MalformedResponse)?;
+        let item_restrictions = value.item_restrictions;
 
         let creator_has_verified_badge = value
             .creator_has_verified_badge
