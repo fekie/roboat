@@ -216,6 +216,7 @@ mod validation;
 // todo: name apis api bedev2 or something
 // todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
 // todo: add method to get items from catalog
+// todo: make ItemDetails include both price and lowest price
 
 use serde::{Deserialize, Serialize};
 
