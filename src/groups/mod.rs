@@ -25,12 +25,11 @@ pub struct Role {
 }
 
 impl Client {
-    /// In order by rank starting from lowest rank.
-    ///
     /// Returns the roles of a group using <https://groups.roblox.com/v1/groups/{group_id}/roles>.
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
+    /// * Returns roles in ascending order by rank.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
@@ -40,12 +39,11 @@ impl Client {
     /// ```no_run
     /// use roboat::ClientBuilder;
     ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
     /// const GROUP_ID: u64 = 1127093;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    /// let client = ClientBuilder::new().build();
     ///
     /// let roles = client.group_roles(GROUP_ID).await?;
     ///
