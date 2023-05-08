@@ -221,8 +221,7 @@ mod validation;
 // todo: add method to get items from catalog
 // todo: make ItemDetails include both price and lowest price
 // todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
-// todo: rename all examples with get_ to fetch_
-// todo: sort api coverage by alphabetical order
+// todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
 
 use serde::{Deserialize, Serialize};
 
