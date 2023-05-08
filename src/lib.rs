@@ -43,6 +43,7 @@
 //!   - Fetch Username - [`Client::username`]
 //!   - Fetch Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
+//!   - Fetch User Details - [`Client::user_details`]
 //!
 //! # Quick Start Examples
 //!
