@@ -211,11 +211,7 @@ mod validation;
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
-// todo: add ugc limited buying
-// todo: make feature that allows reqwest crate to not collide.
 // todo: hide reqwest types
-// todo: rename reqwest_types.rs to request_types.rs
-// todo: list what errors can be returned by each method
 // todo: maybe respect cookies returned
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
