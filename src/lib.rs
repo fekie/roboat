@@ -33,6 +33,8 @@
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Auth API
 //!   - Force Refresh Xcsrf - [`Client::force_refresh_xcsrf`]
+//! * Group API
+//!   - Fetch Group Roles - [`Client::group_roles`]
 //! * BEDEV2 API
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
@@ -182,20 +184,25 @@ pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
+/// A module for endpoints prefixed with <https://auth.roblox.com/*>.
 mod auth;
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
 pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
+/// A module related to the [`Client`] struct.
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://groups.roblox.com/*>.
+pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
 mod presence;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+/// A module related to validating requests.
 mod validation;
 
 // todo: add manual xcsrf refresh
@@ -217,10 +224,13 @@ mod validation;
 // todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
 // todo: add method to get items from catalog
 // todo: make ItemDetails include both price and lowest price
+// todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
+// todo: rename all examples with get_ to fetch_
+// todo: sort api coverage by alphabetical order
 
 use serde::{Deserialize, Serialize};
 
-// Used in reqwest header keys.
+// Used in request header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
 // The user agent used for fussy endpoints.
 const USER_AGENT: &str =
