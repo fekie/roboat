@@ -9,6 +9,14 @@
 //! All public methods in this crate are documented and have at least one corresponding example.
 //!
 //! # Coverage
+//! * Auth API
+//!   - Force Refresh Xcsrf - [`Client::force_refresh_xcsrf`]
+//! * BEDEV2 API
+//!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
+//!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
+//!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
+//!   - Fetch Collectible Creator ID - [`Client::collectible_creator_id`]
+//!   - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`]
 //! * Catalog API
 //!   - Fetch Item Details - [`Client::item_details`]
 //!   - Fetch Product ID - [`Client::product_id`]  
@@ -22,25 +30,17 @@
 //!   - Put Limited On Sale - [`Client::put_limited_on_sale`]
 //!   - Take Limited Off Sale - [`Client::take_limited_off_sale`]
 //!   - Purchase Tradable Limited - [`Client::purchase_tradable_limited`]
+//! * Group API
+//!   - Fetch Group Roles - [`Client::group_roles`]
+//! * Presence API
+//!   - Register Presence - [`Client::register_presence`]
+//! * Trades API
+//!   - Fetch Trades List - [`Client::trades`]
 //! * Users API
 //!   - Fetch User ID - [`Client::user_id`]
 //!   - Fetch Username - [`Client::username`]
 //!   - Fetch Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
-//! * Presence API
-//!   - Register Presence - [`Client::register_presence`]
-//! * Trades API
-//!   - Fetch Trades List - [`Client::trades`]
-//! * Auth API
-//!   - Force Refresh Xcsrf - [`Client::force_refresh_xcsrf`]
-//! * Group API
-//!   - Fetch Group Roles - [`Client::group_roles`]
-//! * BEDEV2 API
-//!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
-//!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]
-//!   - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`]
-//!   - Fetch Collectible Creator ID - [`Client::collectible_creator_id`]
-//!   - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`]
 //!
 //! # Quick Start Examples
 //!
@@ -211,11 +211,7 @@ mod validation;
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
-// todo: add ugc limited buying
-// todo: make feature that allows reqwest crate to not collide.
 // todo: hide reqwest types
-// todo: rename reqwest_types.rs to request_types.rs
-// todo: list what errors can be returned by each method
 // todo: maybe respect cookies returned
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
