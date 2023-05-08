@@ -84,7 +84,7 @@ impl Client {
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
-    /// let keyword = "linkmon".to_string();
+    /// let keyword = KEYWORD.to_string();
     /// let users = client.user_search(keyword).await?;
     ///
     /// println!("Found {} users.", users.len());
