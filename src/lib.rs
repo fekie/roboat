@@ -225,7 +225,7 @@ mod validation;
 
 use serde::{Deserialize, Serialize};
 
-// Used in reqwest header keys.
+// Used in request header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
 // The user agent used for fussy endpoints.
 const USER_AGENT: &str =
