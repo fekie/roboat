@@ -323,3 +323,12 @@ pub enum RoboatError {
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
 }
+
+/// The universal struct for a Roblox user in this crate.
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct User {
+    pub user_id: u64,
+    pub username: String,
+    pub display_name: String,
+}
