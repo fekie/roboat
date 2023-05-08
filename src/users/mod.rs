@@ -23,7 +23,7 @@ pub(crate) struct ClientUserInformation {
 /// The details of a user. Fetched from <https://users.roblox.com/v1/users/search?keyword={keyword}>.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub struct User {
+pub struct UserDetails {
     pub user_id: u64,
     pub username: String,
     pub display_name: String,
@@ -96,7 +96,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn user_search(&self, keyword: String) -> Result<Vec<User>, RoboatError> {
+    pub async fn user_search(&self, keyword: String) -> Result<Vec<UserDetails>, RoboatError> {
         let formatted_url = format!("{}?keyword={}", USERS_SEARCH_API, keyword);
 
         let cookie_string = self.cookie_string().unwrap_or(HeaderValue::from_static(""));
@@ -114,7 +114,7 @@ impl Client {
         let mut users = Vec::new();
 
         for user in raw.data {
-            let user_data = User {
+            let user_data = UserDetails {
                 user_id: user.id,
                 username: user.name,
                 display_name: user.display_name,

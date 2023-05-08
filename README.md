@@ -44,6 +44,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Purchase Tradable Limited - [`Client::purchase_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_tradable_limited)
 * Group API - [`groups.roblox.com/*`]
     - Fetch Group Roles - [`Client::group_roles`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.group_roles)
+    - Fetch Group Role Members - [`Client::group_role_members`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.group_role_members)
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
 * Trades API - [`trades.roblox.com/*`]
@@ -64,7 +65,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.17.0"
+roboat = "0.18.0"
 ```
 
 # Quick Start Examples

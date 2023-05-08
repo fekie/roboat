@@ -32,6 +32,7 @@
 //!   - Purchase Tradable Limited - [`Client::purchase_tradable_limited`]
 //! * Group API
 //!   - Fetch Group Roles - [`Client::group_roles`]
+//!   - Fetch Group Role Members - [`Client::group_role_members`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
@@ -221,8 +222,7 @@ mod validation;
 // todo: add method to get items from catalog
 // todo: make ItemDetails include both price and lowest price
 // todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
-// todo: rename all examples with get_ to fetch_
-// todo: sort api coverage by alphabetical order
+// todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
 
 use serde::{Deserialize, Serialize};
 
@@ -323,4 +323,13 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
+}
+
+/// The universal struct for a Roblox user in this crate.
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct User {
+    pub user_id: u64,
+    pub username: String,
+    pub display_name: String,
 }
