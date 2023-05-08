@@ -55,6 +55,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
     - Fetch Display Name - [`Client::display_name`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.display_name)
     - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
+    - Fetch User Details - [`Client::user_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_details)
 
 # Setup
 You can add the latest version of roboat to your project by running:
@@ -66,7 +67,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.19.0"
+roboat = "0.20.0"
 ```
 
 # Quick Start Examples

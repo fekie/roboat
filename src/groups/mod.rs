@@ -14,7 +14,6 @@ const CHANGE_GROUP_MEMBER_ROLE_API: &str =
 
 /// A role in a group.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct Role {
     /// The ID of the role.
     pub id: u64,
@@ -23,6 +22,7 @@ pub struct Role {
     /// A number from 0 to 255 that determines the role's rank, with
     /// 255 being the highest rank and 0 being the lowest rank.
     pub rank: u8,
+    #[serde(alias = "memberCount")]
     /// The number of members in the role.
     pub member_count: u64,
 }

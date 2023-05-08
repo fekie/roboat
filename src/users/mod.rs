@@ -1,11 +1,12 @@
-use crate::{Client, RoboatError};
+use crate::{Client, RoboatError, User};
 use reqwest::header::{self, HeaderValue};
 use serde::{Deserialize, Serialize};
 
 mod request_types;
 
-const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
+const AUTHENTICATED_USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/authenticated";
 const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
+const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/{user_id}";
 
 /// Basic information about the account of the Roblosecurity. Retrieved
 /// from <https://users.roblox.com/v1/users/authenticated>.
@@ -20,15 +21,24 @@ pub(crate) struct ClientUserInformation {
     pub display_name: String,
 }
 
-/// The details of a user. Fetched from <https://users.roblox.com/v1/users/search?keyword={keyword}>.
+/// The details of a user. Fetched from https://users.roblox.com/v1/users/{user_id}>.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct UserDetails {
-    pub user_id: u64,
+    #[serde(alias = "name")]
     pub username: String,
+    #[serde(alias = "displayName")]
     pub display_name: String,
+    pub id: u64,
+    pub description: String,
+    /// A time string of when the account was created. Follows ISO 8061 format.
+    #[serde(alias = "created")]
+    pub created_at: String,
+    /// Whether the account is terminated. Does not include non-termination bans.
+    #[serde(alias = "isBanned")]
+    pub is_terminated: bool,
+    #[serde(alias = "hasVerifiedBadge")]
     pub has_verified_badge: bool,
-    pub previous_usernames: Vec<String>,
 }
 
 impl Client {
@@ -46,7 +56,7 @@ impl Client {
 
         let request_result = self
             .reqwest_client
-            .get(USER_DETAILS_API)
+            .get(AUTHENTICATED_USER_DETAILS_API)
             .header(header::COOKIE, cookie)
             .send()
             .await;
@@ -96,7 +106,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn user_search(&self, keyword: String) -> Result<Vec<UserDetails>, RoboatError> {
+    pub async fn user_search(&self, keyword: String) -> Result<Vec<User>, RoboatError> {
         let formatted_url = format!("{}?keyword={}", USERS_SEARCH_API, keyword);
 
         let cookie_string = self.cookie_string().unwrap_or(HeaderValue::from_static(""));
@@ -114,17 +124,54 @@ impl Client {
         let mut users = Vec::new();
 
         for user in raw.data {
-            let user_data = UserDetails {
+            let user_data = User {
                 user_id: user.id,
                 username: user.name,
                 display_name: user.display_name,
-                has_verified_badge: user.has_verified_badge,
-                previous_usernames: user.previous_usernames,
             };
 
             users.push(user_data);
         }
 
         Ok(users)
+    }
+
+    /// Fetches user details using <https://users.roblox.com/v1/users/{user_id}>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const USER_ID: u64 = 2207291;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let user_details = client.user_details(USER_ID).await?;
+    ///
+    /// println!("Username: {}", user_details.username);
+    /// println!("Display Name: {}", user_details.display_name);
+    /// println!("Year Created: {}", user_details.created_at.chars().take(4).collect::<String>());
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn user_details(&self, user_id: u64) -> Result<UserDetails, RoboatError> {
+        let formatted_url = USER_DETAILS_API.replace("{user_id}", &user_id.to_string());
+
+        let request_result = self.reqwest_client.get(formatted_url).send().await;
+
+        let response = Self::validate_request_result(request_result).await?;
+        let user_details = Self::parse_to_raw::<UserDetails>(response).await?;
+
+        Ok(user_details)
     }
 }
