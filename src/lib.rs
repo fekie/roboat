@@ -33,6 +33,8 @@
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Auth API
 //!   - Force Refresh Xcsrf - [`Client::force_refresh_xcsrf`]
+//! * Group API
+//!   - Fetch Group Roles - [`Client::group_roles`]
 //! * BEDEV2 API
 //!   - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`]
 //!   - Fetch Collectible Product ID - [`Client::collectible_product_id`]

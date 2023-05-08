@@ -45,6 +45,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
 * Auth API - [`auth.roblox.com/*`]
     - Force Refresh X-CSRF-TOKEN - [`Client::force_refresh_xcsrf_token`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.force_refresh_xcsrf_token)
+* Group API - [`groups.roblox.com/*`]
+    - Fetch Group Roles - [`Client::group_roles`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.group_roles)
 * BEDEV2 API - [`apis.roblox.com/*`] 
     - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.non_tradable_limited_details)
     - Fetch Collectible Product ID - [`Client::collectible_product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id)
