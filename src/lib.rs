@@ -182,11 +182,13 @@ pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
+/// A module for endpoints prefixed with <https://auth.roblox.com/*>.
 mod auth;
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
 pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
+/// A module related to the [`Client`] struct.
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
@@ -198,6 +200,7 @@ mod presence;
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
+/// A module related to validating requests.
 mod validation;
 
 // todo: add manual xcsrf refresh
