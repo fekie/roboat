@@ -190,6 +190,8 @@ pub mod catalog;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://groups.roblox.com/*>.
+pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
 mod presence;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
