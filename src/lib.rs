@@ -32,6 +32,7 @@
 //!   - Purchase Tradable Limited - [`Client::purchase_tradable_limited`]
 //! * Group API
 //!   - Fetch Group Roles - [`Client::group_roles`]
+//!   - Fetch Group Role Members - [`Client::group_role_members`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
 //! * Trades API
