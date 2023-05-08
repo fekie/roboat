@@ -1,13 +1,16 @@
 use crate::{Client, Limit, RoboatError, User};
-
 use serde::{Deserialize, Serialize};
 
 mod request_types;
 
 const GROUP_ROLES_API: &str = "https://groups.roblox.com/v1/groups/{group_id}/roles";
+
+const GROUP_ROLE_MEMBERS_SORT_ORDER: &str = "Desc";
 const GROUP_ROLE_MEMBERS_API: &str =
     "https://groups.roblox.com/v1/groups/{group_id}/roles/{role_id}/users?cursor={cursor_id}&limit={limit}&sortOrder={sort_order}";
-const GROUP_ROLE_MEMBERS_SORT_ORDER: &str = "Desc";
+
+const CHANGE_GROUP_MEMBER_ROLE_API: &str =
+    "https://groups.roblox.com/v1/groups/{group_id}/users/{user_id}";
 
 /// A role in a group.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
@@ -142,5 +145,102 @@ impl Client {
         let next_cursor = raw.next_page_cursor;
 
         Ok((users, next_cursor))
+    }
+
+    /// Sets a group member's role by role id using <https://groups.roblox.com/v1/groups/{group_id}/users/{user_id}>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Return Value Notes
+    /// * Will return `Ok(())` if the role was successfully set.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const user_id: u64 = 123456789;
+    /// const group_id: u64 = 1127093;
+    /// const role_id: u64 = 78505465;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let _ = client.set_group_member_role(user_id, group_id, role_id).await?;
+    ///
+    /// println!(
+    ///     "Set user {}'s role to role id {} in group {}.",
+    ///     user_id, role_id, group_id
+    /// );
+    /// # Ok(())
+    /// # }
+    pub async fn set_group_member_role(
+        &self,
+        user_id: u64,
+        group_id: u64,
+        role_id: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .set_group_member_role_internal(user_id, group_id, role_id)
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.set_group_member_role_internal(user_id, group_id, role_id)
+                        .await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+}
+
+mod internal {
+    use super::CHANGE_GROUP_MEMBER_ROLE_API;
+    use crate::{Client, RoboatError, XCSRF_HEADER};
+    use reqwest::header;
+
+    impl Client {
+        pub(super) async fn set_group_member_role_internal(
+            &self,
+            user_id: u64,
+            group_id: u64,
+            role_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = CHANGE_GROUP_MEMBER_ROLE_API
+                .replace("{group_id}", &group_id.to_string())
+                .replace("{user_id}", &user_id.to_string());
+
+            let cookie = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let json = serde_json::json!({ "roleId": role_id });
+
+            let request_result = self
+                .reqwest_client
+                .patch(formatted_url)
+                .json(&json)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // If we got a status code 200, it was successful.
+
+            Ok(())
+        }
     }
 }
