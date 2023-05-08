@@ -225,6 +225,7 @@ mod validation;
 // todo: make ItemDetails include both price and lowest price
 // todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
+// todo: add doc example and example count somewhere
 
 use serde::{Deserialize, Serialize};
 
