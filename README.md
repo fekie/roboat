@@ -21,6 +21,14 @@ All public methods in this crate are documented and have at least one correspond
 Documentation can be found [here](https://docs.rs/roboat/).
 
 # Coverage
+* Auth API - [`auth.roblox.com/*`]
+    - Force Refresh X-CSRF-TOKEN - [`Client::force_refresh_xcsrf_token`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.force_refresh_xcsrf_token)
+* BEDEV2 API - [`apis.roblox.com/*`] 
+    - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.non_tradable_limited_details)
+    - Fetch Collectible Product ID - [`Client::collectible_product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id)
+    - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id_bulk)
+    - Fetch Collectible Creator ID - [`Client::collectible_creator_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_creator_id)
+    - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_non_tradable_limited)
 * Catalog API - [`catalog.roblox.com/*`]
     - Fetch Item Details - [`Client::item_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.item_details)
     - Fetch Product ID - [`Client::product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.product_id)
@@ -34,25 +42,17 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Put Limited On Sale - [`Client::put_limited_on_sale`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.put_limited_on_sale)
     - Take Limited Off Sale - [`Client::take_limited_off_sale`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.take_limited_off_sale)
     - Purchase Tradable Limited - [`Client::purchase_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_tradable_limited)
+* Group API - [`groups.roblox.com/*`]
+    - Fetch Group Roles - [`Client::group_roles`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.group_roles)
+* Presence API - [`presence.roblox.com/*`]
+    - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
+* Trades API - [`trades.roblox.com/*`]
+    - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
 * Users API - [`users.roblox.com/*`]
     - Fetch User ID - [`Client::user_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_id)
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
     - Fetch Display Name - [`Client::display_name`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.display_name)
     - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
-* Presence API - [`presence.roblox.com/*`]
-    - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
-* Trades API - [`trades.roblox.com/*`]
-    - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
-* Auth API - [`auth.roblox.com/*`]
-    - Force Refresh X-CSRF-TOKEN - [`Client::force_refresh_xcsrf_token`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.force_refresh_xcsrf_token)
-* Group API - [`groups.roblox.com/*`]
-    - Fetch Group Roles - [`Client::group_roles`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.group_roles)
-* BEDEV2 API - [`apis.roblox.com/*`] 
-    - Fetch Non-Tradable Limited Details - [`Client::non_tradable_limited_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.non_tradable_limited_details)
-    - Fetch Collectible Product ID - [`Client::collectible_product_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id)
-    - Fetch Collectible Product ID Bulk - [`Client::collectible_product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_product_id_bulk)
-    - Fetch Collectible Creator ID - [`Client::collectible_creator_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_creator_id)
-    - Purchase Non-Tradable Limited - [`Client::purchase_non_tradable_limited`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.purchase_non_tradable_limited)
 
 # Setup
 You can add the latest version of roboat to your project by running:
