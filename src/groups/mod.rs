@@ -87,7 +87,7 @@ impl Client {
     /// # Example
     ///
     /// ```no_run
-    /// use roboat::ClientBuilder;
+    /// use roboat::{ClientBuilder, Limit};
     ///
     /// const GROUP_ID: u64 = 1127093;
     /// const ROLE_ID: u64 = 18792070;
@@ -97,7 +97,7 @@ impl Client {
     /// let client = ClientBuilder::new().build();
     ///
     /// let (members, cursor) = client
-    ///     .group_role_members(GROUP_ID, ROLE_ID, Limit::Hundred, next_cursor)
+    ///     .group_role_members(GROUP_ID, ROLE_ID, Limit::Hundred, None)
     ///     .await?;
     ///
     /// for member in members {
