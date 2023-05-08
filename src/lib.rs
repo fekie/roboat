@@ -222,6 +222,9 @@ mod validation;
 // todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
 // todo: add method to get items from catalog
 // todo: make ItemDetails include both price and lowest price
+// todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
+// todo: rename all examples with get_ to fetch_
+// todo: sort api coverage by alphabetical order
 
 use serde::{Deserialize, Serialize};
 
