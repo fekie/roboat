@@ -24,10 +24,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         next_cursor = cursor;
 
-        if next_cursor.is_none() {
-            break;
-        }
-
         println!("Page {} of Members:", i);
 
         for member in members {
@@ -35,6 +31,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "User ID: {} / Username: {} / Display Name: {}",
                 member.user_id, member.username, member.display_name
             );
+        }
+
+        if next_cursor.is_none() {
+            break;
         }
     }
 

@@ -7,7 +7,7 @@ const GROUP_ROLES_API: &str = "https://groups.roblox.com/v1/groups/{group_id}/ro
 
 const GROUP_ROLE_MEMBERS_SORT_ORDER: &str = "Desc";
 const GROUP_ROLE_MEMBERS_API: &str =
-    "https://groups.roblox.com/v1/groups/{group_id}/roles/{role_id}/users?cursor={cursor_id}&limit={limit}&sortOrder={sort_order}";
+    "https://groups.roblox.com/v1/groups/{group_id}/roles/{role_id}/users?cursor={cursor}&limit={limit}&sortOrder={sort_order}";
 
 const CHANGE_GROUP_MEMBER_ROLE_API: &str =
     "https://groups.roblox.com/v1/groups/{group_id}/users/{user_id}";
@@ -33,6 +33,7 @@ impl Client {
     /// # Notes
     /// * Does not require a valid roblosecurity.
     /// * Returns roles in ascending order by rank.
+    /// * Does not appear to have a rate limit.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
@@ -78,7 +79,7 @@ impl Client {
     }
 
     /// Returns a page of members of a group role using
-    /// <https://groups.roblox.com/v1/groups/{group_id}/roles/{role_id}/users?cursor={cursor_id}&limit={limit}&sortOrder={sort_order}>.
+    /// <https://groups.roblox.com/v1/groups/{group_id}/roles/{role_id}/users?cursor={cursor}&limit={limit}&sortOrder=Desc>.
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
@@ -123,7 +124,7 @@ impl Client {
         let formatted_url = GROUP_ROLE_MEMBERS_API
             .replace("{group_id}", &group_id.to_string())
             .replace("{role_id}", &role_id.to_string())
-            .replace("{cursor_id}", &cursor.unwrap_or_default())
+            .replace("{cursor}", &cursor.unwrap_or_default())
             .replace("{limit}", &limit.to_u64().to_string())
             .replace("{sort_order}", GROUP_ROLE_MEMBERS_SORT_ORDER);
 
