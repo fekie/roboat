@@ -33,6 +33,7 @@ impl Client {
     /// # Notes
     /// * Does not require a valid roblosecurity.
     /// * Returns roles in ascending order by rank.
+    /// * Does not appear to have a rate limit.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
