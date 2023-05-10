@@ -21,7 +21,7 @@ pub(crate) struct ClientUserInformation {
     pub display_name: String,
 }
 
-/// The details of a user. Fetched from https://users.roblox.com/v1/users/{user_id}>.
+/// The details of a user. Fetched from <https://users.roblox.com/v1/users/{user_id}>.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct UserDetails {
