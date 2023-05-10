@@ -208,7 +208,6 @@ pub mod users;
 /// A module related to validating requests.
 mod validation;
 
-// todo: add manual xcsrf refresh
 // todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
