@@ -4,7 +4,7 @@ use reqwest::header;
 const AUTH_BASE_URL: &str = "https://auth.roblox.com/";
 
 impl Client {
-    /// Used to force refresh the xcsrf. This does not invalid the current xcsrf, it just
+    /// Used to force refresh the xcsrf. This does not invalidate the current xcsrf, it just
     /// makes sure that the current xcsrf is valid and adds a new one if it is not.
     ///
     /// Uses the endpoint <https://auth.roblox.com/>
