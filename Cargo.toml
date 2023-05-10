@@ -1,5 +1,5 @@
 [package]
-authors = ["Cayden <longwelldotpy@gmail.com>"]
+authors = ["fekie <fekiewekie@gmail.com>"]
 categories = ["api-bindings"]
 description = "A high performance interface for the Roblox API."
 edition = "2021"
