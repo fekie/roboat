@@ -47,7 +47,7 @@ impl Client {
     /// # Examples
     ///
     /// ```no_run
-    /// use roboat::catalog::avatar_catalog::{ItemType, Item};
+    /// use roboat::catalog::{ItemType, Item};
     /// use roboat::ClientBuilder;
     ///
     /// # #[tokio::main]
@@ -325,8 +325,7 @@ impl Client {
     /// # Examples
     ///
     /// ```no_run
-    /// use roboat::catalog::avatar_catalog::{Item, Category};
-    /// use roboat::catalog::avatar_catalog::search_query::AvatarSearchQueryBuilder;
+    /// use roboat::catalog::{Item, Category, AvatarSearchQueryBuilder};
     /// use roboat::ClientBuilder;
     ///
     /// # #[tokio::main]

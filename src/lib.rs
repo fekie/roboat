@@ -23,6 +23,7 @@
 //!   - Fetch Product ID Bulk - [`Client::product_id_bulk`]
 //!   - Fetch Collectible Item ID - [`Client::collectible_item_id`]
 //!   - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
+//!    - Avatar Catalog Search - [`Client::avatar_catalog_search`]
 //! * Economy API
 //!   - Fetch Robux Balance - [`Client::robux`]
 //!   - Fetch Resellers - [`Client::resellers`]
@@ -151,7 +152,7 @@
 //! This code snippet allows you to get the details of an item.
 //!
 //! ```no_run
-//! use roboat::catalog::avatar_catalog::{Item, ItemType};
+//! use roboat::catalog::{Item, ItemType};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
