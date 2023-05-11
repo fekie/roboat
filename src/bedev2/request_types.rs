@@ -1,4 +1,4 @@
-use crate::catalog::avatar_catalog::CreatorType;
+use crate::catalog::CreatorType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

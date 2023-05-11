@@ -1,8 +1,6 @@
-use super::{
-    CreatorType, Genre, ItemArgs, ItemRestriction, ItemStatus, ItemType, PremiumPricing,
-    PriceStatus,
+use super::catalog_types::{
+    CreatorType, Genre, Item, ItemRestriction, ItemStatus, ItemType, PremiumPricing, PriceStatus,
 };
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -51,21 +49,31 @@ pub(super) struct ItemDetailsRaw {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub(super) struct ItemDetailsReqBody {
-    pub(crate) items: Vec<ItemArgsReq>,
+    pub(crate) items: Vec<ItemReq>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct ItemArgsReq {
+pub(super) struct ItemReq {
     pub item_type: ItemType,
     pub id: u64,
 }
 
-impl From<ItemArgs> for ItemArgsReq {
-    fn from(item: ItemArgs) -> Self {
+impl From<Item> for ItemReq {
+    fn from(item: Item) -> Self {
         Self {
             item_type: item.item_type,
             id: item.id,
         }
     }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub(super) struct AvatarSearchQueryResponse {
+    #[serde(alias = "previousPageCursor")]
+    pub previous_page_cursor: Option<String>,
+    #[serde(alias = "nextPageCursor")]
+    pub next_page_cursor: Option<String>,
+    #[serde(alias = "data")]
+    pub items: Vec<Item>,
 }

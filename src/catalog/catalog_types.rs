@@ -1,12 +1,9 @@
+use super::request_types;
+#[allow(unused_imports)]
 use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 
-mod request_types;
-
-// A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
-
-const ITEM_DETAILS_API: &str = "https://catalog.roblox.com/v1/catalog/items/details";
+const AVATAR_CATALOG_SEARCH_BASE_URL: &str = "https://catalog.roblox.com/v1/search/items?";
 
 /// An enum representing the overall high level type of the item (Asset or Bundle)
 #[derive(
@@ -71,7 +68,8 @@ pub enum BundleType {
     AvatarAnimations,
 }
 
-/// An enum representing the genre of an item (war, funny).
+/// An enum representing the genre of an item (war, funny). Only used when returning
+/// info from item_details.
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
@@ -127,17 +125,6 @@ pub enum ItemRestriction {
     Collectible,
 }
 
-/// Type of creator that created the item (User or Group)
-#[derive(
-    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
-)]
-#[allow(missing_docs)]
-pub enum CreatorType {
-    #[default]
-    User,
-    Group,
-}
-
 /// The price status of an item. Only applies to items not on sale (Free, Offsale).
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
@@ -170,6 +157,22 @@ pub enum Category {
     CommunityCreations,
 }
 
+impl Category {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Featured => 0,
+            Self::All => 1,
+            Self::Collectibles => 2,
+            Self::Clothing => 3,
+            Self::BodyParts => 4,
+            Self::Gear => 5,
+            Self::Accessories => 11,
+            Self::AvatarAnimations => 12,
+            Self::CommunityCreations => 13,
+        }
+    }
+}
+
 /// A time period for when a sort applies.
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
@@ -181,6 +184,17 @@ pub enum SortAggregation {
     PastWeek,
     PastMonth,
     AllTime,
+}
+
+impl SortAggregation {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::PastDay => 0,
+            Self::PastWeek => 1,
+            Self::PastMonth => 2,
+            Self::AllTime => 3,
+        }
+    }
 }
 
 /// Sorting types that can be used in an item search.
@@ -196,6 +210,19 @@ pub enum SortType {
     Updated,
     PriceAsc,
     PriceDesc,
+}
+
+impl SortType {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Relevance => 0,
+            Self::Favorited => 1,
+            Self::Sales => 2,
+            Self::Updated => 3,
+            Self::PriceAsc => 4,
+            Self::PriceDesc => 5,
+        }
+    }
 }
 
 /// A subcategory for items, used when searching.
@@ -239,6 +266,47 @@ pub enum Subcategory {
     Social,
     Building,
     Transport,
+}
+
+impl Subcategory {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Featured => 0,
+            Self::All => 1,
+            Self::Collectibles => 2,
+            Self::Clothing => 3,
+            Self::BodyParts => 4,
+            Self::Gear => 5,
+            Self::Hats => 9,
+            Self::Faces => 10,
+            Self::Shirts => 12,
+            Self::TShirts => 13,
+            Self::Pants => 14,
+            Self::Heads => 15,
+            Self::Accessories => 19,
+            Self::HairAccessories => 20,
+            Self::FaceAccessories => 21,
+            Self::NeckAccessories => 22,
+            Self::ShoulderAccessories => 23,
+            Self::FrontAccessories => 24,
+            Self::BackAccessories => 25,
+            Self::WaistAccessories => 26,
+            Self::AvatarAnimations => 27,
+            Self::Bundles => 37,
+            Self::AnimationBundles => 38,
+            Self::EmoteAnimations => 39,
+            Self::CommunityCreations => 40,
+            Self::Melee => 41,
+            Self::Ranged => 42,
+            Self::Explosive => 43,
+            Self::PowerUp => 44,
+            Self::Navigation => 45,
+            Self::Musical => 46,
+            Self::Social => 47,
+            Self::Building => 48,
+            Self::Transport => 49,
+        }
+    }
 }
 
 /// Additional details for premium pricing.
@@ -314,12 +382,14 @@ pub struct ItemDetails {
     pub collectible_item_id: Option<String>,
 }
 
-/// Holds information used to retrieve data from the [`Client::item_details`] endpoint.
+/// Contains an item id and its type. Used as part of a parameter in [`Client::item_details`], and used as
+/// part of a response in [`Client::avatar_catalog_search`].
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub struct ItemArgs {
+pub struct Item {
     /// The type of the item (Asset or Bundle).
+    #[serde(alias = "itemType")]
     pub item_type: ItemType,
     /// The id of the item, or of the bundle.
     /// In the [`Client::item_details`] endpoint, it acts as both, depending on the [`Self::item_type`].
@@ -465,360 +535,242 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
     }
 }
 
-impl Client {
-    /// Grabs details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
-    /// This now supports "new" limiteds (which include ugc limiteds). Note that this is a messy,
-    /// all-encompassing endpoint that should only be used directly when necessary.
-    ///
-    /// Specialized endpoints that use this internally include: [`Client::product_id`], [`Client::product_id_bulk`],
-    /// [`Client::collectible_item_id`], and [`Client::collectible_item_id_bulk`].
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * This endpoint will accept up to 120 items at a time.
-    /// * Will repeat once if the x-csrf-token is invalid.
-    ///
-    /// # Argument Notes
-    /// * The `id` parameter is that acts differently for this endpoint than others.
-    /// If the `item_type` is [`ItemType::Asset`], then `id` is the item ID.
-    /// Otherwise, if the `item_type` is [`ItemType::Bundle`], then `id` is the bundle ID.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use roboat::catalog::avatar_catalog::ItemArgs;
-    /// use roboat::catalog::avatar_catalog::ItemType;
-    /// use roboat::ClientBuilder;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let asset = ItemArgs {
-    ///     item_type: ItemType::Asset,
-    ///     id: 1365767,
-    /// };
-    ///
-    /// let bundle = ItemArgs {
-    ///    item_type: ItemType::Bundle,
-    ///    id: 39,
-    /// };
-    ///
-    /// let ugc_limited = ItemArgs {
-    ///    item_type: ItemType::Asset,
-    ///    id: 13032232281,
-    /// };
-    ///
-    /// let items = vec![asset, bundle];
-    /// let details = client.item_details(items).await?;
-    ///
-    /// println!("Item Name: {}", details[0].name);
-    /// println!("Bundle Name: {}", details[1].name);
-    /// println!("UGC Limited Name: {} / UGC Limited Collectible ID: {}", details[2].name,
-    ///     details[2].collectible_item_id.as_ref().ok_or("No collectible ID")?);
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn item_details(
-        &self,
-        items: Vec<ItemArgs>,
-    ) -> Result<Vec<ItemDetails>, RoboatError> {
-        match self.item_details_internal(items.clone()).await {
-            Ok(x) => Ok(x),
-            Err(e) => match e {
-                RoboatError::InvalidXcsrf(new_xcsrf) => {
-                    self.set_xcsrf(new_xcsrf).await;
+/// The type of a creator (User, Group).
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+#[allow(missing_docs)]
+pub enum CreatorType {
+    #[default]
+    User,
+    Group,
+}
 
-                    self.item_details_internal(items).await
-                }
-                _ => Err(e),
-            },
+impl CreatorType {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::User => 1,
+            Self::Group => 2,
         }
-    }
-
-    /// Fetches the product ID of an item (must be an asset). Uses [`Client::item_details`] internally
-    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>)
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Will repeat once if the x-csrf-token is invalid.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    ///
-    /// # Example
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let item_id = 12345679;
-    ///
-    /// let product_id = client.product_id(item_id).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn product_id(&self, item_id: u64) -> Result<u64, RoboatError> {
-        let item = ItemArgs {
-            item_type: ItemType::Asset,
-            id: item_id,
-        };
-
-        let details = self.item_details(vec![item]).await?;
-
-        details
-            .get(0)
-            .ok_or(RoboatError::MalformedResponse)?
-            .product_id
-            .ok_or(RoboatError::MalformedResponse)
-    }
-
-    /// Fetches the product ID of multiple items (must be an asset). More efficient than calling [`Client::product_id`] repeatedly.
-    /// Uses [`Client::item_details`] internally
-    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * This endpoint will accept up to 120 items at a time.
-    /// * Will repeat once if the x-csrf-token is invalid.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    ///
-    /// # Example
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let item_id_1 = 12345679;
-    /// let item_id_2 = 987654321;
-    ///
-    /// let product_ids = client.product_id_bulk(vec![item_id_1, item_id_2]).await?;
-    ///
-    /// let product_id_1 = product_ids.get(0).ok_or("No product ID 1")?;
-    /// let product_id_2 = product_ids.get(1).ok_or("No product ID 2")?;
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn product_id_bulk(&self, item_ids: Vec<u64>) -> Result<Vec<u64>, RoboatError> {
-        let item_ids_len = item_ids.len();
-
-        let mut items = Vec::new();
-
-        for item_id in item_ids {
-            let item = ItemArgs {
-                item_type: ItemType::Asset,
-                id: item_id,
-            };
-
-            items.push(item);
-        }
-
-        let details = self.item_details(items).await?;
-
-        let product_ids = details
-            .iter()
-            .filter_map(|x| x.product_id)
-            .collect::<Vec<u64>>();
-
-        if product_ids.len() != item_ids_len {
-            return Err(RoboatError::MalformedResponse);
-        }
-
-        Ok(product_ids)
-    }
-
-    /// Fetches the collectible item id of a multiple non-tradeable limited (including ugc limiteds).
-    /// More efficient than calling [`Client::product_id`] repeatedly.
-    /// Uses [`Client::item_details`] internally
-    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Will repeat once if the x-csrf-token is invalid.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    ///
-    /// # Example
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let item_id = 12345679;
-    ///
-    /// let collectible_item_id = client.collectible_item_id(item_id).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn collectible_item_id(&self, item_id: u64) -> Result<String, RoboatError> {
-        let item = ItemArgs {
-            item_type: ItemType::Asset,
-            id: item_id,
-        };
-
-        let details = self.item_details(vec![item]).await?;
-
-        details
-            .get(0)
-            .ok_or(RoboatError::MalformedResponse)?
-            .collectible_item_id
-            .clone()
-            .ok_or(RoboatError::MalformedResponse)
-    }
-
-    /// Fetches the collectible item ids of multiple non-tradeable limiteds (including ugc limiteds).
-    /// More efficient than calling [`Client::collectible_item_id`] repeatedly.
-    /// Uses [`Client::item_details`] internally
-    /// (which fetches from <https://catalog.roblox.com/v1/catalog/items/details>).
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * This endpoint will accept up to 120 items at a time.
-    /// * Will repeat once if the x-csrf-token is invalid.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
-    ///
-    /// # Example
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    ///
-    /// const ROBLOSECURITY: &str = "roblosecurity";
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let item_id_1 = 12345679;
-    /// let item_id_2 = 987654321;
-    ///
-    /// let collectible_item_ids = client.collectible_item_id_bulk(vec![item_id_1, item_id_2]).await?;
-    ///
-    /// let collectible_item_id_1 = collectible_item_ids.get(0).ok_or("No collectible item ID 1")?;
-    /// let collectible_item_id_2 = collectible_item_ids.get(1).ok_or("No collectible item ID 2")?;
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn collectible_item_id_bulk(
-        &self,
-        item_ids: Vec<u64>,
-    ) -> Result<Vec<String>, RoboatError> {
-        let item_ids_len = item_ids.len();
-
-        let mut items = Vec::new();
-
-        for item_id in item_ids {
-            let item = ItemArgs {
-                item_type: ItemType::Asset,
-                id: item_id,
-            };
-
-            items.push(item);
-        }
-
-        let details = self.item_details(items).await?;
-
-        let collectible_item_ids = details
-            .iter()
-            .filter_map(|x| x.collectible_item_id.clone())
-            .collect::<Vec<String>>();
-
-        if collectible_item_ids.len() != item_ids_len {
-            return Err(RoboatError::MalformedResponse);
-        }
-
-        Ok(collectible_item_ids)
     }
 }
 
-mod internal {
-    use super::{
-        request_types, sort_items_by_argument_order, ItemArgs, ItemDetails, ITEM_DETAILS_API,
-    };
-    use crate::XCSRF_HEADER;
-    use crate::{Client, RoboatError};
+/// The allowed limits in a catalog search query.
+#[allow(missing_docs)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+pub(super) enum QueryLimit {
+    #[default]
+    Ten,
+    TwentyEight,
+    Thirty,
+}
 
-    impl Client {
-        /// Used internally to fetch the details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
-        pub(super) async fn item_details_internal(
-            &self,
-            items: Vec<ItemArgs>,
-        ) -> Result<Vec<ItemDetails>, RoboatError> {
-            let request_body = request_types::ItemDetailsReqBody {
-                // Convert the ItemParameters to te reqwest ItemParametersReq
-                items: items
-                    .iter()
-                    .map(|x| request_types::ItemArgsReq::from(*x))
-                    .collect(),
-            };
+impl QueryLimit {
+    pub(super) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Ten => 10,
+            Self::TwentyEight => 28,
+            Self::Thirty => 30,
+        }
+    }
+}
 
-            let request_result = self
-                .reqwest_client
-                .post(ITEM_DETAILS_API)
-                .header(XCSRF_HEADER, self.xcsrf().await)
-                .json(&request_body)
-                .send()
-                .await;
+/// These are only used when making a search query.
+#[allow(missing_docs)]
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+pub enum QueryGenre {
+    #[default]
+    TownAndCity,
+    Medieval,
+    SciFi,
+    Fighting,
+    Horror,
+    Naval,
+    Adventure,
+    Sports,
+    Comedy,
+    Western,
+    Military,
+    Building,
+    FPS,
+    RPG,
+}
 
-            let response = Self::validate_request_result(request_result).await?;
-            let raw = Self::parse_to_raw::<request_types::ItemDetailsResponse>(response).await?;
+impl QueryGenre {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::TownAndCity => 1,
+            Self::Medieval => 2,
+            Self::SciFi => 3,
+            Self::Fighting => 4,
+            Self::Horror => 5,
+            Self::Naval => 6,
+            Self::Adventure => 7,
+            Self::Sports => 8,
+            Self::Comedy => 9,
+            Self::Western => 10,
+            Self::Military => 11,
+            Self::Building => 13,
+            Self::FPS => 14,
+            Self::RPG => 15,
+        }
+    }
+}
 
-            let mut item_details = Vec::new();
+/// Information comes directly from here <https://create.roblox.com/docs/studio/catalog-api#marketplace-api>.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct AvatarSearchQuery {
+    /// Category must be filled to query more than one page.
+    pub category: Option<Category>,
+    /// Search by creator name. If `creator_type` is not provided, search is for users only.
+    pub creator_name: Option<String>,
+    /// Corresponds to a user id or group id depending on the creator type.
+    /// Must be filled if `creator_type` is filled.
+    pub creator_id: Option<u64>,
+    /// Must be filled if `creator_id` is filled.
+    pub creator_type: Option<CreatorType>,
+    /// The genres of the item; keep in mind [`QueryGenre`] is different from [`Genre`].
+    pub query_genres: Vec<QueryGenre>,
+    /// The keyword to search for.
+    pub keyword: Option<String>,
+    /// The sort aggregation is used to sort the results by a specific metric.
+    /// View [`SortAggregation`] for more information.
+    pub sort_aggregation: Option<SortAggregation>,
+    /// The sort type is used to sort the results in a specific order.
+    /// View [`SortType`] for more information.
+    pub sort_type: Option<SortType>,
+    /// Subcategory must be filled to query more than one page.
+    pub subcategory: Option<Subcategory>,
+}
 
-            for raw_details in raw.data {
-                let details = ItemDetails::try_from(raw_details)?;
-                item_details.push(details);
+impl AvatarSearchQuery {
+    /// Converts the query into a url.
+    pub fn to_url(&self) -> String {
+        let mut url = String::from(AVATAR_CATALOG_SEARCH_BASE_URL);
+
+        if let Some(category) = self.category {
+            url.push_str(&format!("category={}&", category.as_u8()));
+        }
+
+        if let Some(creator_name) = &self.creator_name {
+            url.push_str(&format!("creatorName={}&", creator_name));
+        }
+
+        if let Some(creator_id) = self.creator_id {
+            url.push_str(&format!("creatorTargetId={}&", creator_id));
+        }
+
+        if let Some(creator_type) = self.creator_type {
+            url.push_str(&format!("creatorType={}&", creator_type.as_u8()));
+        }
+
+        if !self.query_genres.is_empty() {
+            url.push_str("genre=");
+            for query_genre in &self.query_genres {
+                url.push_str(&format!("{},", query_genre.as_u8()));
             }
-
-            sort_items_by_argument_order(&mut item_details, &items);
-
-            Ok(item_details)
+            url.push('&');
         }
+
+        if let Some(keyword) = &self.keyword {
+            url.push_str(&format!("keyword={}&", keyword));
+        }
+
+        if let Some(sort_aggregation) = self.sort_aggregation {
+            url.push_str(&format!("sortAggregation={}&", sort_aggregation.as_u8()));
+        }
+
+        if let Some(sort_type) = self.sort_type {
+            url.push_str(&format!("sortType={}&", sort_type.as_u8()));
+        }
+
+        if let Some(subcategory) = self.subcategory {
+            url.push_str(&format!("subcategory={}&", subcategory.as_u8()));
+        }
+
+        // Remove the last & if it exists.
+        if url.ends_with('&') {
+            url.pop();
+        }
+
+        url
     }
 }
 
-/// Makes sure that the items are in the same order as the arguments.
-///
-/// For example, if the arguments are `[1, 2, 3]` and the resulting items are `[2, 1, 3]`,
-/// then the resulting items will be `[1, 2, 3]`.
-fn sort_items_by_argument_order(items: &mut [ItemDetails], arguments: &[ItemArgs]) {
-    items.sort_by(|a, b| {
-        let a_index = arguments
-            .iter()
-            .position(|item_args| item_args.id == a.id)
-            .unwrap_or(usize::MAX);
+/// A builder for [`AvatarSearchQuery`].
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct AvatarSearchQueryBuilder {
+    query: AvatarSearchQuery,
+}
 
-        let b_index = arguments
-            .iter()
-            .position(|item_args| item_args.id == b.id)
-            .unwrap_or(usize::MAX);
+impl AvatarSearchQueryBuilder {
+    /// Creates a new `AvatarSearchQueryBuilder`.
+    pub fn new() -> Self {
+        Self {
+            query: AvatarSearchQuery::default(),
+        }
+    }
 
-        a_index.cmp(&b_index)
-    });
+    /// Builds the [`AvatarSearchQuery`].
+    pub fn build(self) -> AvatarSearchQuery {
+        self.query
+    }
+
+    #[allow(missing_docs)]
+    pub fn category(mut self, category: Category) -> Self {
+        self.query.category = Some(category);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn creator_name(mut self, creator_name: String) -> Self {
+        self.query.creator_name = Some(creator_name);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn creator_id(mut self, creator_id: u64) -> Self {
+        self.query.creator_id = Some(creator_id);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn creator_type(mut self, creator_type: CreatorType) -> Self {
+        self.query.creator_type = Some(creator_type);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn query_genres(mut self, query_genres: Vec<QueryGenre>) -> Self {
+        self.query.query_genres = query_genres;
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn keyword(mut self, keyword: String) -> Self {
+        self.query.keyword = Some(keyword);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn sort_aggregation(mut self, sort_aggregation: SortAggregation) -> Self {
+        self.query.sort_aggregation = Some(sort_aggregation);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn sort_type(mut self, sort_type: SortType) -> Self {
+        self.query.sort_type = Some(sort_type);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn subcategory(mut self, subcategory: Subcategory) -> Self {
+        self.query.subcategory = Some(subcategory);
+        self
+    }
 }

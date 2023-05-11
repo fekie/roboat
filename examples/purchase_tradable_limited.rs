@@ -27,8 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let uaid = args.uaid;
     let price = args.price;
 
-    let item_args = roboat::catalog::avatar_catalog::ItemArgs {
-        item_type: roboat::catalog::avatar_catalog::ItemType::Asset,
+    let item_args = roboat::catalog::Item {
+        item_type: roboat::catalog::ItemType::Asset,
         id: item_id,
     };
 
