@@ -1,5 +1,4 @@
-use roboat::catalog::avatar_catalog::search_query::AvatarSearchQueryBuilder;
-use roboat::catalog::avatar_catalog::Category;
+use roboat::catalog::{AvatarSearchQueryBuilder, Category};
 use roboat::{ClientBuilder, RoboatError};
 
 #[tokio::main]

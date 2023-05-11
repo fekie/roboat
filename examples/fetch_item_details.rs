@@ -1,4 +1,4 @@
-use roboat::catalog::avatar_catalog::{Item, ItemType};
+use roboat::catalog::{Item, ItemType};
 use roboat::ClientBuilder;
 
 #[tokio::main]

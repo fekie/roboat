@@ -1,7 +1,6 @@
-use super::{
+use super::catalog_types::{
     CreatorType, Genre, Item, ItemRestriction, ItemStatus, ItemType, PremiumPricing, PriceStatus,
 };
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -70,7 +69,7 @@ impl From<Item> for ItemReq {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub(super) struct CatalogSearchQueryResponse {
+pub(super) struct AvatarSearchQueryResponse {
     #[serde(alias = "previousPageCursor")]
     pub previous_page_cursor: Option<String>,
     #[serde(alias = "nextPageCursor")]

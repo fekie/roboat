@@ -1,4 +1,4 @@
-use crate::catalog::avatar_catalog::CreatorType;
+use crate::catalog::CreatorType;
 use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
 
