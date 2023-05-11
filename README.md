@@ -35,6 +35,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Product ID Bulk - [`Client::product_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.product_id_bulk)
     - Fetch Collectible Item ID - [`Client::collectible_item_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id)
     - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id_bulk)
+    - Avatar Catalog Search - [`Client::avatar_catalog_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.avatar_catalog_search)
 * Economy API - [`economy.roblox.com/*`]
     - Fetch Robux Balance - [`Client::robux`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.robux)
     - Fetch Resellers - [`Client::resellers`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.resellers)
@@ -67,7 +68,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.20.1"
+roboat = "0.21.0"
 ```
 
 # Quick Start Examples
