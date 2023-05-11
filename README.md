@@ -36,6 +36,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Collectible Item ID - [`Client::collectible_item_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id)
     - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.collectible_item_id_bulk)
     - Avatar Catalog Search - [`Client::avatar_catalog_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.avatar_catalog_search)
+* Chat API - [`chat.roblox.com/*`]
+    - Fetch Unread Conversation Count - [`Client::unread_conversation_count`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.unread_conversation_count)
 * Economy API - [`economy.roblox.com/*`]
     - Fetch Robux Balance - [`Client::robux`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.robux)
     - Fetch Resellers - [`Client::resellers`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.resellers)

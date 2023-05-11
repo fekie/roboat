@@ -23,7 +23,9 @@
 //!   - Fetch Product ID Bulk - [`Client::product_id_bulk`]
 //!   - Fetch Collectible Item ID - [`Client::collectible_item_id`]
 //!   - Fetch Collectible Item ID Bulk - [`Client::collectible_item_id_bulk`]
-//!    - Avatar Catalog Search - [`Client::avatar_catalog_search`]
+//!   - Avatar Catalog Search - [`Client::avatar_catalog_search`]
+//! * Chat API
+//!   - Fetch Unread Conversation Count - [`Client::unread_conversation_count`]
 //! * Economy API
 //!   - Fetch Robux Balance - [`Client::robux`]
 //!   - Fetch Resellers - [`Client::resellers`]
