@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 mod request_types;
+/// Structs and methods related to avatar catalog search.
 pub mod search_query;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
@@ -406,12 +407,14 @@ pub struct ItemDetails {
     pub collectible_item_id: Option<String>,
 }
 
-/// Holds information used to retrieve data from the [`Client::item_details`] endpoint.
+/// Contains an item id and its type. Used as part of a parameter in [`Client::item_details`], and used as
+/// part of a response in [`Client::avatar_catalog_search`].
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub struct ItemArgs {
+pub struct Item {
     /// The type of the item (Asset or Bundle).
+    #[serde(alias = "itemType")]
     pub item_type: ItemType,
     /// The id of the item, or of the bundle.
     /// In the [`Client::item_details`] endpoint, it acts as both, depending on the [`Self::item_type`].
@@ -582,25 +585,24 @@ impl Client {
     /// # Examples
     ///
     /// ```no_run
-    /// use roboat::catalog::avatar_catalog::ItemArgs;
-    /// use roboat::catalog::avatar_catalog::ItemType;
+    /// use roboat::catalog::avatar_catalog::{ItemType, Item};
     /// use roboat::ClientBuilder;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let asset = ItemArgs {
+    /// let asset = Item {
     ///     item_type: ItemType::Asset,
     ///     id: 1365767,
     /// };
     ///
-    /// let bundle = ItemArgs {
+    /// let bundle = Item {
     ///    item_type: ItemType::Bundle,
     ///    id: 39,
     /// };
     ///
-    /// let ugc_limited = ItemArgs {
+    /// let ugc_limited = Item {
     ///    item_type: ItemType::Asset,
     ///    id: 13032232281,
     /// };
@@ -616,10 +618,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn item_details(
-        &self,
-        items: Vec<ItemArgs>,
-    ) -> Result<Vec<ItemDetails>, RoboatError> {
+    pub async fn item_details(&self, items: Vec<Item>) -> Result<Vec<ItemDetails>, RoboatError> {
         match self.item_details_internal(items.clone()).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
@@ -661,7 +660,7 @@ impl Client {
     /// # }
     /// ```
     pub async fn product_id(&self, item_id: u64) -> Result<u64, RoboatError> {
-        let item = ItemArgs {
+        let item = Item {
             item_type: ItemType::Asset,
             id: item_id,
         };
@@ -715,7 +714,7 @@ impl Client {
         let mut items = Vec::new();
 
         for item_id in item_ids {
-            let item = ItemArgs {
+            let item = Item {
                 item_type: ItemType::Asset,
                 id: item_id,
             };
@@ -767,7 +766,7 @@ impl Client {
     /// # }
     /// ```
     pub async fn collectible_item_id(&self, item_id: u64) -> Result<String, RoboatError> {
-        let item = ItemArgs {
+        let item = Item {
             item_type: ItemType::Asset,
             id: item_id,
         };
@@ -826,7 +825,7 @@ impl Client {
         let mut items = Vec::new();
 
         for item_id in item_ids {
-            let item = ItemArgs {
+            let item = Item {
                 item_type: ItemType::Asset,
                 id: item_id,
             };
@@ -850,9 +849,7 @@ impl Client {
 }
 
 mod internal {
-    use super::{
-        request_types, sort_items_by_argument_order, ItemArgs, ItemDetails, ITEM_DETAILS_API,
-    };
+    use super::{request_types, sort_items_by_argument_order, Item, ItemDetails, ITEM_DETAILS_API};
     use crate::XCSRF_HEADER;
     use crate::{Client, RoboatError};
 
@@ -860,13 +857,13 @@ mod internal {
         /// Used internally to fetch the details of one or more items from <https://catalog.roblox.com/v1/catalog/items/details>.
         pub(super) async fn item_details_internal(
             &self,
-            items: Vec<ItemArgs>,
+            items: Vec<Item>,
         ) -> Result<Vec<ItemDetails>, RoboatError> {
             let request_body = request_types::ItemDetailsReqBody {
                 // Convert the ItemParameters to te reqwest ItemParametersReq
                 items: items
                     .iter()
-                    .map(|x| request_types::ItemArgsReq::from(*x))
+                    .map(|x| request_types::ItemReq::from(*x))
                     .collect(),
             };
 
@@ -899,7 +896,7 @@ mod internal {
 ///
 /// For example, if the arguments are `[1, 2, 3]` and the resulting items are `[2, 1, 3]`,
 /// then the resulting items will be `[1, 2, 3]`.
-fn sort_items_by_argument_order(items: &mut [ItemDetails], arguments: &[ItemArgs]) {
+fn sort_items_by_argument_order(items: &mut [ItemDetails], arguments: &[Item]) {
     items.sort_by(|a, b| {
         let a_index = arguments
             .iter()

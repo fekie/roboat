@@ -151,13 +151,13 @@
 //! This code snippet allows you to get the details of an item.
 //!
 //! ```no_run
-//! use roboat::catalog::avatar_catalog::{ItemArgs, ItemType};
+//! use roboat::catalog::avatar_catalog::{Item, ItemType};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let client = roboat::ClientBuilder::new().build();
 //!
-//!     let item = ItemArgs {
+//!     let item = Item {
 //!         item_type: ItemType::Asset,
 //!         id: 1365767,
 //!     };

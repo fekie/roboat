@@ -1,11 +1,10 @@
-use roboat::catalog::avatar_catalog::ItemArgs;
-use roboat::catalog::avatar_catalog::ItemType;
+use roboat::catalog::avatar_catalog::{Item, ItemType};
 use roboat::ClientBuilder;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Roblox "new" limited
-    let item_1 = ItemArgs {
+    let item_1 = Item {
         item_type: ItemType::Asset,
         id: 12803855954,
     };
