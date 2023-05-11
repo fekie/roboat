@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 mod request_types;
+pub mod search_query;
 
 // A useful link for the encodings for item types: https://create.roblox.com/docs/studio/catalog-api#avatar-catalog-api
 
@@ -71,7 +72,8 @@ pub enum BundleType {
     AvatarAnimations,
 }
 
-/// An enum representing the genre of an item (war, funny).
+/// An enum representing the genre of an item (war, funny). Only used when returning
+/// info from item_details.
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
@@ -138,6 +140,15 @@ pub enum CreatorType {
     Group,
 }
 
+impl CreatorType {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::User => 1,
+            Self::Group => 2,
+        }
+    }
+}
+
 /// The price status of an item. Only applies to items not on sale (Free, Offsale).
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
@@ -170,6 +181,22 @@ pub enum Category {
     CommunityCreations,
 }
 
+impl Category {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Featured => 0,
+            Self::All => 1,
+            Self::Collectibles => 2,
+            Self::Clothing => 3,
+            Self::BodyParts => 4,
+            Self::Gear => 5,
+            Self::Accessories => 11,
+            Self::AvatarAnimations => 12,
+            Self::CommunityCreations => 13,
+        }
+    }
+}
+
 /// A time period for when a sort applies.
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
@@ -181,6 +208,17 @@ pub enum SortAggregation {
     PastWeek,
     PastMonth,
     AllTime,
+}
+
+impl SortAggregation {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::PastDay => 0,
+            Self::PastWeek => 1,
+            Self::PastMonth => 2,
+            Self::AllTime => 3,
+        }
+    }
 }
 
 /// Sorting types that can be used in an item search.
@@ -196,6 +234,19 @@ pub enum SortType {
     Updated,
     PriceAsc,
     PriceDesc,
+}
+
+impl SortType {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Relevance => 0,
+            Self::Favorited => 1,
+            Self::Sales => 2,
+            Self::Updated => 3,
+            Self::PriceAsc => 4,
+            Self::PriceDesc => 5,
+        }
+    }
 }
 
 /// A subcategory for items, used when searching.
@@ -239,6 +290,47 @@ pub enum Subcategory {
     Social,
     Building,
     Transport,
+}
+
+impl Subcategory {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::Featured => 0,
+            Self::All => 1,
+            Self::Collectibles => 2,
+            Self::Clothing => 3,
+            Self::BodyParts => 4,
+            Self::Gear => 5,
+            Self::Hats => 9,
+            Self::Faces => 10,
+            Self::Shirts => 12,
+            Self::TShirts => 13,
+            Self::Pants => 14,
+            Self::Heads => 15,
+            Self::Accessories => 19,
+            Self::HairAccessories => 20,
+            Self::FaceAccessories => 21,
+            Self::NeckAccessories => 22,
+            Self::ShoulderAccessories => 23,
+            Self::FrontAccessories => 24,
+            Self::BackAccessories => 25,
+            Self::WaistAccessories => 26,
+            Self::AvatarAnimations => 27,
+            Self::Bundles => 37,
+            Self::AnimationBundles => 38,
+            Self::EmoteAnimations => 39,
+            Self::CommunityCreations => 40,
+            Self::Melee => 41,
+            Self::Ranged => 42,
+            Self::Explosive => 43,
+            Self::PowerUp => 44,
+            Self::Navigation => 45,
+            Self::Musical => 46,
+            Self::Social => 47,
+            Self::Building => 48,
+            Self::Transport => 49,
+        }
+    }
 }
 
 /// Additional details for premium pricing.
