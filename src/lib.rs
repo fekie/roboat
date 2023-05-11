@@ -194,6 +194,8 @@ mod auth;
 pub mod bedev2;
 /// A module for endpoints prefixed with <https://catalog.roblox.com/*>.
 pub mod catalog;
+/// A module for endpoints prefixed with <https://chat.roblox.com/*>.
+mod chat;
 /// A module related to the [`Client`] struct.
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
@@ -226,6 +228,7 @@ mod validation;
 // todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
 // todo: add doc example and example count somewhere
+// todo: add message apis
 
 use serde::{Deserialize, Serialize};
 
