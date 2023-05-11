@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let limit = Limit::Ten;
     let cursor = None;
 
-    let trades = client.trades(trade_type, limit, cursor).await?;
+    let (trades, _next_cursor) = client.trades(trade_type, limit, cursor).await?;
 
     let trade_count = trades.len();
 
