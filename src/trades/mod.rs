@@ -87,7 +87,7 @@ impl Client {
     /// let limit = Limit::Ten;
     /// let cursor = None;
     ///
-    /// let trades = client.trades(trade_type, limit, cursor).await?;
+    /// let (trades, next_cursor) = client.trades(trade_type, limit, cursor).await?;
     ///
     /// println!("Inbound Trade #1 Partner: {}", trades[0].partner.username);
     /// # Ok(())
@@ -98,7 +98,7 @@ impl Client {
         trade_type: TradeType,
         limit: Limit,
         cursor: Option<String>,
-    ) -> Result<Vec<Trade>, RoboatError> {
+    ) -> Result<(Vec<Trade>, Option<String>), RoboatError> {
         let limit = limit.to_u64();
         let cursor = cursor.unwrap_or_default();
 
@@ -126,6 +126,8 @@ impl Client {
         let response = Self::validate_request_result(request_result).await?;
         let raw = Self::parse_to_raw::<request_types::InboundTradesResponse>(response).await?;
 
+        let next_cursor = raw.next_page_cursor;
+
         let mut trades = Vec::new();
 
         for trade in raw.data {
@@ -145,6 +147,6 @@ impl Client {
             trades.push(trade);
         }
 
-        Ok(trades)
+        Ok((trades, next_cursor))
     }
 }
