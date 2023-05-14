@@ -39,6 +39,8 @@
 //!   - Set Group Member Role - [`Client::set_group_member_role`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//! * Private Messages API
+//!  - Fetch Messages - [`Client::messages`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Users API
@@ -206,6 +208,8 @@ pub mod economy;
 pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
 mod presence;
+/// A module for endpoints prefixed with <https://privatemessages.roblox.com/*>.
+pub mod private_messages;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.

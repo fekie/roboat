@@ -51,6 +51,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Set Group Member Role - [`Client::set_group_member_role`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.set_group_member_role)
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
+* Private Messages API - [`privatemessages.roblox.com/*`]
+    - Fetch Messages - [`Client::messages`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.messages)
 * Trades API - [`trades.roblox.com/*`]
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
 * Users API - [`users.roblox.com/*`]
@@ -70,7 +72,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.22.0"
+roboat = "0.23.0"
 ```
 
 # Quick Start Examples
