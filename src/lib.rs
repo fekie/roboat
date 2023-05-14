@@ -39,6 +39,8 @@
 //!   - Set Group Member Role - [`Client::set_group_member_role`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//! * Private Messages API
+//!  - Fetch Messages - [`Client::messages`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Users API
