@@ -1,10 +1,12 @@
-use crate::{Client, Limit, RoboatError};
+use crate::{Client, Limit, RoboatError, User};
 use reqwest::header;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 mod request_types;
 
 const TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
+const TRADE_DETAILS_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}";
 
 /// For requests related to trades, we use Descending as the sort order.
 /// This is because there is hardly any use case for using a reverse sort order for trades.
@@ -51,6 +53,22 @@ pub enum TradeStatus {
     RejectedDueToError,
 }
 
+impl std::str::FromStr for TradeStatus {
+    type Err = RoboatError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Open" => Ok(Self::Open),
+            "Completed" => Ok(Self::Completed),
+            "Declined" => Ok(Self::Declined),
+            "Expired" => Ok(Self::Expired),
+            "RejectedDueToError" => Ok(Self::RejectedDueToError),
+            _ => Err(RoboatError::MalformedResponse),
+        }
+    }
+}
+
+// todo: change this to a `User`
 /// The details of the account you're trading with.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 #[allow(missing_docs)]
@@ -58,6 +76,43 @@ pub struct Partner {
     pub user_id: u64,
     pub username: String,
     pub display_name: String,
+}
+
+/// The details of a trade.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct TradeDetails {
+    /// Your partner in the trade deal.
+    pub partner: User,
+    /// The items you're offering.
+    pub your_items: Vec<TradeItem>,
+    /// The amount of robux you're offering.
+    pub your_robux: u64,
+    /// The items your partner is offering.
+    pub partner_items: Vec<TradeItem>,
+    /// The amount of robux your partner is offering.
+    pub partner_robux: u64,
+    /// The creation time of the trade in ISO 8601 format.
+    pub created: String,
+    /// The expiration time of the trade in ISO 8601 format.
+    pub expiration: Option<String>,
+    /// Whether one of the parties can still act on the trade.
+    pub is_active: bool,
+    /// The status of the trade.
+    pub status: TradeStatus,
+}
+
+/// The details of an item in a trade. This is separate from other item structs
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct TradeItem {
+    pub item_id: u64,
+    /// The serial number of the item. Only exists for limited Us.
+    pub serial_number: Option<u64>,
+    /// The unique asset id of the item. This is the only item with this uaid.
+    pub uaid: u64,
+    pub name: String,
+    /// The recent average price of the item.
+    pub rap: u64,
 }
 
 impl Client {
@@ -148,5 +203,103 @@ impl Client {
         }
 
         Ok((trades, next_cursor))
+    }
+
+    /// Returns the details of a trade using <https://trades.roblox.com/v1/trades/{trade_id}>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const TRADE_ID: u64 = 123456789;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let trade_details = client.trade_details(TRADE_ID).await?;
+    ///
+    /// println!("Trade Details: {:#?}", trade_details);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn trade_details(&self, trade_id: u64) -> Result<TradeDetails, RoboatError> {
+        let formatted_url = TRADE_DETAILS_API.replace("{trade_id}", &trade_id.to_string());
+        let cookie_string = self.cookie_string()?;
+
+        let response_result = self
+            .reqwest_client
+            .get(&formatted_url)
+            .header(header::COOKIE, cookie_string)
+            .send()
+            .await;
+
+        let response = Self::validate_request_result(response_result).await?;
+        let raw = Self::parse_to_raw::<request_types::TradeDetailsResponse>(response).await?;
+
+        let partner = User {
+            user_id: raw.offers[1].user.id as u64,
+            username: raw.offers[1].user.name.clone(),
+            display_name: raw.offers[1].user.display_name.clone(),
+        };
+
+        let mut your_items: Vec<TradeItem> = Vec::new();
+
+        for item in &raw.offers[0].user_assets {
+            let trade_item = TradeItem {
+                item_id: item.asset_id as u64,
+                serial_number: item.serial_number.map(|x| x as u64),
+                uaid: item.id as u64,
+                name: item.name.clone(),
+                rap: item.recent_average_price as u64,
+            };
+
+            your_items.push(trade_item);
+        }
+
+        let mut partner_items: Vec<TradeItem> = Vec::new();
+
+        for item in &raw.offers[1].user_assets {
+            let trade_item = TradeItem {
+                item_id: item.asset_id as u64,
+                serial_number: item.serial_number.map(|x| x as u64),
+                uaid: item.id as u64,
+                name: item.name.clone(),
+                rap: item.recent_average_price as u64,
+            };
+
+            partner_items.push(trade_item);
+        }
+
+        let your_robux = raw.offers[0].robux as u64;
+        let partner_robux = raw.offers[1].robux as u64;
+
+        let created = raw.created;
+        let expiration = raw.expiration;
+        let is_active = raw.is_active;
+
+        let trade_status = TradeStatus::from_str(&raw.status)?;
+
+        let trade_details = TradeDetails {
+            partner,
+            your_items,
+            partner_items,
+            your_robux,
+            partner_robux,
+            created,
+            expiration,
+            is_active,
+            status: trade_status,
+        };
+
+        Ok(trade_details)
     }
 }
