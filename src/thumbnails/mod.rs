@@ -13,7 +13,7 @@ const THUMBNAIL_API_URL: &str = "https://thumbnails.roblox.com/v1/batch";
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub enum ThumbnailAssetSize {
+pub enum AssetThumbnailSize {
     S30x30,
     S42x42,
     S50x50,
@@ -41,7 +41,7 @@ pub enum ThumbnailAssetSize {
     S1200x80,
 }
 
-impl fmt::Display for ThumbnailAssetSize {
+impl fmt::Display for AssetThumbnailSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::S30x30 => write!(f, "30x30"),
@@ -73,7 +73,7 @@ impl fmt::Display for ThumbnailAssetSize {
 }
 
 impl Client {
-    /// Fetches multiple asset thumbnails of a specified size using <https://users.roblox.com/v1/users/search>.
+    /// Fetches multiple asset thumbnails of a specified size using <https://thumbnails.roblox.com/v1/batch>.
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
@@ -85,13 +85,13 @@ impl Client {
     ///
     /// ```no_run
     /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::ThumbnailAssetSize;
+    /// use roboat::thumbnails::AssetThumbnailSize;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let size = ThumbnailAssetSize::S420x420;
+    /// let size = AssetThumbnailSize::S420x420;
     /// let asset_id_1 = 20418400;
     /// let asset_id_2 = 12660007639;
     ///
@@ -108,7 +108,7 @@ impl Client {
     pub async fn asset_thumbnail_url_bulk(
         &self,
         asset_ids: Vec<u64>,
-        size: ThumbnailAssetSize,
+        size: AssetThumbnailSize,
     ) -> Result<Vec<String>, RoboatError> {
         let url = THUMBNAIL_API_URL;
 
@@ -142,6 +142,46 @@ impl Client {
         }
 
         Ok(urls)
+    }
+
+    /// Fetches an asset thumbnail of a specified size using <https://thumbnails.roblox.com/v1/batch>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    /// use roboat::thumbnails::AssetThumbnailSize;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let asset_id = 20418400;
+    ///
+    /// let url = client
+    ///     .asset_thumbnail_url(asset_id, size)
+    ///     .await?;
+    ///
+    /// println!("Asset {} thumbnail url: {}", asset_id, url);
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn asset_thumbnail_url(
+        &self,
+        asset_id: u64,
+        size: AssetThumbnailSize,
+    ) -> Result<String, RoboatError> {
+        let urls = self.asset_thumbnail_url_bulk(vec![asset_id], size).await?;
+        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
+        Ok(url.to_owned())
     }
 }
 
