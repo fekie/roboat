@@ -41,6 +41,8 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Private Messages API
 //!   - Fetch Messages - [`Client::messages`]
+//! * Thumbnails API
+//!   - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Users API

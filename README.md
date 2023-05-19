@@ -53,6 +53,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
 * Private Messages API - [`privatemessages.roblox.com/*`]
     - Fetch Messages - [`Client::messages`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.messages)
+* Thumbnails API - [`thumbnails.roblox.com/*`]
+    - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url_bulk)
 * Trades API - [`trades.roblox.com/*`]
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
 * Users API - [`users.roblox.com/*`]
