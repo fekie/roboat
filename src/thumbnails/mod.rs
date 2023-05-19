@@ -13,7 +13,7 @@ const THUMBNAIL_API_URL: &str = "https://thumbnails.roblox.com/v1/batch";
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub enum ThumbnailAssetSize {
+pub enum AssetThumbnailSize {
     S30x30,
     S42x42,
     S50x50,
@@ -41,7 +41,7 @@ pub enum ThumbnailAssetSize {
     S1200x80,
 }
 
-impl fmt::Display for ThumbnailAssetSize {
+impl fmt::Display for AssetThumbnailSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::S30x30 => write!(f, "30x30"),
@@ -85,13 +85,13 @@ impl Client {
     ///
     /// ```no_run
     /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::ThumbnailAssetSize;
+    /// use roboat::thumbnails::AssetThumbnailSize;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let size = ThumbnailAssetSize::S420x420;
+    /// let size = AssetThumbnailSize::S420x420;
     /// let asset_id_1 = 20418400;
     /// let asset_id_2 = 12660007639;
     ///
@@ -108,7 +108,7 @@ impl Client {
     pub async fn asset_thumbnail_url_bulk(
         &self,
         asset_ids: Vec<u64>,
-        size: ThumbnailAssetSize,
+        size: AssetThumbnailSize,
     ) -> Result<Vec<String>, RoboatError> {
         let url = THUMBNAIL_API_URL;
 
