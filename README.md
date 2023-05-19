@@ -58,6 +58,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url_bulk)
 * Trades API - [`trades.roblox.com/*`]
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
+    - Fetch Trade Details - [`Client::trade_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trade_details)
 * Users API - [`users.roblox.com/*`]
     - Fetch User ID - [`Client::user_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_id)
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
@@ -75,7 +76,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.25.0"
+roboat = "0.26.0"
 ```
 
 # Quick Start Examples
