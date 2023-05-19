@@ -39,64 +39,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         id: 21070789,
     };
 
-    let items = vec![item_1, item_2, item_3, item_4, item_5, item_6];
+    // ugc limited
+    let item_7 = Item {
+        item_type: ItemType::Asset,
+        id: 13464465797,
+    };
+
+    // off sale ugc (may be out of date in the future)
+    let item_8 = Item {
+        item_type: ItemType::Asset,
+        id: 13450447846,
+    };
+
+    let items = vec![
+        item_1, item_2, item_3, item_4, item_5, item_6, item_7, item_8,
+    ];
 
     let client = ClientBuilder::new().build();
-    let details = client.item_details(items).await?;
+    let all_details = client.item_details(items).await?;
 
-    println!(
-        "Bundle Name: {} / Bundle Price: {}",
-        details[0].name,
-        details[0]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
-
-    println!(
-        "Item Name: {} / Item Price: {}",
-        details[1].name,
-        details[1]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
-
-    println!(
-        "Item Name: {} / Item Price: {}",
-        details[2].name,
-        details[2]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
-
-    println!(
-        "Item Name: {} / Item Price: {}",
-        details[3].name,
-        details[3]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
-
-    println!(
-        "Item Name: {} / Item Price: {}",
-        details[4].name,
-        details[4]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
-
-    println!(
-        "Item Name: {} / Item Price: {}",
-        details[5].name,
-        details[5]
-            .price
-            .map(|x| x.to_string())
-            .unwrap_or_else(|| "*No Resellers*".to_owned())
-    );
+    for details in all_details {
+        println!(
+            "Bundle Name: {} / Bundle Price: {}",
+            details.name,
+            details
+                .price
+                .map(|x| x.to_string())
+                .unwrap_or_else(|| "*No Resellers*".to_owned())
+        );
+    }
 
     Ok(())
 }

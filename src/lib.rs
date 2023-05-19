@@ -41,6 +41,8 @@
 //!   - Register Presence - [`Client::register_presence`]
 //! * Private Messages API
 //!   - Fetch Messages - [`Client::messages`]
+//! * Thumbnails API
+//!   - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`]
 //! * Trades API
 //!   - Fetch Trades List - [`Client::trades`]
 //! * Users API
@@ -210,6 +212,8 @@ pub mod groups;
 mod presence;
 /// A module for endpoints prefixed with <https://privatemessages.roblox.com/*>.
 pub mod private_messages;
+/// A module for endpoints prefixed with <https://thumbnails.roblox.com/*>.
+pub mod thumbnails;
 /// A module for endpoints prefixed with <https://trades.roblox.com/*>.
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
@@ -235,6 +239,7 @@ mod validation;
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
 // todo: add doc example and example count somewhere
 // todo: add message apis
+// todo: show on readme and crate docs which endpoints are wrappers for other endpoints
 
 use serde::{Deserialize, Serialize};
 
