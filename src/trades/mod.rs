@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 mod request_types;
 
-const INBOUND_TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
+const TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
 
 /// For requests related to trades, we use Descending as the sort order.
 /// This is because there is hardly any use case for using a reverse sort order for trades.
@@ -113,7 +113,7 @@ impl Client {
 
         let formatted_url = format!(
             "{}{}?sortOrder={}&cursor={}&limit={}",
-            INBOUND_TRADES_API, trade_type_str, SORT_ORDER, cursor, limit
+            TRADES_API, trade_type_str, SORT_ORDER, cursor, limit
         );
 
         let request_result = self
