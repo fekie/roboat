@@ -143,6 +143,46 @@ impl Client {
 
         Ok(urls)
     }
+
+    /// Fetches an asset thumbnail of a specified size using <https://thumbnails.roblox.com/v1/batch>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    /// use roboat::thumbnails::AssetThumbnailSize;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let asset_id = 20418400;
+    ///
+    /// let url = client
+    ///     .asset_thumbnail_url(asset_id, size)
+    ///     .await?;
+    ///
+    /// println!("Asset {} thumbnail url: {}", asset_id, url);
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn asset_thumbnail_url(
+        &self,
+        asset_id: u64,
+        size: AssetThumbnailSize,
+    ) -> Result<String, RoboatError> {
+        let urls = self.asset_thumbnail_url_bulk(vec![asset_id], size).await?;
+        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
+        Ok(url.to_owned())
+    }
 }
 
 /// Makes sure that the url datas are in the same order as the arguments.
