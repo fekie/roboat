@@ -239,6 +239,7 @@ mod validation;
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
 // todo: add doc example and example count somewhere
 // todo: add message apis
+// todo: show on readme and crate docs which endpoints are wrappers for other endpoints
 
 use serde::{Deserialize, Serialize};
 
