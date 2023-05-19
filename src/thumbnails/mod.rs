@@ -73,7 +73,7 @@ impl fmt::Display for AssetThumbnailSize {
 }
 
 impl Client {
-    /// Fetches multiple asset thumbnails of a specified size using <https://users.roblox.com/v1/users/search>.
+    /// Fetches multiple asset thumbnails of a specified size using <https://thumbnails.roblox.com/v1/batch>.
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
