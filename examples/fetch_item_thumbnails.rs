@@ -1,4 +1,4 @@
-use roboat::thumbnails::ThumbnailAssetSize;
+use roboat::thumbnails::AssetThumbnailSize;
 use roboat::ClientBuilder;
 
 #[tokio::main]
@@ -6,7 +6,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let asset_id_1 = 20418400;
     let asset_id_2 = 12660007639;
 
-    let size = ThumbnailAssetSize::S420x420;
+    let size = AssetThumbnailSize::S420x420;
 
     let client = ClientBuilder::new().build();
     let urls = client
