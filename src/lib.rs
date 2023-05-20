@@ -48,6 +48,7 @@
 //!   - Decline Trade - [`Client::decline_trade`]
 //!   - Fetch Trade Details - [`Client::trade_details`]
 //!   - Fetch Trades List - [`Client::trades`]
+//!   - Send Trade - [`Client::send_trade`]
 //! * Users API
 //!   - Fetch User ID - [`Client::user_id`]
 //!   - Fetch Username - [`Client::username`]
