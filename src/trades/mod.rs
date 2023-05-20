@@ -31,7 +31,7 @@ pub struct Trade {
     /// The id of the trade. Used for accepting, declining, ... trades.
     pub trade_id: u64,
     /// The details of the person you're trading with.
-    pub partner: Partner,
+    pub partner: User,
     /// Whether one of the parties can still act on the trade.
     pub is_active: bool,
     /// The status of the trade.
@@ -66,16 +66,6 @@ impl std::str::FromStr for TradeStatus {
             _ => Err(RoboatError::MalformedResponse),
         }
     }
-}
-
-// todo: change this to a `User`
-/// The details of the account you're trading with.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-#[allow(missing_docs)]
-pub struct Partner {
-    pub user_id: u64,
-    pub username: String,
-    pub display_name: String,
 }
 
 /// The details of a trade.
@@ -186,7 +176,7 @@ impl Client {
         let mut trades = Vec::new();
 
         for trade in raw.data {
-            let partner = Partner {
+            let partner = User {
                 user_id: trade.user.id as u64,
                 username: trade.user.name,
                 display_name: trade.user.display_name,
