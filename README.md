@@ -12,7 +12,7 @@ A high performance interface for the Roblox API.
 This library is designed to be high-performance capable, meaning that it supports proxies
 and is capable of making requests in parallel.
 
-Note that this crate is currently economy-focused, meaning that endpoints related to items and trades are currently prioritized.
+Note that this crate is still in early development and updates may be breaking until the first major version is released.
 
 # Documentation
 Extensive documentation is used throughout this crate. 
