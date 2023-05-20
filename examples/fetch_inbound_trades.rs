@@ -29,8 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {
             for (i, trade) in trades.iter().enumerate() {
                 println!(
-                    "Inbound Trade #{} Partner: {}",
+                    "Inbound Trade #{} / Trade ID: {} / Partner: {}",
                     i + 1,
+                    trade.trade_id,
                     trade.partner.username
                 );
             }

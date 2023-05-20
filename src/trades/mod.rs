@@ -7,6 +7,7 @@ mod request_types;
 
 const TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
 const TRADE_DETAILS_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}";
+const DECLINE_TRADE_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}/decline";
 
 /// For requests related to trades, we use Descending as the sort order.
 /// This is because there is hardly any use case for using a reverse sort order for trades.
@@ -31,7 +32,7 @@ pub struct Trade {
     /// The id of the trade. Used for accepting, declining, ... trades.
     pub trade_id: u64,
     /// The details of the person you're trading with.
-    pub partner: Partner,
+    pub partner: User,
     /// Whether one of the parties can still act on the trade.
     pub is_active: bool,
     /// The status of the trade.
@@ -66,16 +67,6 @@ impl std::str::FromStr for TradeStatus {
             _ => Err(RoboatError::MalformedResponse),
         }
     }
-}
-
-// todo: change this to a `User`
-/// The details of the account you're trading with.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-#[allow(missing_docs)]
-pub struct Partner {
-    pub user_id: u64,
-    pub username: String,
-    pub display_name: String,
 }
 
 /// The details of a trade.
@@ -186,7 +177,7 @@ impl Client {
         let mut trades = Vec::new();
 
         for trade in raw.data {
-            let partner = Partner {
+            let partner = User {
                 user_id: trade.user.id as u64,
                 username: trade.user.name,
                 display_name: trade.user.display_name,
@@ -301,5 +292,76 @@ impl Client {
         };
 
         Ok(trade_details)
+    }
+
+    /// Declines a trade using <https://trades.roblox.com/v1/trades/{trade_id}/decline>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const TRADE_ID: u64 = 123456789;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// client.decline_trade(TRADE_ID).await?;
+    ///
+    /// println!("Declined trade {}", TRADE_ID);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn decline_trade(&self, trade_id: u64) -> Result<(), RoboatError> {
+        match self.decline_trade_internal(trade_id).await {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.decline_trade_internal(trade_id).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+}
+
+mod internal {
+    use super::DECLINE_TRADE_API;
+    use crate::{Client, RoboatError, XCSRF_HEADER};
+    use reqwest::header;
+
+    impl Client {
+        pub(super) async fn decline_trade_internal(
+            &self,
+            trade_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = DECLINE_TRADE_API.replace("{trade_id}", &trade_id.to_string());
+            let cookie_string = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let response_result = self
+                .reqwest_client
+                .post(&formatted_url)
+                .header(header::COOKIE, cookie_string)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            Self::validate_request_result(response_result).await?;
+
+            Ok(())
+        }
     }
 }
