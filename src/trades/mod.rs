@@ -8,6 +8,7 @@ mod request_types;
 const TRADES_API: &str = "https://trades.roblox.com/v1/trades/";
 const TRADE_DETAILS_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}";
 const DECLINE_TRADE_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}/decline";
+const SEND_TRADE_API: &str = "https://trades.roblox.com/v1/trades/send";
 
 /// For requests related to trades, we use Descending as the sort order.
 /// This is because there is hardly any use case for using a reverse sort order for trades.
@@ -335,10 +336,94 @@ impl Client {
             },
         }
     }
+
+    /// your_robux and partner robux is before tax
+    ///
+    /// /// Declines a trade using <https://trades.roblox.com/v1/trades/{trade_id}/decline>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    ///
+    /// # Argument Notes
+    /// * `your_robux` and `partner` is before 30% tax.
+    /// * Uaids are NOT item/asset ids. They are unique ids for each item.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let partner_id = 12345;
+    /// let your_uaids = vec![123, 456];
+    /// let your_robux = 100;
+    /// let partner_uaids = vec![321, 654];
+    /// let partner_robux = 0;
+    ///
+    /// let trade_id = client
+    ///     .send_trade(
+    ///         partner_id,
+    ///         your_uaids,
+    ///         your_robux,
+    ///         partner_uaids,
+    ///         partner_robux,
+    ///     )
+    ///     .await?;
+    ///
+    /// println!("Sent Trade! Trade ID: {}", trade_id);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn send_trade(
+        &self,
+        partner_id: u64,
+        your_item_uaids: Vec<u64>,
+        your_robux: u64,
+        partner_item_uaids: Vec<u64>,
+        partner_robux: u64,
+    ) -> Result<u64, RoboatError> {
+        match self
+            .send_trade_internal(
+                partner_id,
+                your_item_uaids.clone(),
+                your_robux,
+                partner_item_uaids.clone(),
+                partner_robux,
+            )
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.send_trade_internal(
+                        partner_id,
+                        your_item_uaids,
+                        your_robux,
+                        partner_item_uaids,
+                        partner_robux,
+                    )
+                    .await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
-    use super::DECLINE_TRADE_API;
+    use super::{request_types, DECLINE_TRADE_API, SEND_TRADE_API};
     use crate::{Client, RoboatError, XCSRF_HEADER};
     use reqwest::header;
 
@@ -362,6 +447,50 @@ mod internal {
             Self::validate_request_result(response_result).await?;
 
             Ok(())
+        }
+
+        pub(super) async fn send_trade_internal(
+            &self,
+            partner_id: u64,
+            your_item_uaids: Vec<u64>,
+            your_robux: u64,
+            partner_item_uaids: Vec<u64>,
+            partner_robux: u64,
+        ) -> Result<u64, RoboatError> {
+            let cookie_string = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let user_id = self.user_id().await?;
+            let user_trade_offer = request_types::SendTradeOffer {
+                user_id,
+                user_asset_ids: your_item_uaids,
+                robux: your_robux,
+            };
+
+            let partner_trade_offer = request_types::SendTradeOffer {
+                user_id: partner_id,
+                user_asset_ids: partner_item_uaids,
+                robux: partner_robux,
+            };
+
+            let body = request_types::SendTradeBody {
+                // The partner trade offer always comes first.
+                offers: vec![partner_trade_offer, user_trade_offer],
+            };
+
+            let response_result = self
+                .reqwest_client
+                .post(SEND_TRADE_API)
+                .header(header::COOKIE, cookie_string)
+                .header(XCSRF_HEADER, xcsrf)
+                .json(&body)
+                .send()
+                .await;
+
+            let response = Self::validate_request_result(response_result).await?;
+            let raw = Self::parse_to_raw::<request_types::SendTradeResponse>(response).await?;
+
+            Ok(raw.id)
         }
     }
 }

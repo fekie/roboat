@@ -71,3 +71,23 @@ pub(super) struct UserAsset {
     pub asset_stock: Option<i64>,
     pub membership_type: Option<String>,
 }
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct SendTradeBody {
+    /// The first offer is the partner, the second is the user.
+    pub offers: Vec<SendTradeOffer>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct SendTradeOffer {
+    pub user_id: u64,
+    pub user_asset_ids: Vec<u64>,
+    pub robux: u64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(super) struct SendTradeResponse {
+    pub id: u64,
+}

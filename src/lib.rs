@@ -48,6 +48,7 @@
 //!   - Decline Trade - [`Client::decline_trade`]
 //!   - Fetch Trade Details - [`Client::trade_details`]
 //!   - Fetch Trades List - [`Client::trades`]
+//!   - Send Trade - [`Client::send_trade`]
 //! * Users API
 //!   - Fetch User ID - [`Client::user_id`]
 //!   - Fetch Username - [`Client::username`]
@@ -229,7 +230,6 @@ mod validation;
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
-// todo: hide reqwest types
 // todo: maybe respect cookies returned
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
@@ -243,6 +243,8 @@ mod validation;
 // todo: add doc example and example count somewhere
 // todo: add message apis
 // todo: show on readme and crate docs which endpoints are wrappers for other endpoints
+// todo: change vecs in arguments to slices
+// todo: roblox error code 0 is "Challenge is required to authorize the request" (any captcha/two step)
 
 use serde::{Deserialize, Serialize};
 
