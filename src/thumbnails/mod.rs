@@ -77,6 +77,7 @@ impl Client {
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
+    /// * Can handle up to 100 asset ids at once.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
