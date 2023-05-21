@@ -226,7 +226,6 @@ pub mod users;
 /// A module related to validating requests.
 mod validation;
 
-// todo: endpoints that require premium/robux to test: recent trades, send trade, buy limited item, buy non-limited item
 // todo: inventory api, groups api, follow api
 // todo: add usage to readme
 // todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
@@ -235,9 +234,6 @@ mod validation;
 // todo: maybe post on devforums, reddit, maybe the rust server
 // todo: put string of parsing error in MalformedResponse
 // todo: apparently a v2 details api does 500 items at once
-// todo: name apis api bedev2 or something
-// todo: rename methods and docs to remain consistent over what non-tradable limiteds are called.
-// todo: add method to get items from catalog
 // todo: make ItemDetails include both price and lowest price
 // todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
