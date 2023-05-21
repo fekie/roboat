@@ -45,10 +45,11 @@
 //!   - Fetch Asset Thumbnail URL - [`Client::asset_thumbnail_url`]
 //!   - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`]
 //! * Trades API
+//!   - Accept Trade - [`Client::accept_trade`]
 //!   - Decline Trade - [`Client::decline_trade`]
+//!   - Send Trade - [`Client::send_trade`]
 //!   - Fetch Trade Details - [`Client::trade_details`]
 //!   - Fetch Trades List - [`Client::trades`]
-//!   - Send Trade - [`Client::send_trade`]
 //! * Users API
 //!   - Fetch User ID - [`Client::user_id`]
 //!   - Fetch Username - [`Client::username`]

@@ -57,10 +57,11 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Asset Thumbnail URL - [`Client::asset_thumbnail_url`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url)
     - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url_bulk)
 * Trades API - [`trades.roblox.com/*`]
+    - Accept Trade - [`Client::accept_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.accept_trade)
     - Decline Trade - [`Client::decline_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.decline_trade)
+    - Send Trade - [`Client::send_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.send_trade)
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
     - Fetch Trade Details - [`Client::trade_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trade_details)
-    - Send Trade - [`Client::send_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.send_trade)
 * Users API - [`users.roblox.com/*`]
     - Fetch User ID - [`Client::user_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_id)
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
