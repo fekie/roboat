@@ -246,6 +246,8 @@ mod validation;
 // todo: show on readme and crate docs which endpoints are wrappers for other endpoints
 // todo: change vecs in arguments to slices
 // todo: roblox error code 0 is "Challenge is required to authorize the request" (any captcha/two step)
+// todo: add http caching
+// todo: the roblox api docs show the roblox error codes, maybe a custom sub error can be made
 
 use serde::{Deserialize, Serialize};
 
