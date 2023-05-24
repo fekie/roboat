@@ -477,12 +477,15 @@ impl Client {
     /// # Examples
     ///
     /// ```no_run
-    /// use roboat::Client;
+    /// use roboat::ClientBuilder;
     /// use roboat::RoboatError;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), RoboatError> {
-    /// let client = Client::new();
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
     /// let trade_count = client.trade_count().await?;
     ///
     /// println!("Total trades: {}", trade_count);
