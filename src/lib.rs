@@ -50,6 +50,7 @@
 //!   - Send Trade - [`Client::send_trade`]
 //!   - Fetch Trade Details - [`Client::trade_details`]
 //!   - Fetch Trades List - [`Client::trades`]
+//!   - Fetch Trade Count - [`Client::trade_count`]
 //! * Users API
 //!   - Fetch User ID - [`Client::user_id`]
 //!   - Fetch Username - [`Client::username`]
