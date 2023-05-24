@@ -91,3 +91,8 @@ pub(super) struct SendTradeOffer {
 pub(super) struct SendTradeResponse {
     pub id: u64,
 }
+
+#[derive(Serialize, Deserialize)]
+pub(super) struct TradeCountResponse {
+    pub count: u64,
+}

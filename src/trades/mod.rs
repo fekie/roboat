@@ -10,6 +10,7 @@ const TRADE_DETAILS_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}"
 const DECLINE_TRADE_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}/decline";
 const SEND_TRADE_API: &str = "https://trades.roblox.com/v1/trades/send";
 const ACCEPT_TRADE_API: &str = "https://trades.roblox.com/v1/trades/{trade_id}/accept";
+const TRADE_COUNT_API: &str = "https://trades.roblox.com/v1/trades/inbound/count";
 
 /// For requests related to trades, we use Descending as the sort order.
 /// This is because there is hardly any use case for using a reverse sort order for trades.
@@ -462,6 +463,49 @@ impl Client {
                 _ => Err(e),
             },
         }
+    }
+
+    /// Retrieves the count of trades the user using <https://trades.roblox.com/v1/trades/inbound/count>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    /// use roboat::RoboatError;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), RoboatError> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let trade_count = client.trade_count().await?;
+    ///
+    /// println!("Total trades: {}", trade_count);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn trade_count(&self) -> Result<u64, RoboatError> {
+        let cookie_string = self.cookie_string()?;
+
+        let response_result = self
+            .reqwest_client
+            .get(TRADE_COUNT_API)
+            .header(header::COOKIE, cookie_string)
+            .send()
+            .await;
+
+        let response = Self::validate_request_result(response_result).await?;
+        let raw = Self::parse_to_raw::<request_types::TradeCountResponse>(response).await?;
+
+        Ok(raw.count)
     }
 }
 

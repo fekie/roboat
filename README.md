@@ -62,6 +62,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Send Trade - [`Client::send_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.send_trade)
     - Fetch Trades List - [`Client::trades`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trades)
     - Fetch Trade Details - [`Client::trade_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trade_details)
+    - Fetch Trade Count - [`Client::trade_count`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.trade_count)
 * Users API - [`users.roblox.com/*`]
     - Fetch User ID - [`Client::user_id`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_id)
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
@@ -79,7 +80,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.29.0"
+roboat = "0.30.0"
 ```
 
 # Quick Start Examples
