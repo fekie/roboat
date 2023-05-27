@@ -1,4 +1,4 @@
-use roboat::thumbnails::{AssetThumbnailSize, ThumbnailType};
+use roboat::thumbnails::{ThumbnailSize, ThumbnailType};
 use roboat::ClientBuilder;
 
 #[tokio::main]
@@ -7,7 +7,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let avatar_id_2 = 15189;
     let avatar_id_3 = 5866753;
 
-    let size = AssetThumbnailSize::S420x420;
+    let size = ThumbnailSize::S420x420;
     let thumbnail_type = ThumbnailType::Avatar;
 
     let client = ClientBuilder::new().build();

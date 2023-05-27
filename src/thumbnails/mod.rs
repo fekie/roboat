@@ -13,7 +13,7 @@ const THUMBNAIL_API_URL: &str = "https://thumbnails.roblox.com/v1/batch";
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
-pub enum AssetThumbnailSize {
+pub enum ThumbnailSize {
     S30x30,
     S42x42,
     S50x50,
@@ -54,7 +54,7 @@ pub enum ThumbnailType {
     Asset,
 }
 
-impl fmt::Display for AssetThumbnailSize {
+impl fmt::Display for ThumbnailSize {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::S30x30 => write!(f, "30x30"),
@@ -86,235 +86,6 @@ impl fmt::Display for AssetThumbnailSize {
 }
 
 impl Client {
-    /// Fetches multiple asset thumbnails of a specified size using <https://thumbnails.roblox.com/v1/batch>.
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Can handle up to 100 asset ids at once.
-    /// * Does not appear to have a rate limit.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::AssetThumbnailSize;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let size = AssetThumbnailSize::S420x420;
-    /// let asset_id_1 = 20418400;
-    /// let asset_id_2 = 12660007639;
-    ///
-    /// let urls = client
-    ///     .asset_thumbnail_url_bulk(vec![asset_id_1, asset_id_2], size)
-    ///     .await?;
-    ///
-    /// println!("Asset {} thumbnail url: {}", asset_id_1, urls[0]);
-    /// println!("Asset {} thumbnail url: {}", asset_id_2, urls[1]);
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn asset_thumbnail_url_bulk(
-        &self,
-        asset_ids: Vec<u64>,
-        size: AssetThumbnailSize,
-    ) -> Result<Vec<String>, RoboatError> {
-        let url = THUMBNAIL_API_URL;
-
-        let mut json_item_requests = Vec::new();
-
-        for asset_id in &asset_ids {
-            json_item_requests.push(serde_json::json!({
-                "requestId": format!("{}::Asset:{}:png:regular", asset_id, size),
-                "type": "Asset",
-                "targetId": asset_id,
-                "token": "",
-                "format": "png",
-                "size": size.to_string(),
-            }));
-        }
-
-        let body = serde_json::json!(json_item_requests);
-
-        let request_result = self.reqwest_client.post(url).json(&body).send().await;
-
-        let response = Self::validate_request_result(request_result).await?;
-        let mut raw =
-            Self::parse_to_raw::<request_types::AssetThumbnailUrlResponse>(response).await?;
-
-        sort_url_datas_by_argument_order(&mut raw.data, &asset_ids);
-
-        let mut urls = Vec::new();
-
-        for data in raw.data {
-            urls.push(data.image_url);
-        }
-
-        Ok(urls)
-    }
-
-    /// Fetches an asset thumbnail of a specified size using <https://thumbnails.roblox.com/v1/batch>.
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Does not appear to have a rate limit.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::AssetThumbnailSize;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let size = AssetThumbnailSize::S420x420;
-    /// let asset_id = 20418400;
-    ///
-    /// let url = client
-    ///     .asset_thumbnail_url(asset_id, size)
-    ///     .await?;
-    ///
-    /// println!("Asset {} thumbnail url: {}", asset_id, url);
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn asset_thumbnail_url(
-        &self,
-        asset_id: u64,
-        size: AssetThumbnailSize,
-    ) -> Result<String, RoboatError> {
-        let urls = self.asset_thumbnail_url_bulk(vec![asset_id], size).await?;
-        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
-        Ok(url.to_owned())
-    }
-
-    /// Fetches multiple avatar thumbnails of a specified size using <https://thumbnails.roblox.com/v1/batch>.
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Can handle up to 100 asset ids at once.
-    /// * Does not appear to have a rate limit.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::AssetThumbnailSize;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let size = AssetThumbnailSize::S420x420;
-    /// let avatar_id_1 = 20418400;
-    /// let avatar_id_2 = 12660007639;
-    ///
-    /// let urls = client
-    ///     .avatar_thumbnail_url_bulk(vec![avatar_id_1, avatar_id_2], size)
-    ///     .await?;
-    ///
-    /// println!("Avatar {} thumbnail url: {}", avatar_id_1, urls[0]);
-    /// println!("Avatar {} thumbnail url: {}", avatar_id_2, urls[1]);
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn avatar_thumbnail_url_bulk(
-        &self,
-        player_ids: Vec<u64>,
-        size: AssetThumbnailSize,
-    ) -> Result<Vec<String>, RoboatError> {
-        let url = THUMBNAIL_API_URL;
-
-        let mut json_item_requests = Vec::new();
-
-        for avatar_id in &player_ids {
-            json_item_requests.push(serde_json::json!({
-                "requestId": format!("{}:undefined:Avatar:{}:null:regular", avatar_id, size),
-                "type": "Avatar",
-                "targetId": avatar_id,
-                "format": None::<String>,
-                "size": size.to_string(),
-            }));
-        }
-
-        let body = serde_json::json!(json_item_requests);
-
-        let request_result = self.reqwest_client.post(url).json(&body).send().await;
-
-        let response = Self::validate_request_result(request_result).await?;
-        let mut raw =
-            Self::parse_to_raw::<request_types::AssetThumbnailUrlResponse>(response).await?;
-
-        sort_url_datas_by_argument_order(&mut raw.data, &player_ids);
-
-        let mut urls = Vec::new();
-
-        for data in raw.data {
-            urls.push(data.image_url);
-        }
-
-        Ok(urls)
-    }
-
-    /// Fetches an avatar thumbnail of a specified size using <https://thumbnails.roblox.com/v1/batch>.
-    ///
-    /// # Notes
-    /// * Does not require a valid roblosecurity.
-    /// * Does not appear to have a rate limit.
-    ///
-    /// # Errors
-    /// * All errors under [Standard Errors](#standard-errors).
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::AssetThumbnailSize;
-    ///
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let client = ClientBuilder::new().build();
-    ///
-    /// let size = AssetThumbnailSize::S420x420;
-    /// let avatar_id = 20418400;
-    ///
-    /// let url = client
-    ///     .asset_thumbnail_url(avatar_id, size)
-    ///     .await?;
-    ///
-    /// println!("Avatar {} thumbnail url: {}", avatar_id, url);
-    ///
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn avatar_thumbnail_url(
-        &self,
-        player_id: u64,
-        size: AssetThumbnailSize,
-    ) -> Result<String, RoboatError> {
-        let urls = self
-            .avatar_thumbnail_url_bulk(vec![player_id], size)
-            .await?;
-        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
-        Ok(url.to_owned())
-    }
-
     /// Fetches multiple thumbnails of a specified size and type using <https://thumbnails.roblox.com/v1/batch>.
     ///
     /// # Notes
@@ -331,13 +102,13 @@ impl Client {
     ///
     /// ```no_run
     /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::{AssetThumbnailSize, ThumbnailType};
+    /// use roboat::thumbnails::{ThumbnailSize, ThumbnailType};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::Avatar;
     ///
     /// let avatar_id_1 = 20418400;
@@ -350,7 +121,7 @@ impl Client {
     /// println!("Avatar {} thumbnail url: {}", avatar_id_1, urls[0]);
     /// println!("Avatar {} thumbnail url: {}", avatar_id_2, urls[1]);
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::AvatarHeadshot;
     ///
     /// let avatar_id_1 = 20418400;
@@ -363,7 +134,7 @@ impl Client {
     /// println!("Avatar headshot {} thumbnail url: {}", avatar_id_1, urls[0]);
     /// println!("Avatar headshot {} thumbnail url: {}", avatar_id_2, urls[1]);
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::Asset;
     ///
     /// let asset_id_1 = 20418400;
@@ -382,7 +153,7 @@ impl Client {
     pub async fn thumbnail_url_bulk(
         &self,
         ids: Vec<u64>,
-        size: AssetThumbnailSize,
+        size: ThumbnailSize,
         thumbnail_type: ThumbnailType,
     ) -> Result<Vec<String>, RoboatError> {
         let mut json_item_requests = Vec::new();
@@ -437,13 +208,13 @@ impl Client {
     ///
     /// ```no_run
     /// use roboat::ClientBuilder;
-    /// use roboat::thumbnails::{AssetThumbnailSize, ThumbnailType};
+    /// use roboat::thumbnails::{ThumbnailSize, ThumbnailType};
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::Avatar;
     ///
     /// let avatar_id = 20418400;
@@ -454,7 +225,7 @@ impl Client {
     ///
     /// println!("Avatar {} thumbnail url: {}", avatar_id, url);
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::AvatarHeadshot;
     ///
     /// let avatar_id = 20418400;
@@ -465,7 +236,7 @@ impl Client {
     ///
     /// println!("Avatar headshot {} thumbnail url: {}", avatar_id, url);
     ///
-    /// let size = AssetThumbnailSize::S420x420;
+    /// let size = ThumbnailSize::S420x420;
     /// let thumbnail_type = ThumbnailType::Asset;
     ///
     /// let asset_id = 20418400;
@@ -482,7 +253,7 @@ impl Client {
     pub async fn thumbnail_url(
         &self,
         id: u64,
-        size: AssetThumbnailSize,
+        size: ThumbnailSize,
         thumbnail_type: ThumbnailType,
     ) -> Result<String, RoboatError> {
         let urls = self
@@ -516,7 +287,7 @@ fn sort_url_datas_by_argument_order(
 fn generate_request_id_string(
     thumbnail_type: ThumbnailType,
     id: u64,
-    size: AssetThumbnailSize,
+    size: ThumbnailSize,
 ) -> String {
     match thumbnail_type {
         ThumbnailType::Avatar => format!("{}:undefined:Avatar:{}:null:regular", id, size),
