@@ -78,6 +78,7 @@ impl Client {
     /// # Notes
     /// * Does not require a valid roblosecurity.
     /// * Can handle up to 100 asset ids at once.
+    /// * Does not appear to have a rate limit.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
@@ -149,6 +150,7 @@ impl Client {
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
+    /// * Does not appear to have a rate limit.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
@@ -184,6 +186,79 @@ impl Client {
         let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
         Ok(url.to_owned())
     }
+
+    /// Fetches multiple avatar thumbnails of a specified size using <https://thumbnails.roblox.com/v1/batch>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Can handle up to 100 asset ids at once.
+    /// * Does not appear to have a rate limit.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    /// use roboat::thumbnails::AssetThumbnailSize;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let avatar_id_1 = 20418400;
+    /// let avatar_id_2 = 12660007639;
+    ///
+    /// let urls = client
+    ///     .avatar_thumbnail_url_bulk(vec![avatar_id_1, avatar_id_2], size)
+    ///     .await?;
+    ///
+    /// println!("Avatar {} thumbnail url: {}", avatar_id_1, urls[0]);
+    /// println!("Avatar {} thumbnail url: {}", avatar_id_2, urls[1]);
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn avatar_thumbnail_url_bulk(
+        &self,
+        player_ids: Vec<u64>,
+        size: AssetThumbnailSize,
+    ) -> Result<Vec<String>, RoboatError> {
+        let url = THUMBNAIL_API_URL;
+
+        let mut json_item_requests = Vec::new();
+
+        for avatar_id in &player_ids {
+            json_item_requests.push(serde_json::json!({
+                "requestId": format!("{}:undefined:Avatar:{}:null:regular", avatar_id, size),
+                "type": "Avatar",
+                "targetId": avatar_id,
+                "format": None::<String>,
+                "size": size.to_string(),
+            }));
+        }
+
+        let body = serde_json::json!(json_item_requests);
+
+        let request_result = self.reqwest_client.post(url).json(&body).send().await;
+
+        let response = Self::validate_request_result(request_result).await?;
+        let mut raw =
+            Self::parse_to_raw::<request_types::AssetThumbnailUrlResponse>(response).await?;
+
+        sort_url_datas_by_argument_order(&mut raw.data, &player_ids);
+
+        let mut urls = Vec::new();
+
+        for data in raw.data {
+            urls.push(data.image_url);
+        }
+
+        Ok(urls)
+    }
+
 }
 
 /// Makes sure that the url datas are in the same order as the arguments.
