@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let avatar_id_3 = 5866753;
 
     let size = AssetThumbnailSize::S420x420;
-    let thumbnail_type = ThumbnailType::Avatar;
+    let thumbnail_type = ThumbnailType::AvatarHeadshot;
 
     let client = ClientBuilder::new().build();
 
@@ -21,9 +21,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .thumbnail_url(avatar_id_3, size, thumbnail_type)
         .await?;
 
-    println!("Avatar {} thumbnail url: {}", avatar_id_1, urls[0]);
-    println!("Avatar {} thumbnail url: {}", avatar_id_2, urls[1]);
-    println!("Avatar {} thumbnail url: {}", avatar_id_3, url);
+    println!("Avatar headshot {} thumbnail url: {}", avatar_id_1, urls[0]);
+    println!("Avatar headshot {} thumbnail url: {}", avatar_id_2, urls[1]);
+    println!("Avatar headshot {} thumbnail url: {}", avatar_id_3, url);
 
     Ok(())
 }
