@@ -332,10 +332,19 @@ pub enum RoboatError {
     /// allow async recursion without making a type signature extremely messy.
     #[error("Invalid Xcsrf. New Xcsrf Contained In Error.")]
     InvalidXcsrf(String),
-    /// Used when an endpoint returns a 403 status code, but the response does not contain
+    /// Used when an endpoint returns a 403 status code, doesn't need a challenge, but the response does not contain
     /// a new xcsrf.
     #[error("Missing Xcsrf")]
     XcsrfNotReturned,
+    /// Used when an endpoint returns a 403 status code, but not because of an invalid xcsrf.
+    /// The string inside this error variant is a challenge id, which can be used to complete the challenge
+    /// (which can be either a captcha or a two step verification code).
+    #[error("Challenge Required. A captcha or two step authentication must be completed using challenge id {0}.")]
+    ChallengeRequired(String),
+    /// Used when an endpoint returns a 403 status code, can be parsed into a roblox error,
+    /// but the error message is incorrect or the challenge id is not returned. This also means that no xcsrf was returned.
+    #[error("Unknown Status Code 403 Format. If this occurs often it may be a bug. Please report it to the issues page.")]
+    UnknownStatus403Format,
     /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
     PurchaseTradableLimitedError(PurchaseTradableLimitedError),

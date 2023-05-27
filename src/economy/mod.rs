@@ -63,6 +63,7 @@ pub enum PurchaseTradableLimitedError {
     UnknownRobloxErrorMsg(String),
 }
 
+// todo: change this to User maybe
 /// A reseller of a resale listing.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]

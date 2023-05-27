@@ -8,66 +8,96 @@ use serde::{Deserialize, Serialize};
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 struct RobloxErrorResponse {
-    errors: Vec<RobloxErrorRaw>,
+    pub errors: Vec<RobloxErrorRaw>,
 }
 
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 struct RobloxErrorRaw {
-    code: u16,
-    message: String,
+    pub code: u16,
+    pub message: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChallengeMetadata {
+    pub user_id: String,
+    pub challenge_id: String,
+    pub should_show_remember_device_checkbox: bool,
+    pub remember_device: bool,
+    pub session_cookie: String,
+    pub verification_token: String,
+    pub action_type: String,
+    pub request_path: String,
+    pub request_method: String,
 }
 
 impl Client {
-    /// Used to process a 403 response from an endpoint. This requires new xcsrf to be
-    /// pulled and returned inside an error
+    /// Used to process a 403 response from an endpoint. This status is returned when a challenge is needed
+    /// or when the xcsrf is invalid.
     async fn process_403(request_response: Response) -> RoboatError {
         let headers = request_response.headers().clone();
-        let xcsrf = headers
-            .get(XCSRF_HEADER)
-            .map(|x| x.to_str().unwrap().to_string());
 
-        match xcsrf {
-            // If the xcsrf exists, we can send back invalid xcsrfs.
-            Some(xcsrf) => {
-                // If the response cannot be parsed, and the xcsrf exists, we return an invalid xcsrf error.
-                let error_response = match request_response.json::<RobloxErrorResponse>().await {
-                    Ok(x) => x,
-                    Err(_) => {
-                        return RoboatError::InvalidXcsrf(xcsrf);
+        // We branch here depending on whether it can parse into a `RobloxErrorResponse` or not.
+        // If it can, it means a challenge is required and we return a `RoboatError::ChallengeRequired(_)`.
+        // Otherwise, we return an xcsrf related error.
+
+        match request_response.json::<RobloxErrorResponse>().await {
+            Ok(x) => {
+                // We make sure the first error exists and is a challenge required error.
+                match x.errors.first() {
+                    Some(error) => {
+                        if error.message != "Challenge is required to authorize the request" {
+                            return RoboatError::UnknownRobloxErrorCode {
+                                code: error.code,
+                                message: error.message.clone(),
+                            };
+                        }
                     }
-                };
-
-                match error_response.errors.first() {
-                    Some(error) => match error.code {
-                        0 => RoboatError::InvalidXcsrf(xcsrf),
-                        _ => RoboatError::UnknownRobloxErrorCode {
-                            code: error.code,
-                            message: error.message.clone(),
-                        },
-                    },
-                    None => RoboatError::InvalidXcsrf(xcsrf),
+                    None => {
+                        return RoboatError::UnknownStatus403Format;
+                    }
                 }
-            }
-            // Otherwise, we parse the error knowing it doesn't exist
-            None => {
-                // If the response cannot be parsed, and the xcsrf does not exist, we return an xcsrf not returned error.
-                let error_response = match request_response.json::<RobloxErrorResponse>().await {
-                    Ok(x) => x,
-                    Err(_) => {
-                        return RoboatError::XcsrfNotReturned;
+
+                // For some really really *stupid* reason, the header `rblx-challenge-id` is not the real challenge id.
+                // The challenge id is actually inside the header `rblx-challenge-metadata`, which is encoding in base64.
+
+                // We get the challenge metadata from the headers, and error if we cant.
+                let metadata_encoded = match headers
+                    .get("rblx-challenge-metadata")
+                    .map(|x| x.to_str().unwrap().to_string())
+                {
+                    Some(x) => x,
+                    None => {
+                        return RoboatError::UnknownStatus403Format;
                     }
                 };
 
-                match error_response.errors.first() {
-                    Some(error) => match error.code {
-                        0 => RoboatError::XcsrfNotReturned,
-                        _ => RoboatError::UnknownRobloxErrorCode {
-                            code: error.code,
-                            message: error.message.clone(),
-                        },
-                    },
-                    None => RoboatError::MalformedResponse,
+                // We can unwrap here because we're kinda screwed if it's spitting out other stuff and the library would need to be fixed.
+                let metadata =
+                    String::from_utf8(base64::decode(metadata_encoded).unwrap()).unwrap();
+
+                // We parse the metadata into a struct, and error if we cant.
+                let metadata_struct: ChallengeMetadata = match serde_json::from_str(&metadata) {
+                    Ok(x) => x,
+                    Err(_) => {
+                        return RoboatError::UnknownStatus403Format;
+                    }
+                };
+
+                // We return the challenge required error.
+                RoboatError::ChallengeRequired(metadata_struct.challenge_id)
+            }
+            Err(_) => {
+                // If we're down here, it means that the response is not a challenge required error and we
+                // can return xcsrf if it exists
+                let xcsrf = headers
+                    .get(XCSRF_HEADER)
+                    .map(|x| x.to_str().unwrap().to_string());
+
+                match xcsrf {
+                    Some(x) => RoboatError::InvalidXcsrf(x),
+                    None => RoboatError::XcsrfNotReturned,
                 }
             }
         }
