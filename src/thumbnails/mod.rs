@@ -420,6 +420,77 @@ impl Client {
 
         Ok(urls)
     }
+
+    /// Fetches a thumbnail of a specified size and type using <https://thumbnails.roblox.com/v1/batch>.
+    ///
+    /// # Notes
+    /// * Does not require a valid roblosecurity.
+    /// * Can handle up to 100 asset ids at once.
+    /// * Does not appear to have a rate limit.
+    /// * Note all types are implemented, the full list can be found [here](https://thumbnails.roblox.com/docs/index.html)
+    /// and the implemented ones can be found in [`ThumbnailType`].
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    /// use roboat::thumbnails::{AssetThumbnailSize, ThumbnailType};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().build();
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let thumbnail_type = ThumbnailType::Avatar;
+    ///
+    /// let avatar_id = 20418400;
+    ///
+    /// let url = client
+    ///     .thumbnail_url(avatar_id, size, thumbnail_type)
+    ///     .await?;
+    ///
+    /// println!("Avatar {} thumbnail url: {}", avatar_id, url);
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let thumbnail_type = ThumbnailType::AvatarHeadshot;
+    ///
+    /// let avatar_id = 20418400;
+    ///
+    /// let url = client
+    ///     .thumbnail_url(avatar_id, size, thumbnail_type)
+    ///     .await?;
+    ///
+    /// println!("Avatar headshot {} thumbnail url: {}", avatar_id, url);
+    ///
+    /// let size = AssetThumbnailSize::S420x420;
+    /// let thumbnail_type = ThumbnailType::Asset;
+    ///
+    /// let asset_id = 20418400;
+    ///
+    /// let url = client
+    ///     .thumbnail_url(asset_id, size, thumbnail_type)
+    ///     .await?;
+    ///
+    /// println!("Asset {} thumbnail url: {}", asset_id, url);
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn thumbnail_url(
+        &self,
+        id: u64,
+        size: AssetThumbnailSize,
+        thumbnail_type: ThumbnailType,
+    ) -> Result<String, RoboatError> {
+        let urls = self
+            .thumbnail_url_bulk(vec![id], size, thumbnail_type)
+            .await?;
+        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
+        Ok(url.to_owned())
+    }
 }
 
 /// Makes sure that the url datas are in the same order as the arguments.
@@ -440,4 +511,34 @@ fn sort_url_datas_by_argument_order(
 
         a_index.cmp(&b_index)
     });
+}
+
+fn generate_request_id_string(
+    thumbnail_type: ThumbnailType,
+    id: u64,
+    size: AssetThumbnailSize,
+) -> String {
+    match thumbnail_type {
+        ThumbnailType::Avatar => format!("{}:undefined:Avatar:{}:null:regular", id, size),
+        ThumbnailType::AvatarHeadshot => {
+            format!("{}:undefined:AvatarHeadshot:{}:null:regular", id, size)
+        }
+        ThumbnailType::Asset => format!("{}::Asset:{}:png:regular", id, size),
+    }
+}
+
+fn generate_format(thumbnail_type: ThumbnailType) -> Option<String> {
+    match thumbnail_type {
+        ThumbnailType::Avatar => None::<String>,
+        ThumbnailType::AvatarHeadshot => None::<String>,
+        ThumbnailType::Asset => Some("png".to_string()),
+    }
+}
+
+fn generate_thumbnail_type_string(thumbnail_type: ThumbnailType) -> String {
+    match thumbnail_type {
+        ThumbnailType::Avatar => "Avatar".to_string(),
+        ThumbnailType::AvatarHeadshot => "AvatarHeadShot".to_string(),
+        ThumbnailType::Asset => "Asset".to_string(),
+    }
 }
