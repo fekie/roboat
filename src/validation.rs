@@ -159,7 +159,6 @@ impl Client {
         let response_struct = match response.json::<T>().await {
             Ok(x) => x,
             Err(_) => {
-                // todo: put the error as a string in here
                 return Err(RoboatError::MalformedResponse);
             }
         };
