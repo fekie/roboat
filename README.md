@@ -80,7 +80,7 @@ Alternatively, you can add a specific version of roboat to your project by addin
 
 ```toml
 [dependencies]
-roboat = "0.31.0"
+roboat = "0.32.0"
 ```
 
 # Quick Start Examples
