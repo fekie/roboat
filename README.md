@@ -54,8 +54,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
 * Private Messages API - [`privatemessages.roblox.com/*`]
     - Fetch Messages - [`Client::messages`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.messages)
 * Thumbnails API - [`thumbnails.roblox.com/*`]
-    - Fetch Asset Thumbnail URL - [`Client::asset_thumbnail_url`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url)
-    - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.asset_thumbnail_url_bulk)
+    - Fetch Thumbnail Url Bulk - [`Client::thumbnail_url_bulk`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.thumbnail_url_bulk)
+    - Fetch Thumbnail Url - [`Client::thumbnail_url`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.thumbnail_url)
 * Trades API - [`trades.roblox.com/*`]
     - Accept Trade - [`Client::accept_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.accept_trade)
     - Decline Trade - [`Client::decline_trade`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.decline_trade)

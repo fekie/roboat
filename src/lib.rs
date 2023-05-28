@@ -42,8 +42,8 @@
 //! * Private Messages API
 //!   - Fetch Messages - [`Client::messages`]
 //! * Thumbnails API
-//!   - Fetch Asset Thumbnail URL - [`Client::asset_thumbnail_url`]
-//!   - Fetch Asset Thumbnail URL Bulk - [`Client::asset_thumbnail_url_bulk`]
+//!   - Fetch Thumbnail Url Bulk - [`Client::thumbnail_url_bulk`]
+//!   - Fetch Thumbnail Url - [`Client::thumbnail_url`]
 //! * Trades API
 //!   - Accept Trade - [`Client::accept_trade`]
 //!   - Decline Trade - [`Client::decline_trade`]
