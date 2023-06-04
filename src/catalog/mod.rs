@@ -7,7 +7,7 @@ use catalog_types::QueryLimit;
 pub use catalog_types::{
     AssetType, AvatarSearchQuery, AvatarSearchQueryBuilder, BundleType, Category, CreatorType,
     Genre, Item, ItemDetails, ItemRestriction, ItemStatus, ItemType, PriceStatus, QueryGenre,
-    SortAggregation, SortType, Subcategory,
+    SortAggregation, SortType, Subcategory, SalesTypeFilter, Limit
 };
 
 /// Types related to the avatar catalog.

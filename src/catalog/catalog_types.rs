@@ -225,6 +225,60 @@ impl SortType {
     }
 }
 
+/// Sort between different sale types of assets, used when searching.
+/// Values can be from here <https://create.roblox.com/docs/reference/engine/enums/SalesTypeFilter>.
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+#[allow(missing_docs)]
+pub enum SalesTypeFilter {
+    #[default]
+    All,
+    Collectibles,
+    Premium,
+}
+
+impl SalesTypeFilter {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Self::All => 1,
+            Self::Collectibles => 2,
+            Self::Premium => 3,
+        }
+    }
+}
+
+/// Limit the amount of results shown by the API when searching.
+/// Values can be found when entering an invalid limit to the API <https://catalog.roblox.com/v1/search/items?limit=110>.
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+#[allow(missing_docs)]
+pub enum Limit {
+    #[default]
+    Ten,
+    TwentyEight,
+    Thirty,
+    Fifty,
+    Sixty,
+    Hundred,
+    HundredTwenty,
+}
+
+impl Limit {
+    pub(crate) fn as_u8(&self) -> u8 {
+        match self {
+            Limit::Ten => 10,
+            Limit::TwentyEight => 28,
+            Limit::Thirty => 30,
+            Limit::Fifty => 50,
+            Limit::Sixty => 60,
+            Limit::Hundred => 100,
+            Limit::HundredTwenty => 120,
+        }
+    }
+}
+
 /// A subcategory for items, used when searching.
 #[allow(missing_docs)]
 #[derive(
@@ -645,6 +699,16 @@ pub struct AvatarSearchQuery {
     pub sort_type: Option<SortType>,
     /// Subcategory must be filled to query more than one page.
     pub subcategory: Option<Subcategory>,
+    /// The minimum price for each asset.
+    pub min_price: Option<u32>,
+    /// The maximum price for each asset.
+    pub max_price: Option<u32>,
+    /// The maximum assets Roblox should return per page.
+    /// View [`Limit`] for more information.
+    pub limit: Option<Limit>,
+    /// Sort between different sale types of assets.
+    /// View [`SalesTypeFilter`] for more information.
+    pub sales_type_filter: Option<SalesTypeFilter>,
 }
 
 impl AvatarSearchQuery {
@@ -690,6 +754,22 @@ impl AvatarSearchQuery {
 
         if let Some(subcategory) = self.subcategory {
             url.push_str(&format!("subcategory={}&", subcategory.as_u8()));
+        }
+
+        if let Some(min_price) = self.min_price {
+            url.push_str(&format!("minPrice={}&", min_price));
+        }
+
+        if let Some(max_price) = self.max_price {
+            url.push_str(&format!("maxPrice={}&", max_price));
+        }
+
+        if let Some(limit) = self.limit {
+            url.push_str(&format!("limit={}&", limit.as_u8()));
+        }
+
+        if let Some(sales_type_filter) = self.sales_type_filter {
+            url.push_str(&format!("salesTypeFilter={}&", sales_type_filter.as_u8()));
         }
 
         // Remove the last & if it exists.
@@ -771,6 +851,30 @@ impl AvatarSearchQueryBuilder {
     #[allow(missing_docs)]
     pub fn subcategory(mut self, subcategory: Subcategory) -> Self {
         self.query.subcategory = Some(subcategory);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn min_price(mut self, min_price: u32) -> Self {
+        self.query.min_price = Some(min_price);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn max_price(mut self, max_price: u32) -> Self {
+        self.query.max_price = Some(max_price);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn limit(mut self, limit: Limit) -> Self {
+        self.query.limit = Some(limit);
+        self
+    }
+
+    #[allow(missing_docs)]
+    pub fn sales_type_filter(mut self, sales_type_filter: SalesTypeFilter) -> Self {
+        self.query.sales_type_filter = Some(sales_type_filter);
         self
     }
 }
