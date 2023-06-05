@@ -704,9 +704,15 @@ pub struct AvatarSearchQuery {
     /// Subcategory must be filled to query more than one page.
     pub subcategory: Option<Subcategory>,
     /// The minimum price for each asset.
-    pub min_price: Option<u64>,
+    ///
+    /// This is a u32 because large numbers are almost always not needed and cause the
+    /// endpoint to return an error. More information can be found here: https://github.com/Chloe-Woahie/roboat/pull/61
+    pub min_price: Option<u32>,
     /// The maximum price for each asset.
-    pub max_price: Option<u64>,
+    ///
+    /// This is a u32 because large numbers are almost always not needed and cause the
+    /// endpoint to return an error. More information can be found here: https://github.com/Chloe-Woahie/roboat/pull/61
+    pub max_price: Option<u32>,
     /// The maximum assets Roblox should return per page.
     /// View [`CatalogQueryLimit`] for more information.
     pub limit: Option<CatalogQueryLimit>,
@@ -859,13 +865,13 @@ impl AvatarSearchQueryBuilder {
     }
 
     #[allow(missing_docs)]
-    pub fn min_price(mut self, min_price: u64) -> Self {
+    pub fn min_price(mut self, min_price: u32) -> Self {
         self.query.min_price = Some(min_price);
         self
     }
 
     #[allow(missing_docs)]
-    pub fn max_price(mut self, max_price: u64) -> Self {
+    pub fn max_price(mut self, max_price: u32) -> Self {
         self.query.max_price = Some(max_price);
         self
     }
