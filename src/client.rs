@@ -65,6 +65,11 @@ use tokio::sync::RwLock;
 /// The errors that can be returned by any of `Client`'s methods that require the X-CSRF-TOKEN header are:
 /// - [`RoboatError::InvalidXcsrf`]
 /// - [`RoboatError::XcsrfNotReturned`]
+///
+/// # 2-Factor Authentication / Captcha Required Errors
+/// The errors that can be returned by any of `Client`'s methods that require 2-factor authentication or a captcha are:
+/// - [`RoboatError::ChallengeRequired`]
+/// - [`RoboatError::UnknownStatus403Format`]
 #[derive(Debug, Default)]
 pub struct Client {
     /// The full cookie that includes the roblosecurity token.

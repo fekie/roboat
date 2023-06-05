@@ -446,7 +446,6 @@ impl Client {
         }
     }
 
-    // todo: add manual xcsrf refreshing and talk about it here
     /// Purchases a limited using  <https://economy.roblox.com/v1/purchases/products/{product_id}>.
     /// Only works on tradeable (legacy) limiteds.
     ///
@@ -456,6 +455,8 @@ impl Client {
     ///
     /// # Return Value Notes
     /// * Will return `Ok(())` if the limited was successfully purchased.
+    /// * As it will repeat once if the x-csrf-token is invalid, you may want to manually refresh the x-csrf-token
+    /// on another thread by using [`Client::force_refresh_xcsrf`].
     ///
     /// # Argument Notes
     /// * `product_id` is the product id of the limited, NOT the item id.
