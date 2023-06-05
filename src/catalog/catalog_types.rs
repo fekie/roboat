@@ -700,9 +700,9 @@ pub struct AvatarSearchQuery {
     /// Subcategory must be filled to query more than one page.
     pub subcategory: Option<Subcategory>,
     /// The minimum price for each asset.
-    pub min_price: Option<u32>,
+    pub min_price: Option<u64>,
     /// The maximum price for each asset.
-    pub max_price: Option<u32>,
+    pub max_price: Option<u64>,
     /// The maximum assets Roblox should return per page.
     /// View [`Limit`] for more information.
     pub limit: Option<Limit>,
@@ -855,13 +855,13 @@ impl AvatarSearchQueryBuilder {
     }
 
     #[allow(missing_docs)]
-    pub fn min_price(mut self, min_price: u32) -> Self {
+    pub fn min_price(mut self, min_price: u64) -> Self {
         self.query.min_price = Some(min_price);
         self
     }
 
     #[allow(missing_docs)]
-    pub fn max_price(mut self, max_price: u32) -> Self {
+    pub fn max_price(mut self, max_price: u64) -> Self {
         self.query.max_price = Some(max_price);
         self
     }
