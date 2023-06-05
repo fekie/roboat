@@ -3,11 +3,11 @@ use request_types::AvatarSearchQueryResponse;
 
 use catalog_types::QueryLimit;
 
-/// re export all types
+// Re-export all types so that they are easily accessible from the crate root.
 pub use catalog_types::{
-    AssetType, AvatarSearchQuery, AvatarSearchQueryBuilder, BundleType, Category, CreatorType,
-    Genre, Item, ItemDetails, ItemRestriction, ItemStatus, ItemType, PriceStatus, QueryGenre,
-    SortAggregation, SortType, Subcategory,
+    AssetType, AvatarSearchQuery, AvatarSearchQueryBuilder, BundleType, CatalogQueryLimit,
+    Category, CreatorType, Genre, Item, ItemDetails, ItemRestriction, ItemStatus, ItemType,
+    PriceStatus, QueryGenre, SalesTypeFilter, SortAggregation, SortType, Subcategory,
 };
 
 /// Types related to the avatar catalog.

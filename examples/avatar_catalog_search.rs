@@ -1,10 +1,13 @@
-use roboat::catalog::{AvatarSearchQueryBuilder, Category};
+use roboat::catalog::{AvatarSearchQueryBuilder, CatalogQueryLimit, Category, SalesTypeFilter};
 use roboat::{ClientBuilder, RoboatError};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let query = AvatarSearchQueryBuilder::new()
         .keyword("cute".to_owned())
+        .min_price(300)
+        .sales_type_filter(SalesTypeFilter::Collectibles)
+        .limit(CatalogQueryLimit::TwentyEight)
         .category(Category::Accessories)
         .build();
 
