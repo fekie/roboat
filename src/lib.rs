@@ -231,9 +231,7 @@ mod validation;
 // todo: maybe respect cookies returned
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically and is unlikely to cbe created by the user.
 // todo: add doc example and example count somewhere
-// todo: change vecs in arguments to slices
 // todo: the roblox api docs show the roblox error codes, maybe a custom sub error can be made
-// todo: update docs about general errors, they also need to include 2 step errors.
 // todo: add a "2 step not implemented for this endpoint" error
 
 use serde::{Deserialize, Serialize};
