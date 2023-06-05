@@ -227,24 +227,14 @@ pub mod users;
 /// A module related to validating requests.
 mod validation;
 
-// todo: inventory api, groups api, follow api
-// todo: add usage to readme
-// todo: every type should have an explanation of the typical means by which the user will construct or fetch it, if the answer isn't “this is a struct literal with public methods”.
 // todo: figure out authtickets
 // todo: maybe respect cookies returned
-// todo: maybe post on devforums, reddit, maybe the rust server
-// todo: put string of parsing error in MalformedResponse
-// todo: apparently a v2 details api does 500 items at once
-// todo: make ItemDetails include both price and lowest price
-// todo: replace urls with the form GROUP_ROLES_API.replace("{group_id}", &group_id.to_string());
-// todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically
+// todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically and is unlikely to cbe created by the user.
 // todo: add doc example and example count somewhere
-// todo: add message apis
-// todo: show on readme and crate docs which endpoints are wrappers for other endpoints
 // todo: change vecs in arguments to slices
-// todo: roblox error code 0 is "Challenge is required to authorize the request" (any captcha/two step)
-// todo: add http caching
 // todo: the roblox api docs show the roblox error codes, maybe a custom sub error can be made
+// todo: update docs about general errors, they also need to include 2 step errors.
+// todo: add a "2 step not implemented for this endpoint" error
 
 use serde::{Deserialize, Serialize};
 
