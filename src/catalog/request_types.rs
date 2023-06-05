@@ -19,6 +19,7 @@ pub(super) struct ItemDetailsRaw {
     pub description: Option<String>,
     pub product_id: Option<u64>,
     pub genres: Option<Vec<Genre>>,
+    pub bundled_items: Option<serde_json::Value>,
     pub item_status: Option<Vec<ItemStatus>>,
     pub item_restrictions: Option<Vec<ItemRestriction>>,
     pub creator_has_verified_badge: Option<bool>,
@@ -26,10 +27,14 @@ pub(super) struct ItemDetailsRaw {
     pub creator_target_id: Option<u64>,
     pub creator_name: Option<String>,
     /// Exists instead of lowest_price if the item is non-limited.
+    /// This only occurs in some cases.
     pub price: Option<u64>,
     /// Exists instead of price if the item is limited.
+    /// This only occurs in some cases.
     pub lowest_price: Option<u64>,
+    pub lowest_resale_price: Option<u64>,
     pub favorite_count: Option<u64>,
+    pub purchase_count: Option<u64>,
     pub premium_pricing: Option<PremiumPricing>,
     pub price_status: Option<PriceStatus>,
     /// It is unknown as to what type this value is.
@@ -43,6 +48,12 @@ pub(super) struct ItemDetailsRaw {
     pub collectible_item_id: Option<String>,
     /// Only exists for "new" limiteds.
     pub total_quantity: Option<u64>,
+    pub has_resellers: Option<bool>,
+    pub is_off_sale: Option<bool>,
+    pub remaining_stock: Option<u64>,
+    pub total_stock: Option<u64>,
+    pub quantity_limit_per_user: Option<u64>,
+    pub sale_location_type: Option<String>,
     /// Only exists for "new" limiteds.
     pub units_available_for_consumption: Option<u64>,
 }
