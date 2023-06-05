@@ -1,6 +1,8 @@
 use super::request_types;
+
+// Allow unused imports so they can be linked to in the docs.
 #[allow(unused_imports)]
-use crate::{Client, RoboatError};
+use crate::{Client, Limit, RoboatError};
 use serde::{Deserialize, Serialize};
 
 const AVATAR_CATALOG_SEARCH_BASE_URL: &str = "https://catalog.roblox.com/v1/search/items?";
