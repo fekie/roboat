@@ -259,13 +259,13 @@ impl SalesTypeFilter {
 )]
 #[allow(missing_docs)]
 pub enum CatalogQueryLimit {
-    #[default]
     Ten,
     TwentyEight,
     Thirty,
     Fifty,
     Sixty,
     Hundred,
+    #[default]
     HundredTwenty,
 }
 
