@@ -76,13 +76,6 @@ You can add the latest version of roboat to your project by running:
 cargo add roboat
 ```
 
-Alternatively, you can add a specific version of roboat to your project by adding the crate to your `Cargo.toml`:
-
-```toml
-[dependencies]
-roboat = "0.32.2"
-```
-
 # Quick Start Examples
 
 ## Example 1 - Purchase Free UGC Limited
