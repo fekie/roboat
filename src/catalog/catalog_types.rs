@@ -706,12 +706,12 @@ pub struct AvatarSearchQuery {
     /// The minimum price for each asset.
     ///
     /// This is a u32 because large numbers are almost always not needed and cause the
-    /// endpoint to return an error. More information can be found here: https://github.com/Chloe-Woahie/roboat/pull/61
+    /// endpoint to return an error. More information can be found here: <https://github.com/Chloe-Woahie/roboat/pull/61>.
     pub min_price: Option<u32>,
     /// The maximum price for each asset.
     ///
     /// This is a u32 because large numbers are almost always not needed and cause the
-    /// endpoint to return an error. More information can be found here: https://github.com/Chloe-Woahie/roboat/pull/61
+    /// endpoint to return an error. More information can be found here: <https://github.com/Chloe-Woahie/roboat/pull/61>.
     pub max_price: Option<u32>,
     /// The maximum assets Roblox should return per page.
     /// View [`CatalogQueryLimit`] for more information.
