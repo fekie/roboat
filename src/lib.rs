@@ -257,8 +257,14 @@ const USER_AGENT: &str =
 const CONTENT_TYPE: &str = "application/json;charset=utf-8";
 
 /// The maximum amount of instances to return from an endpoint. Used as a parameter in various methods that call
-/// endpoints. This is an enum instead of an integer as these are the only values that are accepted by Roblox
+/// endpoints.
+///
+/// This is an enum instead of an integer as these are usually the only values that are accepted by Roblox
 /// for the limit parameter.
+///
+/// This is the most common limit used on Roblox endpoints. However, not all endpoints use this limit.
+/// Some alternative limits are as follows:
+/// * [`catalog::CatalogQueryLimit`]
 #[allow(missing_docs)]
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
