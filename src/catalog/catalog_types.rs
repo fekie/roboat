@@ -250,11 +250,13 @@ impl SalesTypeFilter {
 
 /// Limit the amount of results shown by the API when searching.
 /// Values can be found when entering an invalid limit to the API <https://catalog.roblox.com/v1/search/items?limit=110>.
+///
+/// This is a special Roblox limit that does not match the universal [`Limit`].
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
 #[allow(missing_docs)]
-pub enum Limit {
+pub enum CatalogQueryLimit {
     #[default]
     Ten,
     TwentyEight,
@@ -265,16 +267,16 @@ pub enum Limit {
     HundredTwenty,
 }
 
-impl Limit {
+impl CatalogQueryLimit {
     pub(crate) fn as_u8(&self) -> u8 {
         match self {
-            Limit::Ten => 10,
-            Limit::TwentyEight => 28,
-            Limit::Thirty => 30,
-            Limit::Fifty => 50,
-            Limit::Sixty => 60,
-            Limit::Hundred => 100,
-            Limit::HundredTwenty => 120,
+            Self::Ten => 10,
+            Self::TwentyEight => 28,
+            Self::Thirty => 30,
+            Self::Fifty => 50,
+            Self::Sixty => 60,
+            Self::Hundred => 100,
+            Self::HundredTwenty => 120,
         }
     }
 }
@@ -704,8 +706,8 @@ pub struct AvatarSearchQuery {
     /// The maximum price for each asset.
     pub max_price: Option<u64>,
     /// The maximum assets Roblox should return per page.
-    /// View [`Limit`] for more information.
-    pub limit: Option<Limit>,
+    /// View [`CatalogQueryLimit`] for more information.
+    pub limit: Option<CatalogQueryLimit>,
     /// Sort between different sale types of assets.
     /// View [`SalesTypeFilter`] for more information.
     pub sales_type_filter: Option<SalesTypeFilter>,
@@ -866,8 +868,10 @@ impl AvatarSearchQueryBuilder {
         self
     }
 
-    #[allow(missing_docs)]
-    pub fn limit(mut self, limit: Limit) -> Self {
+    /// Sets the amount of items to return per page.
+    ///
+    /// Note that this uses [`CatalogQueryLimit`] instead of the universal [`Limit`].
+    pub fn limit(mut self, limit: CatalogQueryLimit) -> Self {
         self.query.limit = Some(limit);
         self
     }
