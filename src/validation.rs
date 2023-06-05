@@ -3,6 +3,8 @@ use reqwest::Response;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
+// I really hate the way new updates of this library work but I don't want a dependency to be outdated
+use base64::{engine::general_purpose, Engine as _};
 /// Roblox's error response used when a status code of 403 is given. Only the first error
 /// is used when converting to [`RoboatError`].
 #[allow(missing_docs)]
@@ -74,11 +76,10 @@ impl Client {
                 };
 
                 // We can unwrap here because we're kinda screwed if it's spitting out other stuff and the library would need to be fixed.
-                let metadata =
-                    String::from_utf8(base64::decode(metadata_encoded).unwrap()).unwrap();
+                let metadata = general_purpose::STANDARD.decode(metadata_encoded).unwrap();
 
                 // We parse the metadata into a struct, and error if we cant.
-                let metadata_struct: ChallengeMetadata = match serde_json::from_str(&metadata) {
+                let metadata_struct: ChallengeMetadata = match serde_json::from_slice(&metadata) {
                     Ok(x) => x,
                     Err(_) => {
                         return RoboatError::UnknownStatus403Format;
