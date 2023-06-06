@@ -488,6 +488,9 @@ pub struct ItemDetails {
     /// Whether the asset is off sale or not.
     /// Only present if false, otherwise assume is true.
     pub is_off_sale: Option<bool>,
+    /// Shows where users are able to purchase the asset, as some might only be purchable in game.
+    /// May not be fully documented yet.
+    pub sale_location_type: Option<SaleLocationType>,
     /// The maximum quantity of stock that can be bought.
     /// Only present for Limited items.
     pub quantity_limit_per_user: Option<u64>,
@@ -594,7 +597,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
         let item_statuses = value.item_status;
         let has_resellers = value.has_resellers;
         let is_off_sale = value.is_off_sale;
-        let _sale_location_type = value.sale_location_type.map(|x| SaleLocationType::from_str(&x));
+        let sale_location_type = value.sale_location_type.map(|x| SaleLocationType::from_str(&x)).unwrap();
 
         let item_restrictions = value.item_restrictions;
 
@@ -655,6 +658,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             purchase_count,
             has_resellers,
             is_off_sale,
+            sale_location_type,
             quantity_limit_per_user,
         })
     }
