@@ -452,21 +452,32 @@ pub struct ItemDetails {
     pub creator_id: u64,
     /// The name of the creator. The value is "Roblox" if the creator is Roblox.
     pub creator_name: String,
-    /// Coincides with price if the item is a non-limited,
-    /// and lowest price if item is a limited.
+    /// Coincides with price if the item is a non-limited.
     ///
     /// If the item is offsale, the price is 0.
-    /// However, if the price is a limited and no resellers exist,
-    /// then the price does not exist.
+    ///
+    /// This price most likely does not exist on any limiteds.
+    /// If this item is a limited-u, then this field is the price of the item when it was released.
+    /// If this item is a non-tradable limited that hasn't sold out, this field is the current price of the item.
+    /// If this item is a non-tradable limited that has sold out, this field is the original price of the item.
+    ///
     /// As this is a finicky field, I would only trust it on offsale, non-limited items.
     pub price: Option<u64>,
     /// Only exists if the item has special premium pricing.
     pub premium_pricing: Option<PremiumPricing>,
-    /// The lowest price the asset has been sold for.
-    /// Only present for Limited items.
+    /// The lowest price of the item by a reseller.
+    /// Only appears to be present for Limited and limited-u items.
+    /// Does not seem to appear on ugc limiteds that are sold out and being resold by resellers.
+    ///
+    /// There is a lot unknown about this field and it is not yet known what the difference between
+    /// it and [`Self::lowest_resale_price`] is.
     pub lowest_price: Option<u64>,
-    /// The lowest price the asset has been resold for.
-    /// Only present for Limited items.
+    /// The lowest price of the item by a reseller.
+    /// Only appears to be present for Limited and limited-u items.
+    /// Does not seem to appear on ugc limiteds that are sold out and being resold by resellers.
+    ///
+    /// There is a lot unknown about this field and it is not yet known what the difference between
+    /// it and [`Self::lowest_price`] is.
     pub lowest_resale_price: Option<u64>,
     /// Only exists if the item has a special price status.
     pub price_status: Option<PriceStatus>,
