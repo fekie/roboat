@@ -458,7 +458,7 @@ pub struct ItemDetails {
     /// If the item is offsale, the price is 0.
     /// However, if the price is a limited and no resellers exist,
     /// then the price does not exist.
-    /// Note that this only occurs sometimes.
+    /// As this is a finicky field, I would only trust it on offsale, non-limited items.
     pub price: Option<u64>,
     /// Only exists if the item has special premium pricing.
     pub premium_pricing: Option<PremiumPricing>,
