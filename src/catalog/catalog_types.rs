@@ -97,10 +97,9 @@ pub enum Genre {
 
 /// An enum representing the sale location type of an asset. Only used when returning
 /// info from item_details.
-#[derive(
-    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Copy,
-)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Copy)]
 #[allow(missing_docs)]
+#[non_exhaustive]
 pub enum SaleLocationType {
     NotApplicable,
     Game,
@@ -116,7 +115,7 @@ impl SaleLocationType {
             "Game" => Some(SaleLocationType::Game),
             "ExperiencesDevApiOnly" => Some(SaleLocationType::ExperiencesDevApiOnly),
             "ShopAndAllExperiences" => Some(SaleLocationType::ShopAndAllExperiences),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -597,7 +596,10 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
         let item_statuses = value.item_status;
         let has_resellers = value.has_resellers;
         let is_off_sale = value.is_off_sale;
-        let sale_location_type = value.sale_location_type.map(|x| SaleLocationType::from_str(&x)).unwrap();
+        let sale_location_type = value
+            .sale_location_type
+            .map(|x| SaleLocationType::from_str(&x))
+            .unwrap();
 
         let item_restrictions = value.item_restrictions;
 
