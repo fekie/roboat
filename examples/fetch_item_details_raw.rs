@@ -77,14 +77,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let all_details = client.item_details(items).await?;
 
     for details in all_details {
-        println!(
-            "Bundle Name: {} / Bundle Price: {}",
-            details.name,
-            details
-                .price
-                .map(|x| x.to_string())
-                .unwrap_or_else(|| "*No Resellers*".to_owned())
-        );
+        println!("Item Id: {}", details.id);
+        println!("{:?}", details);
+        println!("\n");
     }
 
     Ok(())
