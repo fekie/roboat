@@ -51,8 +51,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         id: 13450447846,
     };
 
+    // unsold ugc
+    let item_9 = Item {
+        item_type: ItemType::Asset,
+        id: 13600952997,
+    };
+
+    // unsold ugc with resellers
+    let item_10 = Item {
+        item_type: ItemType::Asset,
+        id: 13420878571,
+    };
+
+    // sold out ugc with resellers
+    let item_11 = Item {
+        item_type: ItemType::Asset,
+        id: 12073669026,
+    };
+
     let items = vec![
-        item_1, item_2, item_3, item_4, item_5, item_6, item_7, item_8,
+        item_1, item_2, item_3, item_4, item_5, item_6, item_7, item_8, item_9, item_10, item_11,
     ];
 
     let client = ClientBuilder::new().build();
