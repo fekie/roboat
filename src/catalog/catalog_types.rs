@@ -95,6 +95,41 @@ pub enum Genre {
     WildWest,
 }
 
+/// An enum representing the sale location type of an asset. Only used when returning
+/// info from item_details.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Copy)]
+#[allow(missing_docs)]
+#[non_exhaustive]
+pub enum SaleLocationType {
+    NotApplicable,
+    Game,
+    ExperiencesDevApiOnly,
+    ShopAndAllExperiences,
+    // there might be more...
+}
+
+impl SaleLocationType {
+    pub(crate) fn from_str(data: &str) -> Option<Self> {
+        match data {
+            "NotApplicable" => Some(SaleLocationType::NotApplicable),
+            "Game" => Some(SaleLocationType::Game),
+            "ExperiencesDevApiOnly" => Some(SaleLocationType::ExperiencesDevApiOnly),
+            "ShopAndAllExperiences" => Some(SaleLocationType::ShopAndAllExperiences),
+            _ => None,
+        }
+    }
+}
+impl std::fmt::Display for SaleLocationType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NotApplicable => write!(f, "NotApplicable"),
+            Self::Game => write!(f, "Game"),
+            Self::ExperiencesDevApiOnly => write!(f, "ExperiencesDevApiOnly"),
+            Self::ShopAndAllExperiences => write!(f, "ShopAndAllExperiences"),
+        }
+    }
+}
+
 /// The status of an item (Sale, Exclusive).
 #[allow(missing_docs)]
 #[derive(
@@ -417,27 +452,62 @@ pub struct ItemDetails {
     pub creator_id: u64,
     /// The name of the creator. The value is "Roblox" if the creator is Roblox.
     pub creator_name: String,
-    /// Coincides with price if the item is a non-limited,
-    /// and lowest price if item is a limited.
+    /// Coincides with price if the item is a non-limited.
     ///
     /// If the item is offsale, the price is 0.
-    /// However, if the price is a limited and no resellers exist,
-    /// then the price does not exist.
+    ///
+    /// This price most likely does not exist on any limiteds.
+    /// If this item is a limited-u, then this field is the price of the item when it was released.
+    /// If this item is a non-tradable limited that hasn't sold out, this field is the current price of the item.
+    /// If this item is a non-tradable limited that has sold out, this field is the original price of the item.
+    ///
+    /// As this is a finicky field, I would only trust it on offsale, non-limited items.
     pub price: Option<u64>,
+    /// Only exists if the item has special premium pricing.
+    pub premium_pricing: Option<PremiumPricing>,
+    /// The lowest price of the item by a reseller.
+    /// Only appears to be present for Limited and limited-u items.
+    /// Does not seem to appear on ugc limiteds that are sold out and being resold by resellers.
+    ///
+    /// There is a lot unknown about this field and it is not yet known what the difference between
+    /// it and [`Self::lowest_resale_price`] is.
+    pub lowest_price: Option<u64>,
+    /// The lowest price of the item by a reseller.
+    /// Only appears to be present for Limited and limited-u items.
+    /// Does not seem to appear on ugc limiteds that are sold out and being resold by resellers.
+    ///
+    /// There is a lot unknown about this field and it is not yet known what the difference between
+    /// it and [`Self::lowest_price`] is.
+    pub lowest_resale_price: Option<u64>,
+    /// Only exists if the item has a special price status.
+    pub price_status: Option<PriceStatus>,
+    /// The amount of stock that is available for purchase directly.
+    /// Only present for Limited items.
+    pub units_available_for_consumption: Option<u64>,
+    /// The amount of times the asset has been purchased.
+    pub purchase_count: Option<u64>,
     /// For some reason, if details for multiple items are requested from
     /// the item details endpoint, this field is not present.
     pub favorite_count: Option<u64>,
-    /// Only exists if the item has a special price status.
-    pub price_status: Option<PriceStatus>,
-    /// Only exists if the item has special premium pricing.
-    pub premium_pricing: Option<PremiumPricing>,
+    /// The id needed to purchase a "new" limited. This replaces the
+    /// product id. Although this is an id, this is a String instead of a u64.
+    pub collectible_item_id: Option<String>,
+    /// Whether the asset has resellers.
+    /// Only present for Limited items.
+    pub has_resellers: Option<bool>,
+    /// Whether the asset is off sale or not.
+    /// Only present if false, otherwise assume is true.
+    pub is_off_sale: Option<bool>,
+    /// Shows where users are able to purchase the asset, as some might only be purchable in game.
+    /// May not be fully documented yet.
+    pub sale_location_type: Option<SaleLocationType>,
+    /// The maximum quantity of stock that can be bought.
+    /// Only present for Limited items.
+    pub quantity_limit_per_user: Option<u64>,
     /// The remaining stock of an item. Only applies to "new" limiteds.
     pub remaining_stock: Option<u64>,
     /// The total stock of an item. Only applies to "new" limiteds.
     pub total_stock: Option<u64>,
-    /// The id needed to purchase a "new" limited. This replaces the
-    /// product id. Although this is an id, this is a String instead of a u64.
-    pub collectible_item_id: Option<String>,
 }
 
 /// Contains an item id and its type. Used as part of a parameter in [`Client::item_details`], and used as
@@ -519,6 +589,7 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             None => None,
         };
 
+        let _bundled_items = value.bundled_items;
         let bundle_type = match value.bundle_type {
             Some(bundle_type_id) => {
                 let bundle_type = BundleType::try_from(bundle_type_id)?;
@@ -534,6 +605,12 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
         let product_id = value.product_id;
         let creator_type = value.creator_type.ok_or(RoboatError::MalformedResponse)?;
         let item_statuses = value.item_status;
+        let has_resellers = value.has_resellers;
+        let is_off_sale = value.is_off_sale;
+        let sale_location_type = value
+            .sale_location_type
+            .map(|x| SaleLocationType::from_str(&x))
+            .unwrap();
 
         let item_restrictions = value.item_restrictions;
 
@@ -552,20 +629,19 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
 
         let genres = value.genres;
         let favorite_count = value.favorite_count;
+        let purchase_count = value.purchase_count;
         let price_status = value.price_status;
         let premium_pricing = value.premium_pricing;
 
-        // If the price is None, use the lowest price (used for limiteds).
-        // If neither exists, the item has no resellers and the price
-        // does not exist.
-        let price = match value.price {
-            Some(x) => Some(x),
-            None => value.lowest_price,
-        };
+        let price = value.price;
+        let lowest_price = value.lowest_price;
+        let lowest_resale_price = value.lowest_resale_price;
 
+        let units_available_for_consumption = value.units_available_for_consumption;
         let remaining_stock = value.units_available_for_consumption;
         let total_stock = value.total_quantity;
         let collectible_item_id = value.collectible_item_id;
+        let quantity_limit_per_user = value.quantity_limit_per_user;
 
         Ok(Self {
             id,
@@ -589,6 +665,14 @@ impl TryFrom<request_types::ItemDetailsRaw> for ItemDetails {
             remaining_stock,
             total_stock,
             collectible_item_id,
+            lowest_price,
+            lowest_resale_price,
+            units_available_for_consumption,
+            purchase_count,
+            has_resellers,
+            is_off_sale,
+            sale_location_type,
+            quantity_limit_per_user,
         })
     }
 }
