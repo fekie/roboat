@@ -203,17 +203,19 @@ impl Client {
     /// ```no_run
     /// use roboat::ClientBuilder;
     ///
-    /// const USERNAME: &str = "Slavanomics";
+    /// const USERNAME: &str = "Builderman";
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().build();
     ///
-    /// let user_details = client.user_details(USER_ID).await?;
+    /// let users = vec![USERNAME.to_owned()];
+    /// let all_username_user_details = client.username_user_details(users, Some(true)).await?;
+    /// let username_user_details = all_username_user_details.first().ok_or("User not found")?;
     ///
-    /// println!("Username: {}", user_details.username);
-    /// println!("Display Name: {}", user_details.display_name);
-    /// println!("Year Created: {}", user_details.created_at.chars().take(4).collect::<String>());
+    /// println!("Username: {}", username_user_details.username);
+    /// println!("Display Name: {}", username_user_details.display_name);
+    /// println!("ID: {}", username_user_details.id);
     ///
     /// # Ok(())
     /// # }
@@ -237,18 +239,17 @@ impl Client {
         let raw =
             Self::parse_to_raw::<request_types::UsernameUserDetailsResponse>(response).await?;
 
-        let mut users = Vec::new();
-        for user in raw.data {
-            let user_data = UsernameUserDetails {
+        let users = raw
+            .data
+            .into_iter()
+            .map(|user| UsernameUserDetails {
                 requested_username: user.requested_username,
                 username: user.name,
                 display_name: user.display_name,
                 id: user.id,
                 has_verified_badge: user.has_verified_badge,
-            };
-
-            users.push(user_data);
-        }
+            })
+            .collect();
         Ok(users)
     }
 }
