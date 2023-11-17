@@ -22,7 +22,7 @@ pub(super) struct UserSearchUserInformationRaw {
 #[serde(rename_all = "camelCase")]
 pub(super) struct UsernameUserDetailsRequest {
     pub usernames: Vec<String>,
-    pub exclude_banned_users: Option<bool>,
+    pub exclude_banned_users: bool,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -210,7 +210,7 @@ impl Client {
     /// let client = ClientBuilder::new().build();
     ///
     /// let users = vec![USERNAME.to_owned()];
-    /// let all_username_user_details = client.username_user_details(users, Some(true)).await?;
+    /// let all_username_user_details = client.username_user_details(users, true).await?;
     /// let username_user_details = all_username_user_details.first().ok_or("User not found")?;
     ///
     /// println!("Username: {}", username_user_details.username);
@@ -223,7 +223,7 @@ impl Client {
     pub async fn username_user_details(
         &self,
         usernames: Vec<String>,
-        exclude_banned_users: Option<bool>,
+        exclude_banned_users: bool,
     ) -> Result<Vec<UsernameUserDetails>, RoboatError> {
         let request_result = self
             .reqwest_client
