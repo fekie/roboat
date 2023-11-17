@@ -155,6 +155,11 @@ impl Client {
 
     /// Fetches user details using <https://users.roblox.com/v1/users/{user_id}>.
     ///
+    /// For bulk fetching, it is recommended to use [`Client::username_user_details`]
+    /// instead. This is because more users can be fetched at once using that endpoint.
+    /// The only downside of this is that you can only search using usernames instead
+    /// of user IDs.
+    ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
     ///
