@@ -224,6 +224,11 @@ More examples can be found in the [examples](examples) directory.
 
 This crate is a sister crate of [roli](https://crates.io/crates/roli), an API wrapper for [Rolimons.com](https://www.rolimons.com/).
 
+# Requesting
+
+Don't see an endpoint you need covered? Request it in an issue or join the [Discord Server](https://discord.com/invite/QmBEgPaFSD) and mention it to us in the #api-coverage-requests channel! Since Roblox has a lot of endpoints,
+we find it easier to add endpoints as they are needed/requested.
+
 # Contributing
 
 Pull requests and issues are welcome!
