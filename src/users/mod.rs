@@ -9,6 +9,8 @@ const USERS_SEARCH_API: &str = "https://users.roblox.com/v1/users/search";
 const USER_DETAILS_API: &str = "https://users.roblox.com/v1/users/{user_id}";
 const USER_FROM_USERNAME_API: &str = "https://users.roblox.com/v1/usernames/users";
 
+// TODO: try to make a unified user details struct
+
 /// Basic information about the account of the Roblosecurity. Retrieved
 /// from <https://users.roblox.com/v1/users/authenticated>.
 #[allow(missing_docs)]
