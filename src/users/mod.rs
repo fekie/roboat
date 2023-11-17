@@ -192,10 +192,19 @@ impl Client {
         Ok(user_details)
     }
 
-    /// Fetches user details using <https://users.roblox.com/v1/users/{user_id}>.
+    /// Fetches user details using <https://users.roblox.com/v1/usernames/users>.
+    ///
+    /// This endpoint uses a post request instead of a get request so
+    /// it can be used to retrieve information about multiple users at once.
+    ///
+    /// To fetch a single user, or to fetch a user using a user ID instead of a username,
+    /// use [`Client::user_details`] instead.
     ///
     /// # Notes
     /// * Does not require a valid roblosecurity.
+    /// * This is virtually the same as [`Client::user_details`] except that it can
+    /// fetch multiple users at once, and it searches using usernames instead of user IDs.
+    /// * The usernames are not case sensitive.
     ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
