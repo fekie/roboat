@@ -7,7 +7,7 @@ keywords = ["roblox", "api", "roblox-api"]
 license = "MIT"
 name = "roboat"
 readme = "README.md"
-repository = "https://github.com/Chloe-Woahie/roboat"
+repository = "https://github.com/fekie/roboat"
 version = "0.34.1"
 
 [dependencies]
