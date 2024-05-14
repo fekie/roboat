@@ -351,6 +351,9 @@ impl Client {
     /// * `your_robux` and `partner` is before 30% tax.
     /// * Uaids are NOT item/asset ids. They are unique ids for each item.
     ///
+    /// # Return Notes
+    /// * The value returned on success is the trade id.
+    ///
     /// # Errors
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [Auth Required Errors](#auth-required-errors).
@@ -422,6 +425,18 @@ impl Client {
             },
         }
     }
+
+    /* pub async fn send_trade_two_step(
+        &self,
+        partner_id: u64,
+        your_item_uaids: Vec<u64>,
+        your_robux: u64,
+        partner_item_uaids: Vec<u64>,
+        partner_robux: u64,
+        two_step_solution: TradeTwoStepSolution,
+    ) -> Result<u64, RoboatError> {
+        todo!()
+    } */
 
     /// Accepts a trade using <https://trades.roblox.com/v1/trades/{trade_id}/accept>.
     ///

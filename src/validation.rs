@@ -49,6 +49,19 @@ impl Client {
                 // We make sure the first error exists and is a challenge required error.
                 match x.errors.first() {
                     Some(error) => {
+                        if error.code == 0 {
+                            // A hack here, but sometimes they give a 403 with a code of 0
+                            // with no message. This is a xcsrf error.
+                            let xcsrf = headers
+                                .get(XCSRF_HEADER)
+                                .map(|x| x.to_str().unwrap().to_string());
+
+                            return match xcsrf {
+                                Some(x) => RoboatError::InvalidXcsrf(x),
+                                None => RoboatError::XcsrfNotReturned,
+                            };
+                        }
+
                         if error.message != "Challenge is required to authorize the request" {
                             return RoboatError::UnknownRobloxErrorCode {
                                 code: error.code,

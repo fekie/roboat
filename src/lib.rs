@@ -58,7 +58,8 @@
 //!   - User Search - [`Client::user_search`]
 //!   - Username User Search - [`Client::username_user_search`]
 //!   - Fetch User Details - [`Client::user_details`]
-
+//! * UNDER CONSTRUCTION
+//!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
 //!
 //! # Quick Start Examples
 //!
@@ -350,6 +351,48 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
+    /// Used when an io error occurs.
+    #[error("IoError {0}")]
+    IoError(#[from] std::io::Error),
+    /// Used when a file system path passed to a method is invalid.
+    #[error("Invalid Path {0}")]
+    InvalidPath(String),
+}
+
+/// The type of the challenge required to complete a request.
+/// This can be either a captcha or a two step verification code (can be an authenticator or an email).
+#[non_exhaustive]
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub enum ChallengeType {
+    #[default]
+    TwoStep,
+}
+
+impl TryFrom<String> for ChallengeType {
+    type Error = RoboatError;
+
+    fn try_from(raw: String) -> Result<Self, Self::Error> {
+        match raw.as_str() {
+            "twostepverification" => Ok(ChallengeType::TwoStep),
+            _ => Err(RoboatError::MalformedResponse),
+        }
+    }
+}
+
+/// The challenge info returned by Roblox when a challenge is required to complete a request.
+/// This challenge can be either a two step verification code or a captcha. This is specified by the `challenge_type` field.
+#[non_exhaustive]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub struct ChallengeInfo {
+    /// The string in the returned `rblx-challenge-id` header.
+    pub challenge_id: String,
+    /// The string in the returned `rblx-challenge-metadata` header.
+    ///
+    /// This is encoded in base64 and can be decoded using the [`base64`] crate.
+    pub challenge_metadata: String,
+    /// The type of challenge parsed from the `rblx-challenge-type` header.
+    pub challenge_type: ChallengeType,
 }
 
 /// The universal struct for a Roblox user in this crate.
