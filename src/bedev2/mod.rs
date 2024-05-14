@@ -225,7 +225,7 @@ impl Client {
             .await?;
 
         let collectible_product_id = details
-            .get(0)
+            .first()
             .ok_or(RoboatError::MalformedResponse)?
             .collectible_product_id
             .clone();
