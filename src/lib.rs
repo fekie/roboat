@@ -56,6 +56,7 @@
 //!   - Fetch Username - [`Client::username`]
 //!   - Fetch Display Name - [`Client::display_name`]
 //!   - User Search - [`Client::user_search`]
+//!   - Username User Search - [`Client::username_user_search`]
 //!   - Fetch User Details - [`Client::user_details`]
 //! * UNDER CONSTRUCTION
 //!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
