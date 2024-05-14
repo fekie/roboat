@@ -10,6 +10,8 @@ const COLLECTIBLE_ITEM_DETAILS_API: &str =
 const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1: &str =
     "https://apis.roblox.com/marketplace-sales/v1/item/";
 
+const ASSET_UPLOAD_API: &str = "https://apis.roblox.com/assets/user-auth/v1/assets";
+
 const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2: &str = "/purchase-item";
 
 /// Custom Roblox errors that occur when using [`Client::purchase_non_tradable_limited`].
@@ -38,6 +40,24 @@ pub enum PurchaseNonTradableLimitedError {
     /// Thrown when an unknown error occurs.
     #[error("Unknown Roblox Error Message: {0}")]
     UnknownRobloxErrorMsg(String),
+}
+
+#[derive(
+    Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
+)]
+pub enum ClassicClothingType {
+    #[default]
+    Shirt,
+    Pants,
+}
+
+impl std::fmt::Display for ClassicClothingType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ClassicClothingType::Shirt => write!(f, "Shirt"),
+            ClassicClothingType::Pants => write!(f, "Pants"),
+        }
+    }
 }
 
 /// A struct containing (mostly) all the fields possibly returned from <https://apis.roblox.com/marketplace-items/v1/items/details>.
@@ -429,17 +449,68 @@ impl Client {
             },
         }
     }
+
+    /// Uploads classic clothing to a group. This currently only works for classic clothing and
+    /// for people uploading from groups. This is because the endpoint is not fully understood yet
+    /// and reverse engineering it is expensive.
+    ///
+    /// Uses endpoint <https://apis.roblox.com/assets/user-auth/v1/assets>.
+    ///
+    /// # WARNING: UNDER CONSTRUCTION
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    /// * Will repeat once if the x-csrf-token is invalid.
+    /// * The `image_path` must be a valid path to an image file.
+    pub async fn upload_classic_clothing_to_group(
+        &self,
+        group_id: u64,
+        name: String,
+        description: String,
+        image_path: String,
+        classic_clothing_type: ClassicClothingType,
+    ) -> Result<(), RoboatError> {
+        match self
+            .upload_classic_clothing_to_group_internal(
+                group_id,
+                name.clone(),
+                description.clone(),
+                image_path.clone(),
+                classic_clothing_type,
+            )
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.upload_classic_clothing_to_group_internal(
+                        group_id,
+                        name,
+                        description,
+                        image_path,
+                        classic_clothing_type,
+                    )
+                    .await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
+    use std::path::Path;
+
     use reqwest::header;
 
     use super::{
-        request_types, sort_items_by_argument_order, NonTradableLimitedDetails,
-        PurchaseNonTradableLimitedError, COLLECTIBLE_ITEM_DETAILS_API,
+        request_types, sort_items_by_argument_order, ClassicClothingType,
+        NonTradableLimitedDetails, PurchaseNonTradableLimitedError, COLLECTIBLE_ITEM_DETAILS_API,
         PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1, PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2,
     };
-    use crate::{Client, RoboatError, XCSRF_HEADER};
+    use crate::{bedev2::ASSET_UPLOAD_API, Client, RoboatError, XCSRF_HEADER};
 
     impl Client {
         pub(super) async fn non_tradable_limited_details_internal(
@@ -535,6 +606,41 @@ mod internal {
                     PurchaseNonTradableLimitedError::UnknownRobloxErrorMsg(raw.purchase_result),
                 )),
             }
+        }
+
+        pub(super) async fn upload_classic_clothing_to_group_internal(
+            &self,
+            group_id: u64,
+            name: String,
+            description: String,
+            image_path: String,
+            classic_clothing_type: ClassicClothingType,
+        ) -> Result<(), RoboatError> {
+            let filename = Path::new(&image_path)
+                .file_name()
+                .map(|x| x.to_string_lossy().to_string())
+                .ok_or(RoboatError::InvalidPath(image_path.clone()))?;
+
+            let form = reqwest::multipart::Form::new()
+                .part("fileContent", reqwest::multipart::Part::bytes(tokio::fs::read(image_path).await?).file_name(filename))
+                .text("request", format!("{{\"displayName\":\"{}\",\"description\":\"{}\",\"assetType\":\"{}\",\"creationContext\":{{\"creator\":{{\"groupId\":{}}},\"expectedPrice\":10}}}}", name, description, classic_clothing_type, group_id));
+
+            let cookie_string = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let response_result = self
+                .reqwest_client
+                .request(reqwest::Method::POST, ASSET_UPLOAD_API)
+                .header(header::COOKIE, cookie_string)
+                .header(XCSRF_HEADER, xcsrf)
+                .multipart(form)
+                .send()
+                .await;
+
+            let response = Self::validate_request_result(response_result).await?;
+            let _ = Self::parse_to_raw::<request_types::UploadClassicClothingRaw>(response).await?;
+
+            Ok(())
         }
     }
 }

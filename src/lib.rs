@@ -348,6 +348,12 @@ pub enum RoboatError {
     /// Used for any reqwest error that occurs.
     #[error("RequestError {0}")]
     ReqwestError(reqwest::Error),
+    /// Used when an io error occurs.
+    #[error("IoError {0}")]
+    IoError(#[from] std::io::Error),
+    /// Used when a file system path passed to a method is invalid.
+    #[error("Invalid Path {0}")]
+    InvalidPath(String),
 }
 
 /// The type of the challenge required to complete a request.

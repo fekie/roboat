@@ -31,3 +31,11 @@ pub(super) struct PurchaseNonTradeableLimitedRaw {
     /// Error variants: null, "PriceMismatch"
     pub error_message: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UploadClassicClothingRaw {
+    path: String,
+    operation_id: String,
+    done: bool,
+}
