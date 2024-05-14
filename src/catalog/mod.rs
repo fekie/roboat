@@ -130,7 +130,7 @@ impl Client {
         let details = self.item_details(vec![item]).await?;
 
         details
-            .get(0)
+            .first()
             .ok_or(RoboatError::MalformedResponse)?
             .product_id
             .ok_or(RoboatError::MalformedResponse)
@@ -236,7 +236,7 @@ impl Client {
         let details = self.item_details(vec![item]).await?;
 
         details
-            .get(0)
+            .first()
             .ok_or(RoboatError::MalformedResponse)?
             .collectible_item_id
             .clone()

@@ -337,7 +337,7 @@ impl Client {
             .await?;
 
         let collectible_creator_id = details
-            .get(0)
+            .first()
             .ok_or(RoboatError::MalformedResponse)?
             .creator_id;
 

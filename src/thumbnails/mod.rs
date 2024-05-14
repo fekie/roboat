@@ -259,7 +259,7 @@ impl Client {
         let urls = self
             .thumbnail_url_bulk(vec![id], size, thumbnail_type)
             .await?;
-        let url = urls.get(0).ok_or(RoboatError::MalformedResponse)?;
+        let url = urls.first().ok_or(RoboatError::MalformedResponse)?;
         Ok(url.to_owned())
     }
 }
