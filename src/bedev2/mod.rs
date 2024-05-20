@@ -42,6 +42,10 @@ pub enum PurchaseNonTradableLimitedError {
     UnknownRobloxErrorMsg(String),
 }
 
+/// Used to specify the type of classic clothing being uploaded.
+///
+/// This is used in [`Client::upload_classic_clothing_to_group`].
+#[allow(missing_docs)]
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize, Copy,
 )]
@@ -49,6 +53,7 @@ pub enum ClassicClothingType {
     #[default]
     Shirt,
     Pants,
+    TShirt,
 }
 
 impl std::fmt::Display for ClassicClothingType {
@@ -56,6 +61,7 @@ impl std::fmt::Display for ClassicClothingType {
         match self {
             ClassicClothingType::Shirt => write!(f, "Shirt"),
             ClassicClothingType::Pants => write!(f, "Pants"),
+            ClassicClothingType::TShirt => write!(f, "T-Shirt"),
         }
     }
 }
@@ -621,9 +627,15 @@ mod internal {
                 .map(|x| x.to_string_lossy().to_string())
                 .ok_or(RoboatError::InvalidPath(image_path.clone()))?;
 
+            let asset_name_patch = match classic_clothing_type {
+                ClassicClothingType::Shirt => "Shirt",
+                ClassicClothingType::Pants => "Pants",
+                ClassicClothingType::TShirt => "Tshirt",
+            };
+
             let form = reqwest::multipart::Form::new()
                 .part("fileContent", reqwest::multipart::Part::bytes(tokio::fs::read(image_path).await?).file_name(filename))
-                .text("request", format!("{{\"displayName\":\"{}\",\"description\":\"{}\",\"assetType\":\"{}\",\"creationContext\":{{\"creator\":{{\"groupId\":{}}},\"expectedPrice\":10}}}}", name, description, classic_clothing_type, group_id));
+                .text("request", format!("{{\"displayName\":\"{}\",\"description\":\"{}\",\"assetType\":\"{}\",\"creationContext\":{{\"creator\":{{\"groupId\":{}}},\"expectedPrice\":10}}}}", name, description, asset_name_patch, group_id));
 
             let cookie_string = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;
