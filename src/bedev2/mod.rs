@@ -633,9 +633,14 @@ mod internal {
                 ClassicClothingType::TShirt => "Tshirt",
             };
 
+            let expected_price = match classic_clothing_type {
+                ClassicClothingType::Shirt | ClassicClothingType::Pants => 10,
+                ClassicClothingType::TShirt => 0,
+            };
+
             let form = reqwest::multipart::Form::new()
                 .part("fileContent", reqwest::multipart::Part::bytes(tokio::fs::read(image_path).await?).file_name(filename))
-                .text("request", format!("{{\"displayName\":\"{}\",\"description\":\"{}\",\"assetType\":\"{}\",\"creationContext\":{{\"creator\":{{\"groupId\":{}}},\"expectedPrice\":10}}}}", name, description, asset_name_patch, group_id));
+                .text("request", format!("{{\"displayName\":\"{name}\",\"description\":\"{description}\",\"assetType\":\"{asset_name_patch}\",\"creationContext\":{{\"creator\":{{\"groupId\":{group_id}}},\"expectedPrice\":{expected_price}}}}}" ));
 
             let cookie_string = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;
