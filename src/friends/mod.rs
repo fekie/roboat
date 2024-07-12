@@ -98,24 +98,24 @@ pub struct FriendRequestUserInformation {
 pub struct FriendRequest {
     /// When the friend request was sent.
     #[serde(alias = "senderId")]
-    sender_id: u64,
+    pub sender_id: u64,
 
     /// The sender user Id.
     #[serde(alias = "sourceUniverseId")]
-    source_universe_id: u64,
+    pub source_universe_id: u64,
 
     /// The source universe Id which the request was sent in.
     #[serde(alias = "sentAt")]
-    sent_at: String,
+    pub sent_at: String,
 
     /// The origin source type associated with the friend request.
     /// ['Unknown' = 0, 'PlayerSearch' = 1, 'QrCode' = 2, 'InGame' = 3, 'UserProfile' = 4, 'QqContactImporter' = 5, 'WeChatContactImporter' = 6, 'ProfileShare' = 7, 'PhoneContactImporter' = 8, 'FriendRecommendations' = 9]
     #[serde(alias = "originSourceType")]
-    origin_source_type: String,
+    pub origin_source_type: String,
 
     /// The contact name associated with the friend request.
     #[serde(alias = "contactName")]
-    contact_name: Option<String>,
+    pub contact_name: Option<String>,
 }
 
 impl Client {
