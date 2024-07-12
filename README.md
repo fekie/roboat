@@ -72,6 +72,10 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
     - Username User Search - [`Client::username_user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username_user_search)
     - Fetch User Details - [`Client::user_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_details)
+* Friends API - [`friends.roblox.com/*`]
+    - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.pending_friend_requests)
+    - Fetch Friend Requests - [`Client::friend_requests`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.friend_requests)
+    - Fetch Friends List - [`Client::friends_list`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.friends_list)
 * UNDER CONSTRUCTION
     - Upload Classic Clothing to Group - [`Client::upload_classic_clothing_to_group`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.upload_classic_clothing_to_group)
 
