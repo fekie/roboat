@@ -1,7 +1,6 @@
-use reqwest::header::{self, HeaderName, HeaderValue};
+use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
-
-use crate::{Client, RoboatError, User};
+use reqwest::header;
 
 mod request_types;
 
@@ -90,7 +89,7 @@ pub struct FriendRequestUserInformation {
     pub username: String,
 
     #[serde(alias = "displayName")]
-    pub display_name: String
+    pub display_name: String,
 }
 
 /// Model, representing a friend request.
@@ -134,19 +133,18 @@ impl Client {
     /// use roboat::ClientBuilder;
     ///
     /// const ROBLOSECURITY: &str = "roblosecurity";
-    /// const KEYWORD: &str = "linkmon";
+    /// const USER_ID: u64 = 1692828498;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
-    /// let keyword = KEYWORD.to_string();
-    /// let users = client.friends_list(keyword).await?;
+    /// let friends = client.friends_list(USER_ID).await?;
     ///
-    /// println!("Found {} friends.", users.len());
+    /// println!("Found {} friends.", friends.len());
     ///
-    /// for user in users {
-    ///     println!("{}: {}", user.username, user.user_id);
+    /// for friend in friends {
+    ///     println!("{}: {}", friend.username, friend.user_id);
     /// }
     ///
     /// # Ok(())
@@ -168,7 +166,7 @@ impl Client {
     }
 
     // TODO: add cursor argument or get all requests at one
-    /// Get list of friend requests using <https://friends.roblox.com/v1/my/friends/requests>.
+    /// Get list of friend requests with cursor using <https://friends.roblox.com/v1/my/friends/requests>.
     ///
     /// # Notes
     /// * Requires a valid roblosecurity.
@@ -177,6 +175,26 @@ impl Client {
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let (friend_requests, next_cursor) = client.friend_requests(None).await?;
+    ///
+    /// for user in friend_requests {
+    ///     println!("{} from {}: {}", user.username, user.friend_request.origin_source_type,  user.user_id);
+    /// }
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn friend_requests(
         &self,
         cursor: Option<String>,
@@ -206,6 +224,24 @@ impl Client {
     /// * All errors under [Standard Errors](#standard-errors).
     /// * All errors under [Auth Required Errors](#auth-required-errors).
     ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let count_of_friend_requests = client.pending_friend_requests().await?;
+    ///
+    /// println!("There's a {} pending friend requests!", count_of_friend_requests);
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn pending_friend_requests(
         &self,
     ) -> Result<u64, RoboatError> {

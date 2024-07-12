@@ -58,6 +58,10 @@
 //!   - User Search - [`Client::user_search`]
 //!   - Username User Search - [`Client::username_user_search`]
 //!   - Fetch User Details - [`Client::user_details`]
+//! * Friends API
+//!   - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`]
+//!   - Fetch Friend Requests - [`Client::friend_requests`]
+//!   - Fetch Friends List - [`Client::friends_list`]
 //! * UNDER CONSTRUCTION
 //!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
 //!

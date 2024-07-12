@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let (friend_requests, next_cursor) = client.friend_requests(current_cursor).await?;
 
         for user in friend_requests {
-            println!(" - {}: {}", user.username, user.user_id);
+            println!(" - {} from {}: {}", user.username, user.friend_request.origin_source_type,  user.user_id);
         }
 
         if let Some(cursor) = next_cursor {
