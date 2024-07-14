@@ -13,6 +13,9 @@ const PENDING_FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/user/friend
 const ACCEPT_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
 const DECLINE_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
 
+const SEND_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{target_id}/request-friendship";
+const UNFRIEND: &str = "https://friends.roblox.com/v1/users/{target_id}/unfriend";
+
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
@@ -291,15 +294,9 @@ impl Client {
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
-    /// match client.accept_friend_request(REQUESTER_ID).await {
-    ///     Ok(_) => {
-    ///         println!("Accepted friend request from {}!", REQUESTER_ID);
-    ///     }
-    ///     Err(err) => {
-    ///         eprintln!("Couldn't accept friend request");
-    ///         eprintln!(" {}", err);
-    ///     }
-    /// }
+    /// client.accept_friend_request(REQUESTER_ID).await?;
+    ///
+    /// println!("Accepted friend request from {}!", REQUESTER_ID);
     ///
     /// # Ok(())
     /// # }
@@ -350,15 +347,9 @@ impl Client {
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
     ///
-    /// match client.decline_friend_request(REQUESTER_ID).await {
-    ///     Ok(_) => {
-    ///         println!("Declined friend request from {}!", REQUESTER_ID);
-    ///     }
-    ///     Err(err) => {
-    ///         eprintln!("Couldn't decline friend request");
-    ///         eprintln!(" {}", err);
-    ///     }
-    /// }
+    /// client.decline_friend_request(REQUESTER_ID).await?;
+    ///
+    /// println!("Declined friend request from {}!", REQUESTER_ID);
     ///
     /// # Ok(())
     /// # }
@@ -386,11 +377,115 @@ impl Client {
             },
         }
     }
+
+    /// Sends friend request using <https://friends.roblox.com/v1/users/{target_id}/request-friendship>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const TARGET_ID: u64 = 1;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// client.send_friend_request(TARGET_ID).await?;
+    ///
+    /// println!("Sent friend request to {}!", TARGET_ID);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn send_friend_request(
+        &self,
+        target_id: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .send_friend_request_internal(
+                target_id,
+            )
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.send_friend_request_internal(
+                        target_id
+                    ).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+
+    /// Unfriends using <https://friends.roblox.com/v1/users/{target_id}/unfriend>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const TARGET_ID: u64 = 1;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// client.unfriend(TARGET_ID).await?;
+    ///
+    /// println!("Unfriended {}", TARGET_ID);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn unfriend(
+        &self,
+        target_id: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .unfriend_internal(
+                target_id,
+            )
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.unfriend_internal(
+                        target_id
+                    ).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 mod internal {
     use reqwest::header;
-
+    use serde_json::json;
     use crate::{Client, RoboatError, XCSRF_HEADER};
 
     impl Client {
@@ -425,6 +520,62 @@ mod internal {
         ) -> Result<(), RoboatError> {
             let formatted_url = super::DECLINE_FRIEND_REQUEST
                 .replace("{requester_id}", &requester_id.to_string());
+
+            let cookie = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // If we got a status code 200, it was successful.
+
+            Ok(())
+        }
+
+        pub(super) async fn send_friend_request_internal(
+            &self,
+            target_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = super::SEND_FRIEND_REQUEST
+                .replace("{target_id}", &target_id.to_string());
+
+            let cookie = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            // TODO: maybe add settable friendshipOriginSourceType parameter
+            let body = json!({
+                "friendshipOriginSourceType": 0
+            });
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, xcsrf)
+                .json(&body)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // If we got a status code 200, it was successful.
+
+            Ok(())
+        }
+
+        pub(super) async fn unfriend_internal(
+            &self,
+            target_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = super::UNFRIEND
+                .replace("{target_id}", &target_id.to_string());
 
             let cookie = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;
