@@ -2,40 +2,13 @@ use reqwest::header;
 use serde::{Deserialize, Serialize};
 
 use crate::{Client, RoboatError};
+use crate::presence::PresenceType;
 
 mod request_types;
 
 const FRIENDS_LIST: &str = "https://friends.roblox.com/v1/users/{user_id}/friends";
 const FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/my/friends/requests";
 const PENDING_FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
-
-// TODO: take out this enum to presence
-/// Presence of user
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub enum PresenceType {
-    #[default]
-    Offline,
-    Online,
-    InGame,
-    InStudio,
-    Invisible,
-}
-
-impl TryFrom<i32> for PresenceType {
-    type Error = RoboatError;
-
-    fn try_from(v: i32) -> Result<Self, Self::Error> {
-        match v {
-            0 => Ok(Self::Offline),
-            1 => Ok(Self::Online),
-            2 => Ok(Self::InGame),
-            3 => Ok(Self::InStudio),
-            4 => Ok(Self::Invisible),
-            _ => Err(RoboatError::MalformedResponse)
-        }
-    }
-}
 
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]

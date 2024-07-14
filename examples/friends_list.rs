@@ -1,6 +1,7 @@
 use clap::Parser;
+
 use roboat::ClientBuilder;
-use roboat::friends::PresenceType;
+use roboat::presence::PresenceType;
 
 #[derive(Parser, Debug)]
 struct Args {

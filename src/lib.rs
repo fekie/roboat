@@ -223,7 +223,7 @@ pub mod economy;
 /// A module for endpoints prefixed with <https://groups.roblox.com/*>.
 pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
-mod presence;
+pub mod presence;
 /// A module for endpoints prefixed with <https://privatemessages.roblox.com/*>.
 pub mod private_messages;
 /// A module for endpoints prefixed with <https://thumbnails.roblox.com/*>.
