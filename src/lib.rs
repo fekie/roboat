@@ -62,6 +62,8 @@
 //!   - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`]
 //!   - Fetch Friend Requests - [`Client::friend_requests`]
 //!   - Fetch Friends List - [`Client::friends_list`]
+//!   - Accept Friend Request - [`Client::accept_friend_request`]
+//!   - Decline Friend Request - [`Client::decline_friend_request`]
 //! * UNDER CONSTRUCTION
 //!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
 //!

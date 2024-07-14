@@ -10,6 +10,9 @@ const FRIENDS_LIST: &str = "https://friends.roblox.com/v1/users/{user_id}/friend
 const FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/my/friends/requests";
 const PENDING_FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
 
+const ACCEPT_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
+const DECLINE_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
+
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
@@ -264,5 +267,181 @@ impl Client {
         let raw = Self::parse_to_raw::<request_types::PendingFriendRequestsResponse>(response).await?;
 
         Ok(raw.count)
+    }
+
+    /// Accepts friend request using <https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const REQUESTER_ID: u64 = 1;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// match client.accept_friend_request(REQUESTER_ID).await {
+    ///     Ok(_) => {
+    ///         println!("Accepted friend request from {}!", REQUESTER_ID);
+    ///     }
+    ///     Err(err) => {
+    ///         eprintln!("Couldn't accept friend request");
+    ///         eprintln!(" {}", err);
+    ///     }
+    /// }
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn accept_friend_request(
+        &self,
+        requester_id: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .accept_friend_request_internal(
+                requester_id,
+            )
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.accept_friend_request_internal(
+                        requester_id,
+                    ).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+
+    /// Declines friend request using <https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request>.
+    ///
+    /// # Notes
+    /// * Requires a valid roblosecurity.
+    ///
+    /// # Errors
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    /// const REQUESTER_ID: u64 = 1;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// match client.decline_friend_request(REQUESTER_ID).await {
+    ///     Ok(_) => {
+    ///         println!("Declined friend request from {}!", REQUESTER_ID);
+    ///     }
+    ///     Err(err) => {
+    ///         eprintln!("Couldn't decline friend request");
+    ///         eprintln!(" {}", err);
+    ///     }
+    /// }
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn decline_friend_request(
+        &self,
+        requester_id: u64,
+    ) -> Result<(), RoboatError> {
+        match self
+            .decline_friend_request_internal(
+                requester_id,
+            )
+            .await
+        {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+
+                    self.decline_friend_request_internal(
+                        requester_id
+                    ).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+}
+
+mod internal {
+    use reqwest::header;
+
+    use crate::{Client, RoboatError, XCSRF_HEADER};
+
+    impl Client {
+        pub(super) async fn accept_friend_request_internal(
+            &self,
+            requester_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = super::ACCEPT_FRIEND_REQUEST
+                .replace("{requester_id}", &requester_id.to_string());
+
+            let cookie = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // If we got a status code 200, it was successful.
+
+            Ok(())
+        }
+
+        pub(super) async fn decline_friend_request_internal(
+            &self,
+            requester_id: u64,
+        ) -> Result<(), RoboatError> {
+            let formatted_url = super::DECLINE_FRIEND_REQUEST
+                .replace("{requester_id}", &requester_id.to_string());
+
+            let cookie = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+
+            let request_result = self
+                .reqwest_client
+                .post(formatted_url)
+                .header(header::COOKIE, cookie)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            let _ = Self::validate_request_result(request_result).await?;
+
+            // If we got a status code 200, it was successful.
+
+            Ok(())
+        }
     }
 }
