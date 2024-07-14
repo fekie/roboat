@@ -22,11 +22,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // iterate through all friend requests
 
     let mut current_cursor = None;
+
     loop {
         let (friend_requests, next_cursor) = client.friend_requests(current_cursor).await?;
 
         for user in friend_requests {
-            println!(" - {} from {}: {}", user.username, user.friend_request.origin_source_type,  user.user_id);
+            println!(" - {} from {}: {}", user.username, user.origin_source_type,  user.user_id);
         }
 
         if let Some(cursor) = next_cursor {

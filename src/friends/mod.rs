@@ -1,6 +1,7 @@
-use crate::{Client, RoboatError};
-use serde::{Deserialize, Serialize};
 use reqwest::header;
+use serde::{Deserialize, Serialize};
+
+use crate::{Client, RoboatError};
 
 mod request_types;
 
@@ -8,15 +9,40 @@ const FRIENDS_LIST: &str = "https://friends.roblox.com/v1/users/{user_id}/friend
 const FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/my/friends/requests";
 const PENDING_FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
 
+// TODO: take out this enum to presence
+/// Presence of user
+#[allow(missing_docs)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+pub enum PresenceType {
+    #[default]
+    Offline,
+    Online,
+    InGame,
+    InStudio,
+    Invisible,
+}
+
+impl TryFrom<i32> for PresenceType {
+    type Error = RoboatError;
+
+    fn try_from(v: i32) -> Result<Self, Self::Error> {
+        match v {
+            0 => Ok(Self::Offline),
+            1 => Ok(Self::Online),
+            2 => Ok(Self::InGame),
+            3 => Ok(Self::InStudio),
+            4 => Ok(Self::Invisible),
+            _ => Err(RoboatError::MalformedResponse)
+        }
+    }
+}
+
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub struct FriendsUserInformation {
+pub struct FriendUserInformation {
     #[serde(alias = "id")]
     pub user_id: u64,
-
-    #[serde(alias = "externalAppDisplayName")]
-    pub external_app_display_name: Option<String>,
 
     #[serde(alias = "name")]
     pub username: String,
@@ -24,99 +50,58 @@ pub struct FriendsUserInformation {
     #[serde(alias = "displayName")]
     pub display_name: String,
 
-    /// Whether the user is online.
-    #[serde(alias = "isOnline")]
-    pub is_online: bool,
+    pub description: Option<String>,
 
-    // TODO: make enum from it
-    /// Where the user is online. ['Offline' = 0, 'Online' = 1, 'InGame' = 2, 'InStudio' = 3, 'Invisible' = 4]
-    ///
-    /// Notes:
-    ///  * `None`, when user isn't online
-    #[serde(alias = "presenceType")]
-    pub presence_type: Option<i32>,
+    pub created: String,
 
-    /// Whether the user is deleted.
-    #[serde(alias = "isDeleted")]
-    pub is_deleted: bool,
+    pub presence_type: PresenceType,
 
+    /// Whether the user is banned/terminated.
     #[serde(alias = "isBanned")]
-    pub is_banned: bool,
-
-    /// Frequents value for the user.
-    #[serde(alias = "friendFrequentScore")]
-    pub friend_frequent_score: i64,
-
-    /// Frequents rank for the user.
-    #[serde(alias = "friendFrequentRank")]
-    pub friend_frequent_rank: i64,
+    pub is_terminated: bool,
 
     /// The user's verified badge status.
-    #[serde(alias = "hasVerifiedBadge")]
     pub has_verified_badge: bool,
-
-    pub description: Option<String>,
-    pub created: String,
-}
-
-/// Model, representing a friend request.
-#[allow(missing_docs)]
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-pub struct FriendRequestUserInformation {
-    #[serde(alias = "friendRequest")]
-    pub friend_request: FriendRequest,
-
-    #[serde(alias = "mutualFriendsList")]
-    pub mutual_friends_list: Vec<String>,
-
-    #[serde(alias = "hasVerifiedBadge")]
-    pub has_verified_badge: bool,
-
-    pub description: Option<String>,
-
-    pub created: String,
-
-    #[serde(alias = "isBanned")]
-    pub is_banned: bool,
-
-    #[serde(alias = "externalAppDisplayName")]
-    pub external_app_display_name: Option<String>,
-
-    #[serde(alias = "id")]
-    pub user_id: u64,
-
-    #[serde(alias = "name")]
-    pub username: String,
-
-    #[serde(alias = "displayName")]
-    pub display_name: String,
 }
 
 /// Model, representing a friend request.
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct FriendRequest {
-    /// When the friend request was sent.
-    #[serde(alias = "senderId")]
-    pub sender_id: u64,
+    #[serde(alias = "id")]
+    pub user_id: u64,
 
-    /// The sender user Id.
-    #[serde(alias = "sourceUniverseId")]
-    pub source_universe_id: u64,
+    #[serde(alias = "name")]
+    pub username: String,
 
-    /// The source universe Id which the request was sent in.
-    #[serde(alias = "sentAt")]
-    pub sent_at: String,
+    #[serde(alias = "displayName")]
+    pub display_name: String,
+
+    pub description: Option<String>,
+
+    pub created: String,
+
+    #[serde(alias = "isBanned")]
+    pub is_terminated: bool,
+
+    #[serde(alias = "hasVerifiedBadge")]
+    pub has_verified_badge: bool,
+
+    #[serde(alias = "mutualFriendsList")]
+    pub mutual_friends_list: Vec<String>,
 
     /// The origin source type associated with the friend request.
-    /// ['Unknown' = 0, 'PlayerSearch' = 1, 'QrCode' = 2, 'InGame' = 3, 'UserProfile' = 4, 'QqContactImporter' = 5, 'WeChatContactImporter' = 6, 'ProfileShare' = 7, 'PhoneContactImporter' = 8, 'FriendRecommendations' = 9]
-    #[serde(alias = "originSourceType")]
     pub origin_source_type: String,
 
-    /// The contact name associated with the friend request.
-    #[serde(alias = "contactName")]
-    pub contact_name: Option<String>,
+    /// The source universe id which the request was sent in.
+    /// # Note
+    ///  * Default universe id: `0`
+    pub source_universe_id: u64,
+
+    /// When the friend request was sent.
+    pub sent_at: String,
 }
+
 
 impl Client {
     /// Get list of all friends for the specified user using <https://friends.roblox.com/v1/users/{userId}/friends>.
@@ -150,7 +135,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn friends_list(&self, user_id: u64) -> Result<Vec<FriendsUserInformation>, RoboatError> {
+    pub async fn friends_list(&self, user_id: u64) -> Result<Vec<FriendUserInformation>, RoboatError> {
         let formatted_url = FRIENDS_LIST.replace("{user_id}", &user_id.to_string());
 
         let request_result = self
@@ -162,10 +147,31 @@ impl Client {
         let response = Self::validate_request_result(request_result).await?;
 
         let raw = Self::parse_to_raw::<request_types::FriendsListResponse>(response).await?;
-        Ok(raw.data)
+
+        let mut friends = Vec::new();
+
+        for friend_raw in raw.data {
+            let friend = FriendUserInformation {
+                user_id: friend_raw.id,
+                username: friend_raw.username,
+                display_name: friend_raw.display_name,
+
+                description: friend_raw.description,
+                created: friend_raw.created,
+
+                presence_type: PresenceType::try_from(friend_raw.presence_type.unwrap_or(0))
+                    .unwrap_or(PresenceType::Offline),
+                is_terminated: friend_raw.is_banned,
+
+                has_verified_badge: friend_raw.has_verified_badge,
+            };
+
+            friends.push(friend);
+        }
+
+        Ok(friends)
     }
 
-    // TODO: add cursor argument or get all requests at one
     /// Get list of friend requests with cursor using <https://friends.roblox.com/v1/my/friends/requests>.
     ///
     /// # Notes
@@ -189,7 +195,7 @@ impl Client {
     /// let (friend_requests, next_cursor) = client.friend_requests(None).await?;
     ///
     /// for user in friend_requests {
-    ///     println!("{} from {}: {}", user.username, user.friend_request.origin_source_type,  user.user_id);
+    ///     println!("{} from {}: {}", user.username, user.origin_source_type,  user.user_id);
     /// }
     ///
     /// # Ok(())
@@ -198,9 +204,13 @@ impl Client {
     pub async fn friend_requests(
         &self,
         cursor: Option<String>,
-    ) -> Result<(Vec<FriendRequestUserInformation>, Option<String>), RoboatError> {
+    ) -> Result<(Vec<FriendRequest>, Option<String>), RoboatError> {
         let cookie = self.cookie_string()?;
-        let formatted_url = format!("{}?limit={}", FRIEND_REQUESTS, 10);
+        let mut formatted_url = format!("{}?limit={}", FRIEND_REQUESTS, 10);
+
+        if let Some(cursor) = cursor {
+            formatted_url = format!("{}&cursor={}", formatted_url, cursor)
+        }
 
         let request_result = self
             .reqwest_client
@@ -212,7 +222,28 @@ impl Client {
         let response = Self::validate_request_result(request_result).await?;
 
         let raw = Self::parse_to_raw::<request_types::FriendRequestsResponse>(response).await?;
-        Ok((raw.data, raw.next_page_cursor))
+
+        let mut friend_requests = Vec::new();
+
+        for friend_request_raw in raw.data {
+            let friend_request = FriendRequest {
+                user_id: friend_request_raw.user_id,
+                username: friend_request_raw.username,
+                display_name: friend_request_raw.display_name,
+                description: friend_request_raw.description,
+                created: friend_request_raw.created,
+                is_terminated: friend_request_raw.is_terminated,
+                has_verified_badge: friend_request_raw.has_verified_badge,
+                mutual_friends_list: friend_request_raw.mutual_friends_list,
+                origin_source_type: friend_request_raw.friend_request.origin_source_type,
+                source_universe_id: friend_request_raw.friend_request.source_universe_id,
+                sent_at: friend_request_raw.friend_request.sent_at,
+            };
+
+            friend_requests.push(friend_request);
+        }
+
+        Ok((friend_requests, raw.next_page_cursor))
     }
 
     /// Get count of pending friend requests using <https://friends.roblox.com/v1/user/friend-requests/count>.
