@@ -78,6 +78,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Friends List - [`Client::friends_list`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.friends_list)
     - Accept Friend Request - [`Client::accept_friend_request`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.accept_friend_request)
     - Decline Friend Request - [`Client::decline_friend_request`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.decline_friend_request)
+    - Send Friend Request - [`Client::send_friend_request`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.send_friend_request)
+    - Unfriend - [`Client::unfriend`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.unfriend)
 * UNDER CONSTRUCTION
     - Upload Classic Clothing to Group - [`Client::upload_classic_clothing_to_group`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.upload_classic_clothing_to_group)
 
