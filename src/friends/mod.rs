@@ -6,7 +6,7 @@ use crate::presence::PresenceType;
 
 mod request_types;
 
-const FRIENDS_LIST_API: &str = "https://friends.roblox.com/v1/users/{user_id}/friends?userSort=StatusFrequents";
+const FRIENDS_LIST_API: &str = "https://friends.roblox.com/v1/users/{user_id}/friends";
 const FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/my/friends/requests";
 const PENDING_FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
 
@@ -486,6 +486,7 @@ impl Client {
 mod internal {
     use reqwest::header;
     use serde_json::json;
+
     use crate::{Client, RoboatError, XCSRF_HEADER};
 
     impl Client {
