@@ -6,15 +6,15 @@ use crate::presence::PresenceType;
 
 mod request_types;
 
-const FRIENDS_LIST: &str = "https://friends.roblox.com/v1/users/{user_id}/friends";
-const FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/my/friends/requests";
-const PENDING_FRIEND_REQUESTS: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
+const FRIENDS_LIST_API: &str = "https://friends.roblox.com/v1/users/{user_id}/friends?userSort=StatusFrequents";
+const FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/my/friends/requests";
+const PENDING_FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
 
-const ACCEPT_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
-const DECLINE_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
+const ACCEPT_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
+const DECLINE_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
 
-const SEND_FRIEND_REQUEST: &str = "https://friends.roblox.com/v1/users/{target_id}/request-friendship";
-const UNFRIEND: &str = "https://friends.roblox.com/v1/users/{target_id}/unfriend";
+const SEND_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{target_id}/request-friendship";
+const UNFRIEND_API: &str = "https://friends.roblox.com/v1/users/{target_id}/unfriend";
 
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]
@@ -115,7 +115,7 @@ impl Client {
     /// # }
     /// ```
     pub async fn friends_list(&self, user_id: u64) -> Result<Vec<FriendUserInformation>, RoboatError> {
-        let formatted_url = FRIENDS_LIST.replace("{user_id}", &user_id.to_string());
+        let formatted_url = FRIENDS_LIST_API.replace("{user_id}", &user_id.to_string());
 
         let request_result = self
             .reqwest_client
@@ -185,7 +185,7 @@ impl Client {
         cursor: Option<String>,
     ) -> Result<(Vec<FriendRequest>, Option<String>), RoboatError> {
         let cookie = self.cookie_string()?;
-        let mut formatted_url = format!("{}?limit={}", FRIEND_REQUESTS, 10);
+        let mut formatted_url = format!("{}?limit={}", FRIEND_REQUESTS_API, 10);
 
         if let Some(cursor) = cursor {
             formatted_url = format!("{}&cursor={}", formatted_url, cursor)
@@ -256,7 +256,7 @@ impl Client {
         &self,
     ) -> Result<u64, RoboatError> {
         let cookie = self.cookie_string()?;
-        let formatted_url = PENDING_FRIEND_REQUESTS;
+        let formatted_url = PENDING_FRIEND_REQUESTS_API;
 
         let request_result = self
             .reqwest_client
@@ -493,7 +493,7 @@ mod internal {
             &self,
             requester_id: u64,
         ) -> Result<(), RoboatError> {
-            let formatted_url = super::ACCEPT_FRIEND_REQUEST
+            let formatted_url = super::ACCEPT_FRIEND_REQUEST_API
                 .replace("{requester_id}", &requester_id.to_string());
 
             let cookie = self.cookie_string()?;
@@ -518,7 +518,7 @@ mod internal {
             &self,
             requester_id: u64,
         ) -> Result<(), RoboatError> {
-            let formatted_url = super::DECLINE_FRIEND_REQUEST
+            let formatted_url = super::DECLINE_FRIEND_REQUEST_API
                 .replace("{requester_id}", &requester_id.to_string());
 
             let cookie = self.cookie_string()?;
@@ -543,7 +543,7 @@ mod internal {
             &self,
             target_id: u64,
         ) -> Result<(), RoboatError> {
-            let formatted_url = super::SEND_FRIEND_REQUEST
+            let formatted_url = super::SEND_FRIEND_REQUEST_API
                 .replace("{target_id}", &target_id.to_string());
 
             let cookie = self.cookie_string()?;
@@ -574,7 +574,7 @@ mod internal {
             &self,
             target_id: u64,
         ) -> Result<(), RoboatError> {
-            let formatted_url = super::UNFRIEND
+            let formatted_url = super::UNFRIEND_API
                 .replace("{target_id}", &target_id.to_string());
 
             let cookie = self.cookie_string()?;
