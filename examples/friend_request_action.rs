@@ -3,9 +3,7 @@ use serde::Serialize;
 
 use roboat::ClientBuilder;
 
-#[derive(
-    clap::ValueEnum, Clone, Debug, Serialize,
-)]
+#[derive(clap::ValueEnum, Clone, Debug, Serialize)]
 enum FriendRequestAction {
     Accept,
     Decline,
@@ -41,8 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     eprintln!(" {}", err)
                 }
             }
-
-        },
+        }
         FriendRequestAction::Decline => {
             match client.decline_friend_request(args.requester_id).await {
                 Ok(_) => {

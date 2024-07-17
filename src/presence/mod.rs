@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::{Client, RoboatError};
+use serde::{Deserialize, Serialize};
 
 const REGISTER_PRESENCE_API: &str = "https://presence.roblox.com/v1/presence/register-app-presence";
 
@@ -25,7 +25,7 @@ impl TryFrom<i32> for PresenceType {
             2 => Ok(Self::InGame),
             3 => Ok(Self::InStudio),
             4 => Ok(Self::Invisible),
-            _ => Err(RoboatError::MalformedResponse)
+            _ => Err(RoboatError::MalformedResponse),
         }
     }
 }

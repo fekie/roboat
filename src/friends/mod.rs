@@ -1,19 +1,23 @@
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 
-use crate::{Client, RoboatError};
 use crate::presence::PresenceType;
+use crate::{Client, RoboatError};
 
 mod request_types;
 
 const FRIENDS_LIST_API: &str = "https://friends.roblox.com/v1/users/{user_id}/friends";
 const FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/my/friends/requests";
-const PENDING_FRIEND_REQUESTS_API: &str = "https://friends.roblox.com/v1/user/friend-requests/count";
+const PENDING_FRIEND_REQUESTS_API: &str =
+    "https://friends.roblox.com/v1/user/friend-requests/count";
 
-const ACCEPT_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
-const DECLINE_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
+const ACCEPT_FRIEND_REQUEST_API: &str =
+    "https://friends.roblox.com/v1/users/{requester_id}/accept-friend-request";
+const DECLINE_FRIEND_REQUEST_API: &str =
+    "https://friends.roblox.com/v1/users/{requester_id}/decline-friend-request";
 
-const SEND_FRIEND_REQUEST_API: &str = "https://friends.roblox.com/v1/users/{target_id}/request-friendship";
+const SEND_FRIEND_REQUEST_API: &str =
+    "https://friends.roblox.com/v1/users/{target_id}/request-friendship";
 const UNFRIEND_API: &str = "https://friends.roblox.com/v1/users/{target_id}/unfriend";
 
 /// Model, representing user information that also contains select presence information
@@ -81,7 +85,6 @@ pub struct FriendRequest {
     pub sent_at: String,
 }
 
-
 impl Client {
     /// Get list of all friends for the specified user using <https://friends.roblox.com/v1/users/{userId}/friends>.
     ///
@@ -114,14 +117,13 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn friends_list(&self, user_id: u64) -> Result<Vec<FriendUserInformation>, RoboatError> {
+    pub async fn friends_list(
+        &self,
+        user_id: u64,
+    ) -> Result<Vec<FriendUserInformation>, RoboatError> {
         let formatted_url = FRIENDS_LIST_API.replace("{user_id}", &user_id.to_string());
 
-        let request_result = self
-            .reqwest_client
-            .get(formatted_url)
-            .send()
-            .await;
+        let request_result = self.reqwest_client.get(formatted_url).send().await;
 
         let response = Self::validate_request_result(request_result).await?;
 
@@ -252,9 +254,7 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn pending_friend_requests(
-        &self,
-    ) -> Result<u64, RoboatError> {
+    pub async fn pending_friend_requests(&self) -> Result<u64, RoboatError> {
         let cookie = self.cookie_string()?;
         let formatted_url = PENDING_FRIEND_REQUESTS_API;
 
@@ -267,7 +267,8 @@ impl Client {
 
         let response = Self::validate_request_result(request_result).await?;
 
-        let raw = Self::parse_to_raw::<request_types::PendingFriendRequestsResponse>(response).await?;
+        let raw =
+            Self::parse_to_raw::<request_types::PendingFriendRequestsResponse>(response).await?;
 
         Ok(raw.count)
     }
@@ -301,24 +302,14 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn accept_friend_request(
-        &self,
-        requester_id: u64,
-    ) -> Result<(), RoboatError> {
-        match self
-            .accept_friend_request_internal(
-                requester_id,
-            )
-            .await
-        {
+    pub async fn accept_friend_request(&self, requester_id: u64) -> Result<(), RoboatError> {
+        match self.accept_friend_request_internal(requester_id).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
                     self.set_xcsrf(new_xcsrf).await;
 
-                    self.accept_friend_request_internal(
-                        requester_id,
-                    ).await
+                    self.accept_friend_request_internal(requester_id).await
                 }
                 _ => Err(e),
             },
@@ -354,24 +345,14 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn decline_friend_request(
-        &self,
-        requester_id: u64,
-    ) -> Result<(), RoboatError> {
-        match self
-            .decline_friend_request_internal(
-                requester_id,
-            )
-            .await
-        {
+    pub async fn decline_friend_request(&self, requester_id: u64) -> Result<(), RoboatError> {
+        match self.decline_friend_request_internal(requester_id).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
                     self.set_xcsrf(new_xcsrf).await;
 
-                    self.decline_friend_request_internal(
-                        requester_id
-                    ).await
+                    self.decline_friend_request_internal(requester_id).await
                 }
                 _ => Err(e),
             },
@@ -406,24 +387,14 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn send_friend_request(
-        &self,
-        target_id: u64,
-    ) -> Result<(), RoboatError> {
-        match self
-            .send_friend_request_internal(
-                target_id,
-            )
-            .await
-        {
+    pub async fn send_friend_request(&self, target_id: u64) -> Result<(), RoboatError> {
+        match self.send_friend_request_internal(target_id).await {
             Ok(_) => Ok(()),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
                     self.set_xcsrf(new_xcsrf).await;
 
-                    self.send_friend_request_internal(
-                        target_id
-                    ).await
+                    self.send_friend_request_internal(target_id).await
                 }
                 _ => Err(e),
             },
@@ -458,24 +429,14 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn unfriend(
-        &self,
-        target_id: u64,
-    ) -> Result<(), RoboatError> {
-        match self
-            .unfriend_internal(
-                target_id,
-            )
-            .await
-        {
+    pub async fn unfriend(&self, target_id: u64) -> Result<(), RoboatError> {
+        match self.unfriend_internal(target_id).await {
             Ok(_) => Ok(()),
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
                     self.set_xcsrf(new_xcsrf).await;
 
-                    self.unfriend_internal(
-                        target_id
-                    ).await
+                    self.unfriend_internal(target_id).await
                 }
                 _ => Err(e),
             },
@@ -544,8 +505,8 @@ mod internal {
             &self,
             target_id: u64,
         ) -> Result<(), RoboatError> {
-            let formatted_url = super::SEND_FRIEND_REQUEST_API
-                .replace("{target_id}", &target_id.to_string());
+            let formatted_url =
+                super::SEND_FRIEND_REQUEST_API.replace("{target_id}", &target_id.to_string());
 
             let cookie = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;
@@ -571,12 +532,8 @@ mod internal {
             Ok(())
         }
 
-        pub(super) async fn unfriend_internal(
-            &self,
-            target_id: u64,
-        ) -> Result<(), RoboatError> {
-            let formatted_url = super::UNFRIEND_API
-                .replace("{target_id}", &target_id.to_string());
+        pub(super) async fn unfriend_internal(&self, target_id: u64) -> Result<(), RoboatError> {
+            let formatted_url = super::UNFRIEND_API.replace("{target_id}", &target_id.to_string());
 
             let cookie = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;

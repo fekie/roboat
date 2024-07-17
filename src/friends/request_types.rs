@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 /// Model, representing user information that also contains select presence information
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
@@ -24,7 +23,7 @@ pub struct FriendUserInformationRaw {
     pub friend_frequent_score: i64,
     pub friend_frequent_rank: i64,
 
-    pub has_verified_badge: bool
+    pub has_verified_badge: bool,
 }
 
 /// Model, representing a friend request.

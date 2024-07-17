@@ -224,6 +224,8 @@ mod chat;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://friends.roblox.com/*>.
+pub mod friends;
 /// A module for endpoints prefixed with <https://groups.roblox.com/*>.
 pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
@@ -236,8 +238,6 @@ pub mod thumbnails;
 pub mod trades;
 /// A module for endpoints prefixed with <https://users.roblox.com/*>.
 pub mod users;
-/// A module for endpoints prefixed with <https://friends.roblox.com/*>.
-pub mod friends;
 /// A module related to validating requests.
 mod validation;
 // todo: figure out authtickets
