@@ -58,6 +58,14 @@
 //!   - User Search - [`Client::user_search`]
 //!   - Username User Search - [`Client::username_user_search`]
 //!   - Fetch User Details - [`Client::user_details`]
+//! * Friends API
+//!   - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`]
+//!   - Fetch Friend Requests - [`Client::friend_requests`]
+//!   - Fetch Friends List - [`Client::friends_list`]
+//!   - Accept Friend Request - [`Client::accept_friend_request`]
+//!   - Decline Friend Request - [`Client::decline_friend_request`]
+//!   - Send Friend Request - [`Client::send_friend_request`]
+//!   - Unfriend - [`Client::unfriend`]
 //! * UNDER CONSTRUCTION
 //!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
 //!
@@ -198,6 +206,7 @@
 
 // Re-export reqwest so people can use the correct version.
 pub use reqwest;
+use serde::{Deserialize, Serialize};
 
 pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
@@ -215,10 +224,12 @@ mod chat;
 mod client;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
+/// A module for endpoints prefixed with <https://friends.roblox.com/*>.
+pub mod friends;
 /// A module for endpoints prefixed with <https://groups.roblox.com/*>.
 pub mod groups;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
-mod presence;
+pub mod presence;
 /// A module for endpoints prefixed with <https://privatemessages.roblox.com/*>.
 pub mod private_messages;
 /// A module for endpoints prefixed with <https://thumbnails.roblox.com/*>.
@@ -229,15 +240,12 @@ pub mod trades;
 pub mod users;
 /// A module related to validating requests.
 mod validation;
-
 // todo: figure out authtickets
 // todo: maybe respect cookies returned
 // todo: maybe add stronger types for stuff like cursors? stuff that can be returned basically and is unlikely to cbe created by the user.
 // todo: add doc example and example count somewhere
 // todo: the roblox api docs show the roblox error codes, maybe a custom sub error can be made
 // todo: add a "2 step not implemented for this endpoint" error
-
-use serde::{Deserialize, Serialize};
 
 // Used in request header keys.
 const XCSRF_HEADER: &str = "x-csrf-token";
@@ -322,7 +330,8 @@ pub enum RoboatError {
     #[error("Unidentified Status Code {0}")]
     UnidentifiedStatusCode(u16),
     /// Used when the response from an API endpoint is malformed.
-    #[error("Malformed Response. If this occurs often it may be a bug. Please report it to the issues page.")]
+    #[error("Malformed Response. If this occurs often it may be a bug. Please report it to the issues page."
+    )]
     MalformedResponse,
     /// Used when an endpoint rejects a request due to an invalid xcsrf.
     /// Mostly used internally invalid xcsrf is returned due to the fact that rust does not
@@ -336,11 +345,13 @@ pub enum RoboatError {
     /// Used when an endpoint returns a 403 status code, but not because of an invalid xcsrf.
     /// The string inside this error variant is a challenge id, which can be used to complete the challenge
     /// (which can be either a captcha or a two step verification code).
-    #[error("Challenge Required. A captcha or two step authentication must be completed using challenge id {0}.")]
+    #[error("Challenge Required. A captcha or two step authentication must be completed using challenge id {0}."
+    )]
     ChallengeRequired(String),
     /// Used when an endpoint returns a 403 status code, can be parsed into a roblox error,
     /// but the error message is incorrect or the challenge id is not returned. This also means that no xcsrf was returned.
-    #[error("Unknown Status Code 403 Format. If this occurs often it may be a bug. Please report it to the issues page.")]
+    #[error("Unknown Status Code 403 Format. If this occurs often it may be a bug. Please report it to the issues page."
+    )]
     UnknownStatus403Format,
     /// Custom Roblox errors sometimes thrown when the user calls [`Client::purchase_tradable_limited`].
     #[error("{0}")]
