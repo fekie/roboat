@@ -222,6 +222,8 @@ pub mod catalog;
 mod chat;
 /// A module related to the [`Client`] struct.
 mod client;
+// A module for endpoints prefixed with <https:://assetdelivery.roblox.com/*>
+pub mod assetdelivery;
 /// A module for endpoints prefixed with <https://economy.roblox.com/*>.
 pub mod economy;
 /// A module for endpoints prefixed with <https://friends.roblox.com/*>.
