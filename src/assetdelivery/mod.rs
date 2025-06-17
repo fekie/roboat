@@ -33,7 +33,7 @@ impl Client {
     ///     .roblosecurity(ROBLOSECURITY.to_string())
     ///     .build();
     ///
-    /// let blob = client.fetch_asset_blob(ASSET_ID).await?;
+    /// let blob = client.fetch_asset_data(ASSET_ID).await?;
     /// println!("Downloaded {} bytes", blob.len());
     /// # Ok(())
     /// # }
