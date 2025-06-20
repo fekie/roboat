@@ -47,28 +47,30 @@ pub struct AssetInfo {
     pub path: String,
     pub revision_id: String,
     pub revision_create_time: String,
-    pub asset_id: String, // Correct as a String since it's returned as a string
+    pub asset_id: String,
     pub display_name: String,
     pub asset_type: String,
-    pub creation_context: CreationContext, // Should match the "creationContext" field in JSON
-    pub moderation_result: ModerationResult, // Should match the "moderationResult" field in JSON
+    pub creation_context: CreationContext,
+    pub moderation_result: ModerationResult,
     pub state: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct CreationContext {
-    pub creator: Creator, // Should match the "creator" object inside "creationContext"
+    pub creator: Creator,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+// Use Option to handle missing fields (If its Group owned it wont have user_id)
 pub struct Creator {
-    pub user_id: String, // "userId" is a string in the JSON response, so this must be String
+    pub group_id: Option<String>,
+    pub user_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ModerationResult {
-    pub moderation_state: String, // "moderationState" is the correct key in the response
+    pub moderation_state: String,
 }
