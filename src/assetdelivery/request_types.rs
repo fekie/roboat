@@ -10,7 +10,7 @@ pub struct AssetMetaData {
     #[serde(rename = "IsCopyrightProtected")]
     pub is_copyright_protected: bool,
     pub is_archived: bool,
-    pub asset_type_id: u32,
+    pub asset_type_id: u8,
     pub is_recordable: bool,
 }
 
@@ -25,6 +25,6 @@ pub struct AssetLocation {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetMetadata {
-    pub metadata_type: u32,
+    pub metadata_type: u8,
     pub value: String,
 }
