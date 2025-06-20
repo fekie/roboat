@@ -96,7 +96,7 @@ mod internal {
         ) -> Result<AssetMetaData, RoboatError> {
             let cookie = self.cookie_string()?;
             // let xcsrf = self.xcsrf().await;
-            let formatted_url = format!("{}/asset/{}", ASSETDELIVERY_V2_API, asset_id);
+            let formatted_url = format!("{}/assetid/{}", ASSETDELIVERY_V2_API, asset_id);
 
             let request_result = self
                 .reqwest_client
