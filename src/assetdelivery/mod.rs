@@ -13,7 +13,6 @@ use reqwest::header;
 
 /// All the payload/response structs
 pub mod request_types;
-
 /// WARNING: Some AssetDelivery V2 API returns Errors even when its status code 200
 impl Client {
     /// Gets Meta data from item, this works on Animations, outfits, places and other assets.
@@ -31,7 +30,6 @@ impl Client {
             Err(e) => match e {
                 RoboatError::InvalidXcsrf(new_xcsrf) => {
                     self.set_xcsrf(new_xcsrf).await;
-
                     self.fetch_asset_metadata_internal(asset_id).await
                 }
                 _ => Err(e),
@@ -178,6 +176,7 @@ mod internal {
     use super::request_types;
     use crate::assetdelivery::request_types::{AssetBatchPayload, AssetBatchResponse};
     use crate::assetdelivery::{AssetMetaData, ASSETDELIVERY_V2_API};
+    use crate::catalog::{catalog_types, AssetType};
     use crate::{Client, RoboatError};
     use reqwest::header;
 
@@ -198,12 +197,19 @@ mod internal {
                 .await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let meta_data =
+            let mut meta_data =
                 Self::parse_to_raw::<Vec<request_types::AssetBatchResponse>>(response).await?;
 
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
-            for batch_resp in &meta_data {
+            for batch_resp in &mut meta_data {
+                // TODO: Convert the Asset Id type to struct
+                if let Some(id) = batch_resp.asset_type_id {
+                    match catalog_types::AssetType::try_from(id as u64) {
+                        Ok(e) => batch_resp.asset_type = Some(e),
+                        Err(..) => {}
+                    }
+                }
                 if let Some(errors) = &batch_resp.errors {
                     for error in errors {
                         // 401 Error will be .ROBLOSECURITY. and not CSRF.

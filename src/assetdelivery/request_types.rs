@@ -1,6 +1,8 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_with::skip_serializing_none;
 
+use crate::catalog::AssetType;
 //NOTE: Asset Deliver API responses are really dynamic and can miss all fields, to show errors so
 //I use option to make Rust not panic because roblox responds with nonsense.
 
@@ -17,7 +19,7 @@ pub struct AssetMetaData {
     #[serde(rename = "IsCopyrightProtected")]
     pub is_copyright_protected: bool,
     pub is_archived: bool,
-    pub asset_type_id: u8,
+    pub asset_type_id: u64,
     pub is_recordable: bool,
 }
 
@@ -71,13 +73,13 @@ pub struct AssetBatchPayload {
 #[serde(rename_all = "camelCase")]
 pub struct AssetBatchResponse {
     pub errors: Option<Vec<RobloxError>>,
-
     pub locations: Option<Vec<Location>>,
     pub request_id: Option<String>,
     pub is_hash_dynamic: Option<bool>,
     pub is_copyright_protected: Option<bool>,
     pub is_archived: Option<bool>,
     pub asset_type_id: Option<u8>,
+    pub asset_type: Option<AssetType>,
     pub content_representation_specifier: Option<ContentRepresentationSpecifier>,
     pub is_recordable: Option<bool>,
 }
