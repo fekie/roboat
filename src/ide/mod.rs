@@ -107,7 +107,6 @@ mod internal {
                 formatted_url = formatted_url.replace("{groupId}", &group_id.to_string());
             }
 
-            println!("hi");
             let request_result = self
                 .reqwest_client
                 .post(formatted_url)
