@@ -13,10 +13,10 @@ version = "0.35.0"
 [dependencies]
 reqwest = { version = "0.12.20", default-features = false, features = [
     "native-tls",
-    #"rustls-tls",
+    # "rustls-tls",
     "json",
     "multipart",
-    "blocking",
+    # "blocking",
     # For Automatic decompression for files from roblox
     "gzip",
 ] }
