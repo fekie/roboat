@@ -30,7 +30,8 @@ impl Client {
     /// * `groupId` – Optional group ID (if uploading to a group)
     ///
     /// # Return Value Notes
-    /// * Returns `Ok(())` if the animation was uploaded successfully.
+    /// * Returns `String` of the new animation ID if the animation was uploaded successfully.
+    /// * Or Returns an error.
     ///
     /// # Errors
     /// * [RoboatError::MissingAuth] – If the `.ROBLOSECURITY` cookie is missing.
@@ -65,16 +66,15 @@ impl Client {
     /// # Ok(())
     /// # }
     /// ```
-
     pub async fn upload_new_animation(
         &self,
         animation_info: NewAnimation,
-    ) -> Result<(), RoboatError> {
+    ) -> Result<String, RoboatError> {
         match self
             .upload_new_animation_internal(animation_info.clone())
             .await
         {
-            Ok(()) => Ok(()),
+            Ok(x) => Ok(x),
             Err(RoboatError::InvalidXcsrf(new_xcsrf)) => {
                 self.set_xcsrf(new_xcsrf).await;
                 self.upload_new_animation_internal(animation_info).await
@@ -94,7 +94,7 @@ mod internal {
         pub(super) async fn upload_new_animation_internal(
             &self,
             animation_info: NewAnimation,
-        ) -> Result<(), RoboatError> {
+        ) -> Result<String, RoboatError> {
             let cookie = self.cookie_string()?;
             let xcsrf = self.xcsrf().await;
 
@@ -107,6 +107,7 @@ mod internal {
                 formatted_url = formatted_url.replace("{groupId}", &group_id.to_string());
             }
 
+            println!("hi");
             let request_result = self
                 .reqwest_client
                 .post(formatted_url)
@@ -117,9 +118,9 @@ mod internal {
                 .send()
                 .await;
 
-            let _ = Self::validate_request_result(request_result).await?;
-
-            Ok(())
+            let response = Self::validate_request_result(request_result).await?;
+            let response_id = response.text().await.map_err(RoboatError::ReqwestError)?;
+            Ok(response_id)
         }
     }
 }
