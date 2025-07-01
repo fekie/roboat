@@ -1,5 +1,5 @@
 use clap::Parser;
-use roboat::assetdelivery::request_types::AssetBatchPayload;
+use roboat::assetdelivery::AssetBatchPayload;
 
 #[derive(Parser, Debug)]
 struct Args {

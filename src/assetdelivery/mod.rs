@@ -4,15 +4,80 @@
 const ASSETDELIVERY_ASSET_API: &str = "https://assetdelivery.roblox.com/v1/asset/?ID={id}";
 const ASSETDELIVERY_V2_API: &str = "https://assetdelivery.roblox.com/v2";
 
-use crate::{
-    assetdelivery::request_types::{AssetBatchPayload, AssetBatchResponse, AssetMetaData},
-    Client, RoboatError, XCSRF_HEADER,
-};
+use crate::catalog::AssetType;
+use crate::{Client, RoboatError, XCSRF_HEADER};
 use bytes::Bytes;
 use reqwest::header;
+use serde_with::skip_serializing_none;
 
 /// All the payload/response structs
 pub mod request_types;
+
+use serde::Deserialize;
+use serde::Serialize;
+
+//https://create.roblox.com/docs/cloud/legacy/assetdelivery/v2#/AssetFetchV2/get_v2_assetId__assetId_
+/// Structs For MetaData /v2/assetId/{assetId} Endpoint
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetIdResponse {
+    pub errors: Option<Vec<request_types::RobloxError>>,
+    pub locations: Vec<request_types::AssetLocation>,
+    pub request_id: String,
+    #[serde(rename = "IsHashDynamic")]
+    pub is_hash_dynamic: bool,
+    #[serde(rename = "IsCopyrightProtected")]
+    pub is_copyright_protected: bool,
+    pub is_archived: bool,
+    pub asset_type_id: u64,
+    pub is_recordable: bool,
+}
+
+/// Structs for /v2/assets/batch All of these are optional to define what Asset you want information from.
+//{https://create.roblox.com/docs/cloud/legacy/assetdelivery/v2#/BatchV2/post_v2_assets_batch}
+#[skip_serializing_none]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(default)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetBatchPayload {
+    pub asset_name: Option<String>,
+    pub asset_type: Option<String>,
+    pub client_insert: Option<bool>,
+    pub place_id: Option<String>,
+    pub request_id: Option<String>,
+    pub script_insert: Option<bool>,
+    pub server_place_id: Option<String>,
+    pub universe_id: Option<String>,
+    pub accept: Option<String>,
+    pub encoding: Option<String>,
+    pub hash: Option<String>,
+    pub user_asset_id: Option<String>,
+    pub asset_id: Option<String>,
+    pub version: Option<String>,
+    pub asset_version_id: Option<String>,
+    pub module_place_id: Option<String>,
+    pub asset_format: Option<String>,
+    #[serde(rename = "roblox-assetFormat")]
+    pub roblox_asset_format: Option<String>,
+    pub content_representation_priority_list: Option<String>,
+    pub do_not_fallback_to_baseline_representation: Option<bool>,
+}
+
+/// Response for AssetBatch
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetBatchResponse {
+    pub errors: Option<Vec<request_types::RobloxError>>,
+    pub locations: Option<Vec<request_types::Location>>,
+    pub request_id: Option<String>,
+    pub is_hash_dynamic: Option<bool>,
+    pub is_copyright_protected: Option<bool>,
+    pub is_archived: Option<bool>,
+    pub asset_type_id: Option<u8>,
+    pub asset_type: Option<AssetType>,
+    pub content_representation_specifier: Option<request_types::ContentRepresentationSpecifier>,
+    pub is_recordable: Option<bool>,
+}
 /// WARNING: Some AssetDelivery V2 API returns Errors even when its status code 200
 impl Client {
     /// Gets Meta data from item, this works on Animations, outfits, places and other assets.
@@ -24,7 +89,10 @@ impl Client {
     /// *Can return a sucess but still have error codes in the response
     /// Doesn't need xcrf, but will add one if it gets 401
 
-    pub async fn fetch_asset_metadata(&self, asset_id: u64) -> Result<AssetMetaData, RoboatError> {
+    pub async fn fetch_asset_metadata(
+        &self,
+        asset_id: u64,
+    ) -> Result<AssetIdResponse, RoboatError> {
         match self.fetch_asset_metadata_internal(asset_id).await {
             Ok(x) => Ok(x),
             Err(e) => match e {
@@ -151,6 +219,7 @@ impl Client {
 
     // WARNING: Theres a V2 API https://assetdelivery.roblox.com/v2/assetid/119472671657225 that
     // has location of the file. Migrate to it if they ever ratelimit/remove the v1 API
+    /// If this API hangs, use a timeout and retry.
     pub async fn fetch_asset_data(&self, asset_id: u64) -> Result<Bytes, RoboatError> {
         let cookie_string = self.cookie_string()?;
         let formatted_url = ASSETDELIVERY_ASSET_API.replace("{id}", &asset_id.to_string());
@@ -173,10 +242,11 @@ impl Client {
 }
 
 mod internal {
-    use super::request_types;
-    use crate::assetdelivery::request_types::{AssetBatchPayload, AssetBatchResponse};
-    use crate::assetdelivery::{AssetMetaData, ASSETDELIVERY_V2_API};
-    use crate::catalog::{catalog_types, AssetType};
+    use crate::assetdelivery::AssetBatchPayload;
+    use crate::assetdelivery::AssetBatchResponse;
+    use crate::assetdelivery::AssetIdResponse;
+    use crate::assetdelivery::ASSETDELIVERY_V2_API;
+    use crate::catalog::catalog_types;
     use crate::{Client, RoboatError};
     use reqwest::header;
 
@@ -197,8 +267,7 @@ mod internal {
                 .await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let mut meta_data =
-                Self::parse_to_raw::<Vec<request_types::AssetBatchResponse>>(response).await?;
+            let mut meta_data = Self::parse_to_raw::<Vec<AssetBatchResponse>>(response).await?;
 
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
@@ -225,7 +294,7 @@ mod internal {
         pub(super) async fn fetch_asset_metadata_internal(
             &self,
             asset_id: u64,
-        ) -> Result<AssetMetaData, RoboatError> {
+        ) -> Result<AssetIdResponse, RoboatError> {
             let cookie = self.cookie_string()?;
             // let xcsrf = self.xcsrf().await;
             let formatted_url = format!("{}/assetid/{}", ASSETDELIVERY_V2_API, asset_id);
@@ -238,7 +307,7 @@ mod internal {
                 .await;
 
             let response = Self::validate_request_result(request_result).await?;
-            let meta_data = Self::parse_to_raw::<request_types::AssetMetaData>(response).await?;
+            let meta_data = Self::parse_to_raw::<AssetIdResponse>(response).await?;
 
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
