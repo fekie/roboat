@@ -66,6 +66,8 @@
 //!   - Decline Friend Request - [`Client::decline_friend_request`]
 //!   - Send Friend Request - [`Client::send_friend_request`]
 //!   - Unfriend - [`Client::unfriend`]
+//! * IDE API (Animations)
+//!   - Upload New Animation - [`Client::upload_new_animation`]
 //! * UNDER CONSTRUCTION
 //!   - Upload Classic Clothing To Group - [`Client::upload_classic_clothing_to_group`]
 //!
