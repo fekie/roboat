@@ -212,6 +212,9 @@ pub use bedev2::PurchaseNonTradableLimitedError;
 pub use client::{Client, ClientBuilder};
 pub use economy::PurchaseTradableLimitedError;
 
+///
+/// A module for endpoints prefixed with <https://assetdelivery.roblox.com/*>
+pub mod assetdelivery;
 /// A module for endpoints prefixed with <https://auth.roblox.com/*>.
 mod auth;
 /// A module for endpoints prefixed with <https://apis.roblox.com/*>.
@@ -228,6 +231,9 @@ pub mod economy;
 pub mod friends;
 /// A module for endpoints prefixed with <https://groups.roblox.com/*>.
 pub mod groups;
+/// A module for endpoints prefixed with <https://www.roblox.com/ide/*>
+// This is used for private APIs like ide/uploadnewanimation and ide/places/createV2
+pub mod ide;
 /// A module for endpoints prefixed with <https://presence.roblox.com/*>.
 pub mod presence;
 /// A module for endpoints prefixed with <https://privatemessages.roblox.com/*>.

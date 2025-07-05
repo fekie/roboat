@@ -1,3 +1,4 @@
+use crate::bedev2::request_types::AssetInfo;
 use crate::catalog::CreatorType;
 use crate::{Client, RoboatError};
 use serde::{Deserialize, Serialize};
@@ -10,7 +11,10 @@ const COLLECTIBLE_ITEM_DETAILS_API: &str =
 const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1: &str =
     "https://apis.roblox.com/marketplace-sales/v1/item/";
 
-const ASSET_UPLOAD_API: &str = "https://apis.roblox.com/assets/user-auth/v1/assets";
+/// This API endpoint supports two operations:
+/// - POST request with a payload to upload an asset
+/// - GET request with an asset ID parameter (/{Id}) to retrieve asset information
+const ASSET_API: &str = "https://apis.roblox.com/assets/user-auth/v1/assets";
 
 const PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2: &str = "/purchase-item";
 
@@ -456,6 +460,60 @@ impl Client {
         }
     }
 
+    /// Fetches detailed information about a specific asset using its asset ID.
+    ///
+    /// This function retrieves asset information such as the asset's name, description,
+    /// and other related details from the Roblox API. It uses the internal `get_asset_info_internal`
+    /// function to send a request to the server and parse the response.
+    ///
+    /// # Argument Notes
+    ///
+    /// * `asset_id`: The unique ID of the asset whose information is being fetched. This ID can be obtained
+    ///   through various means, such as browsing the asset page on Roblox or using other API endpoints.
+    ///
+    /// # Notes
+    /// * requires .ROBLOSECURITY cookie
+    /// * Will repeat once if the x-csrf-token is invalid.
+
+    /// # Errors
+    ///
+    /// * All errors under [Standard Errors](#standard-errors).
+    /// * All errors under [Auth Required Errors](#auth-required-errors).
+    /// * All errors under [X-CSRF-TOKEN Required Errors](#x-csrf-token-required-errors).
+    /// * [`RoboatError::MalformedResponse`] - If the response from the server is malformed and cannot be parsed.
+    /// * [`RoboatError::NetworkError`] - If there is an issue with the network request.
+    /// * [`RoboatError::RequestError`] - If there is any general error with the request or the server response.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use roboat::ClientBuilder;
+    ///
+    /// const ROBLOSECURITY: &str = "roblosecurity";
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = ClientBuilder::new().roblosecurity(ROBLOSECURITY.to_string()).build();
+    ///
+    /// let asset_id = 123456789;
+    ///
+    /// let asset_info = client.get_asset_info(asset_id).await?;
+    /// println!("Asset Info: {:?}", asset_info);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn get_asset_info(&self, asset_id: u64) -> Result<AssetInfo, RoboatError> {
+        match self.get_asset_info_internal(asset_id.clone()).await {
+            Ok(x) => Ok(x),
+            Err(e) => match e {
+                RoboatError::InvalidXcsrf(new_xcsrf) => {
+                    self.set_xcsrf(new_xcsrf).await;
+                    self.get_asset_info_internal(asset_id).await
+                }
+                _ => Err(e),
+            },
+        }
+    }
+
     /// Uploads classic clothing to a group. This currently only works for classic clothing and
     /// for people uploading from groups. This is because the endpoint is not fully understood yet
     /// and reverse engineering it is expensive.
@@ -516,7 +574,10 @@ mod internal {
         NonTradableLimitedDetails, PurchaseNonTradableLimitedError, COLLECTIBLE_ITEM_DETAILS_API,
         PURCHASE_NON_TRADEABLE_LIMITED_API_PART_1, PURCHASE_NON_TRADEABLE_LIMITED_API_PART_2,
     };
-    use crate::{bedev2::ASSET_UPLOAD_API, Client, RoboatError, XCSRF_HEADER};
+    use crate::{
+        bedev2::{request_types::AssetInfo, ASSET_API},
+        Client, RoboatError, XCSRF_HEADER,
+    };
 
     impl Client {
         pub(super) async fn non_tradable_limited_details_internal(
@@ -614,6 +675,29 @@ mod internal {
             }
         }
 
+        pub(super) async fn get_asset_info_internal(
+            &self,
+            asset_id: u64,
+        ) -> Result<AssetInfo, RoboatError> {
+            let cookie_string = self.cookie_string()?;
+            let xcsrf = self.xcsrf().await;
+            let formatted_url = format!("{}/{}", ASSET_API, asset_id);
+
+            let response_result = self
+                .reqwest_client
+                .get(formatted_url)
+                .header(header::COOKIE, cookie_string)
+                .header(XCSRF_HEADER, xcsrf)
+                .send()
+                .await;
+
+            let response = Self::validate_request_result(response_result).await?;
+
+            let asset_info = Self::parse_to_raw::<request_types::AssetInfo>(response).await?;
+
+            Ok(asset_info)
+        }
+
         pub(super) async fn upload_classic_clothing_to_group_internal(
             &self,
             group_id: u64,
@@ -647,7 +731,7 @@ mod internal {
 
             let response_result = self
                 .reqwest_client
-                .request(reqwest::Method::POST, ASSET_UPLOAD_API)
+                .request(reqwest::Method::POST, ASSET_API)
                 .header(header::COOKIE, cookie_string)
                 .header(XCSRF_HEADER, xcsrf)
                 .multipart(form)
