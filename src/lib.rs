@@ -66,6 +66,8 @@
 //!   - Decline Friend Request - [`Client::decline_friend_request`]
 //!   - Send Friend Request - [`Client::send_friend_request`]
 //!   - Unfriend - [`Client::unfriend`]
+//! * Assetdelivery API
+//!   - Fetch Asset Data - [`Client::fetch_asset_data`]
 //! * IDE API (Animations)
 //!   - Upload New Animation - [`Client::upload_new_animation`]
 //! * UNDER CONSTRUCTION

@@ -82,6 +82,8 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Decline Friend Request - [`Client::decline_friend_request`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.decline_friend_request)
     - Send Friend Request - [`Client::send_friend_request`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.send_friend_request)
     - Unfriend - [`Client::unfriend`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.unfriend)
+* Assetdelivery API - [`assetdelivery.roblox.com/*`]
+    - Fetch Asset Data - [`Client::fetch_asset_data`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.fetch_asset_data)
 * IDE API (Animations) - [`ide.roblox.com/*`]
     - Upload New Animation - [`Client::upload_new_animation`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.upload_new_animation)
 * UNDER CONSTRUCTION
