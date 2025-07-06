@@ -88,7 +88,6 @@ impl Client {
     /// Requires valid roblosecurity
     /// *Can return a sucess but still have error codes in the response
     /// Doesn't need xcrf, but will add one if it gets 401
-
     pub async fn fetch_asset_metadata(
         &self,
         asset_id: u64,
@@ -165,7 +164,6 @@ impl Client {
     /// - Network or HTTP errors from the reqwest client
     /// - Invalid or expired X-CSRF tokens (which it will attempt to refresh automatically)
     /// - Malformed responses from the API
-
     pub async fn post_asset_metadata_batch(
         &self,
         asset_batch: Vec<AssetBatchPayload>,
