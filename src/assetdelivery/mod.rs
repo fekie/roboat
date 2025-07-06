@@ -310,15 +310,15 @@ mod internal {
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
             if let Some(errors) = &meta_data.errors {
-                for error in errors {
-                    // 401 Error will be .ROBLOSECURITY. and not CSRF.
-                    if error.code == 401 {
-                        return Err(RoboatError::InvalidRoblosecurity);
-                    } else {
-                        // this API either gets one Error or Asset. Return the Err
-                        // NOTE: This Error could be that the Asset is Private.
-                        return Err(RoboatError::UnidentifiedStatusCode(error.code));
-                    }
+                // We can only return one error, so we just return the first
+                let first_error = errors.first().unwrap();
+                // 401 Error will be .ROBLOSECURITY. and not CSRF.
+                if first_error.code == 401 {
+                    return Err(RoboatError::InvalidRoblosecurity);
+                } else {
+                    // this API either gets one Error or Asset. Return the Err
+                    // NOTE: This Error could be that the Asset is Private.
+                    return Err(RoboatError::UnidentifiedStatusCode(first_error.code));
                 }
             }
 
