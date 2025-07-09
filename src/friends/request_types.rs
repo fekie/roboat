@@ -18,7 +18,7 @@ pub struct FriendUserInformationRaw {
     pub is_online: bool,
     pub is_deleted: bool,
     pub is_banned: bool,
-    pub presence_type: Option<i32>,
+    pub presence_type: Option<u8>,
 
     pub friend_frequent_score: i64,
     pub friend_frequent_rank: i64,
