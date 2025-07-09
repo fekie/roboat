@@ -19,19 +19,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Found {} pending requests.", pending_friend_requests);
 
     // iterate through all friend requests
-
     let mut current_cursor = None;
-
     loop {
         let (friend_requests, next_cursor) = client.friend_requests(current_cursor).await?;
 
         for user in friend_requests {
-            println!(
-                " - {} from {}: {}",
-                user.username, user.origin_source_type, user.user_id
-            );
+            println!(" - {} from {}: {:?}", user.name, user.id, user.request_info)
         }
-
         if let Some(cursor) = next_cursor {
             current_cursor = Some(cursor)
         } else {

@@ -1,6 +1,5 @@
 use clap::Parser;
 
-use roboat::presence::PresenceType;
 use roboat::ClientBuilder;
 
 #[derive(Parser, Debug)]
@@ -14,16 +13,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let client = ClientBuilder::new().build();
 
-    let friends = client.friends_list(args.user_id).await?;
-
-    println!("Found {} friends.", friends.len());
-    for friend in friends {
-        print!("{}: {} ", friend.username, friend.user_id);
-        if friend.presence_type != PresenceType::Offline {
-            println!("({:?})", friend.presence_type)
-        } else {
-            println!();
-        }
+    let friends_list = client.friends_list(args.user_id).await?;
+    for friend in friends_list {
+        println!("{}: {} ", friend.display_name, friend.id);
     }
 
     Ok(())
