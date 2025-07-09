@@ -89,6 +89,7 @@ impl Client {
     /// * If user is in game and either their joins are turned off or you don't have a valid cookie information like place_id will always be None
     /// * Can handle up to 50 users at once
     /// * Doesnt need xcsrf token.
+    /// * This API is ratelimited
     ///
     /// # Return Value Notes
     /// * Will return `Ok(UserPresenceResponse)` if presence was successfully fetched.
