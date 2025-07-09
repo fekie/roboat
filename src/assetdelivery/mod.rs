@@ -270,7 +270,6 @@ mod internal {
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
             for batch_resp in &mut meta_data {
-                // TODO: Convert the Asset Id type to struct
                 if let Some(id) = batch_resp.asset_type_id {
                     match catalog_types::AssetType::try_from(id as u64) {
                         Ok(e) => batch_resp.asset_type = Some(e),
