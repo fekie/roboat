@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-//NOTE: Asset Deliver API responses are really dynamic and can miss all fields, to show errors so
-//I use option to make Rust not panic because roblox responds with nonsense.
+//NOTE: Asset Deliver API responses are really dynamic and can miss all fields, make sure to use
+//option
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -34,21 +34,3 @@ pub struct ContentRepresentationSpecifier {
     pub major_version: Option<String>,
     pub fidelity: Option<String>,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RobloxError {
-    pub code: u16,
-    pub message: String,
-    pub custom_error_code: Option<i32>,
-}
-
-// #[derive(Debug, Serialize, Deserialize)]
-// pub struct AssetError {
-//     #[serde(rename = "Code")]
-//     pub code: Option<u32>,
-//     #[serde(rename = "Message")]
-//     pub message: Option<String>,
-//     #[serde(rename = "CustomErrorCode")]
-//     pub custom_error_code: Option<u32>,
-// }

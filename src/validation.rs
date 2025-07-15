@@ -15,7 +15,7 @@ struct RobloxErrorResponse {
 
 #[allow(missing_docs)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
-struct RobloxErrorRaw {
+pub struct RobloxErrorRaw {
     pub code: u16,
     pub message: String,
 }
