@@ -73,7 +73,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
     - Fetch Display Name - [`Client::display_name`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.display_name)
     - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
-    - Username User Search - [`Client::username_user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username_user_search)
+    - Username User Details - [`Client::username_user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username_user_details)
     - Fetch User Details - [`Client::user_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_details)
 * Friends API - [`friends.roblox.com/*`]
     - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.pending_friend_requests)
