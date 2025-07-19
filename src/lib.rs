@@ -39,6 +39,7 @@
 //!   - Set Group Member Role - [`Client::set_group_member_role`]
 //! * Presence API
 //!   - Register Presence - [`Client::register_presence`]
+//!   - Fetch Users Presence - [`Client::fetch_users_presence`]
 //! * Private Messages API
 //!   - Fetch Messages - [`Client::messages`]
 //! * Thumbnails API

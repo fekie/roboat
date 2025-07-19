@@ -55,6 +55,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Set Group Member Role - [`Client::set_group_member_role`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.set_group_member_role)
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
+    - Fetch Users Precense - [`Client::fetch_users_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.fetch_users_presence)
 * Private Messages API - [`privatemessages.roblox.com/*`]
     - Fetch Messages - [`Client::messages`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.messages)
 * Thumbnails API - [`thumbnails.roblox.com/*`]
