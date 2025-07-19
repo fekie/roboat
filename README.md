@@ -55,6 +55,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Set Group Member Role - [`Client::set_group_member_role`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.set_group_member_role)
 * Presence API - [`presence.roblox.com/*`]
     - Register Presence - [`Client::register_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.register_presence)
+    - Fetch Users Precense - [`Client::fetch_users_presence`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.fetch_users_presence)
 * Private Messages API - [`privatemessages.roblox.com/*`]
     - Fetch Messages - [`Client::messages`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.messages)
 * Thumbnails API - [`thumbnails.roblox.com/*`]
@@ -72,7 +73,7 @@ Documentation can be found [here](https://docs.rs/roboat/).
     - Fetch Username - [`Client::username`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username)
     - Fetch Display Name - [`Client::display_name`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.display_name)
     - User Search - [`Client::user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_search)
-    - Username User Search - [`Client::username_user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username_user_search)
+    - Username User Details - [`Client::username_user_search`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.username_user_details)
     - Fetch User Details - [`Client::user_details`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.user_details)
 * Friends API - [`friends.roblox.com/*`]
     - Fetch Count of Pending Friend Requests - [`Client::pending_friend_requests`](https://docs.rs/roboat/latest/roboat/struct.Client.html#method.pending_friend_requests)

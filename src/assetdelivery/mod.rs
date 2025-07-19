@@ -5,6 +5,7 @@ const ASSETDELIVERY_ASSET_API: &str = "https://assetdelivery.roblox.com/v1/asset
 const ASSETDELIVERY_V2_API: &str = "https://assetdelivery.roblox.com/v2";
 
 use crate::catalog::AssetType;
+use crate::validation::RobloxErrorRaw;
 use crate::{Client, RoboatError, XCSRF_HEADER};
 use bytes::Bytes;
 use reqwest::header;
@@ -21,7 +22,7 @@ use serde::Serialize;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetIdResponse {
-    pub errors: Option<Vec<request_types::RobloxError>>,
+    pub errors: Option<Vec<RobloxErrorRaw>>,
     pub locations: Vec<request_types::AssetLocation>,
     pub request_id: String,
     #[serde(rename = "IsHashDynamic")]
@@ -67,7 +68,7 @@ pub struct AssetBatchPayload {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetBatchResponse {
-    pub errors: Option<Vec<request_types::RobloxError>>,
+    pub errors: Option<Vec<RobloxErrorRaw>>,
     pub locations: Option<Vec<request_types::Location>>,
     pub request_id: Option<String>,
     pub is_hash_dynamic: Option<bool>,
@@ -270,15 +271,14 @@ mod internal {
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
             for batch_resp in &mut meta_data {
-                // TODO: Convert the Asset Id type to struct
                 if let Some(id) = batch_resp.asset_type_id {
                     match catalog_types::AssetType::try_from(id as u64) {
                         Ok(e) => batch_resp.asset_type = Some(e),
                         Err(..) => {}
                     }
                 }
-                if let Some(errors) = &batch_resp.errors {
-                    for error in errors {
+                if let Some(roblox_error_raw) = &batch_resp.errors {
+                    for error in roblox_error_raw {
                         // 401 Error will be .ROBLOSECURITY. and not CSRF.
                         if error.code == 401 {
                             return Err(RoboatError::InvalidRoblosecurity);
@@ -309,9 +309,9 @@ mod internal {
 
             // Scan response for roblox errors, if its 401 just return Invalid Cookie (Can't be
             // CSRF on this API)
-            if let Some(errors) = &meta_data.errors {
+            if let Some(roblox_error_raw) = &meta_data.errors {
                 // We can only return one error, so we just return the first
-                let first_error = errors.first().unwrap();
+                let first_error = roblox_error_raw.first().unwrap();
                 // 401 Error will be .ROBLOSECURITY. and not CSRF.
                 if first_error.code == 401 {
                     return Err(RoboatError::InvalidRoblosecurity);
