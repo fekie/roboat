@@ -236,6 +236,10 @@ pub mod economy;
 pub mod friends;
 /// A module for endpoints prefixed with <https://groups.roblox.com/*>.
 pub mod groups;
+
+/// A module for endpoints prefixed with <https://games.roblox.com/*>
+pub mod games;
+
 /// A module for endpoints prefixed with <https://www.roblox.com/ide/*>
 // This is used for private APIs like ide/uploadnewanimation and ide/places/createV2
 pub mod ide;
